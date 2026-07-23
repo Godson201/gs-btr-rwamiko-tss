@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs -I{} sh -c 'wc -l \"{}\" | sed \"s|{}||\"; echo \" {}\"')",
+      "Bash(grep -iE \"^\\(next|react|react-dom|tailwindcss|typescript\\)$\")",
+      "Bash(grep -iE \"^\\(typescript|@nestjs\\)$\")",
+      "Bash(docker --version)",
+      "Bash(docker compose *)",
+      "Bash(npm --version)",
+      "PowerShell(docker --version)",
+      "PowerShell(docker compose version)",
+      "Bash(grep -iE \"^tailwindcss$|^typescript$|^postcss$|^autoprefixer$\")",
+      "Bash(npm view *)",
+      "Bash(npm install *)",
+      "Bash(npx prisma *)",
+      "WebFetch(domain:pris.ly)",
+      "WebFetch(domain:www.prisma.io)",
+      "Bash(npx tsc *)",
+      "Bash(npx nest *)",
+      "Bash(npx next *)",
+      "Bash(taskkill //F //IM node.exe)",
+      "Bash(gh auth *)",
+      "Bash(git rm *)",
+      "Bash(git add *)"
+    ]
+  }
+}
