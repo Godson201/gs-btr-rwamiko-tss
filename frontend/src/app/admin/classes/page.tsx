@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Plus, Trash2 } from 'lucide-react';
+import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -98,10 +99,10 @@ export default function AdminClassesPage() {
     {
       header: 'Class',
       cell: (row) => (
-        <span className="font-medium">
+        <Link href={`/admin/classes/${row.id}`} className="font-medium hover:underline">
           {row.name}
           {row.section ? ` - ${row.section}` : ''}
-        </span>
+        </Link>
       ),
     },
     { header: 'Level', cell: (row) => row.level },

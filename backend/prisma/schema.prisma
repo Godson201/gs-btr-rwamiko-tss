@@ -197,15 +197,17 @@ model Class {
 }
 
 model Subject {
-  id           String   @id @default(cuid())
-  name         String
-  code         String   @unique
-  departmentId String?
-  description  String?
-  credits      Int?
-  isCore       Boolean  @default(false)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id            String   @id @default(cuid())
+  name          String
+  code          String   @unique
+  departmentId  String?
+  description   String?
+  credits       Int?
+  learningHours Int?
+  competences   String[]
+  isCore        Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   department  Department?      @relation(fields: [departmentId], references: [id])
   teachers    SubjectTeacher[]

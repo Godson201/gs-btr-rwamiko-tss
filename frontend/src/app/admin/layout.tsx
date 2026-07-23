@@ -28,7 +28,7 @@ const navItems = [
   { label: 'Students', href: '/admin/students', icon: GraduationCap },
   { label: 'Teachers', href: '/admin/teachers', icon: Users },
   { label: 'Classes', href: '/admin/classes', icon: School },
-  { label: 'Subjects', href: '/admin/subjects', icon: BookMarked, disabled: true },
+  { label: 'Modules', href: '/admin/modules', icon: BookMarked },
   { label: 'Settings', href: '/admin/settings', icon: Settings, disabled: true },
 ];
 

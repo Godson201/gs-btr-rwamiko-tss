@@ -9,8 +9,10 @@ import { UsersModule } from './modules/users/users.module';
 import { StudentsModule } from './modules/students/students.module';
 import { TeachersModule } from './modules/teachers/teachers.module';
 import { ClassesModule } from './modules/classes/classes.module';
+import { ClassModulesModule } from './modules/class-modules/class-modules.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { DepartmentsModule } from './modules/departments/departments.module';
+import { ModulesModule } from './modules/modules/modules.module';
 
 @Module({
   imports: [
@@ -28,8 +30,10 @@ import { DepartmentsModule } from './modules/departments/departments.module';
     StudentsModule,
     TeachersModule,
     ClassesModule,
+    ClassModulesModule,
     DashboardModule,
     DepartmentsModule,
+    ModulesModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
