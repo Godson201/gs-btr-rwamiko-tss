@@ -21,7 +21,28 @@
       "Bash(taskkill //F //IM node.exe)",
       "Bash(gh auth *)",
       "Bash(git rm *)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "PowerShell(Get-Command psql -ErrorAction SilentlyContinue)",
+      "PowerShell(winget list --id PostgreSQL.PostgreSQL -e 2>&1)",
+      "PowerShell(winget search PostgreSQL --source winget --accept-source-agreements 2>&1)",
+      "PowerShell(winget show PostgreSQL.PostgreSQL.17 --source winget --accept-source-agreements 2>&1)",
+      "PowerShell(winget install --id PostgreSQL.PostgreSQL.17 --source winget --accept-source-agreements --accept-package-agreements --silent --override \"--mode unattended --unattendedmodeui minimal --superpassword postgres_root_pw --serverport 5432 --disable-components stackbuilder\" 2>&1)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" -I https://get.enterprisedb.com/postgresql/postgresql-17.10-2-windows-x64.exe)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" -I https://www.postgresql.org)",
+      "Bash(mkdir -p \"/c/Users/Godson IT/AppData/Local/Temp/claude/f--gs-btr-rwamiko-tss/e02129cb-8b0c-4099-8a25-407c52aefcf2/scratchpad\")",
+      "Read(//c/Users/Godson IT/AppData/Local/Temp/claude/f--gs-btr-rwamiko-tss/e02129cb-8b0c-4099-8a25-407c52aefcf2/scratchpad/**)",
+      "Bash(curl -L -o postgresql-installer.exe \"https://get.enterprisedb.com/postgresql/postgresql-17.10-2-windows-x64.exe\" --progress-bar)",
+      "Bash(ls -la \"/c/Users/Godson IT/AppData/Local/Temp/claude/f--gs-btr-rwamiko-tss/e02129cb-8b0c-4099-8a25-407c52aefcf2/scratchpad/postgresql-installer.exe\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" -I \"https://get.enterprisedb.com/postgresql/postgresql-17.10-2-windows-x64-binaries.zip\")",
+      "Read(//c/Users/Godson IT/pgsql17/**)",
+      "Read(//c/Users/Godson IT/pgsql17/pgsql/bin/**)",
+      "Bash('/c/Users/Godson IT/pgsql17/pgsql/bin/initdb.exe' -D '/c/Users/Godson IT/pgsql17/data' -U postgres -A trust -E UTF8)",
+      "Bash('/c/Users/Godson IT/pgsql17/pgsql/bin/pg_ctl.exe' -D '/c/Users/Godson IT/pgsql17/data' -l '/c/Users/Godson IT/pgsql17/pg.log' -o '-p 5432' start)",
+      "Bash('/c/Users/Godson IT/pgsql17/pgsql/bin/pg_ctl.exe' -D '/c/Users/Godson IT/pgsql17/data' status)",
+      "Bash(export PGPASSWORD=\"\")",
+      "Bash('/c/Users/Godson IT/pgsql17/pgsql/bin/psql.exe' -U postgres -h localhost -p 5432 -d postgres -c 'CREATE USER gs_user WITH PASSWORD '\\\\''secure_password_here'\\\\'' CREATEDB;')",
+      "Bash('/c/Users/Godson IT/pgsql17/pgsql/bin/psql.exe' -U postgres -h localhost -p 5432 -d postgres -c 'CREATE DATABASE gs_btr_rwamiko OWNER gs_user;')",
+      "Bash('/c/Users/Godson IT/pgsql17/pgsql/bin/psql.exe' -U postgres -h localhost -p 5432 -d postgres -c '\\\\l')"
     ]
   }
 }

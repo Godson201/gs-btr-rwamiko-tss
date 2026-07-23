@@ -76,7 +76,7 @@ export class StudentsService {
       throw new ConflictException('A user with this email already exists');
     }
 
-    const saltRounds = this.configService.get<number>('BCRYPT_SALT_ROUNDS', 10);
+    const saltRounds = Number(this.configService.get('BCRYPT_SALT_ROUNDS', 10));
     const hashedPassword = await bcrypt.hash(dto.password, saltRounds);
 
     return this.prisma.$transaction(async (tx) => {
