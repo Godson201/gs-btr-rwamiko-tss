@@ -65,7 +65,7 @@ export default function AdminClassesPage() {
 
   const form = useForm<ClassFormValues>({
     resolver: zodResolver(classSchema),
-    defaultValues: { name: '', level: '', section: '', academicYearId: '', capacity: undefined },
+    defaultValues: { name: '', level: '', section: '', academicYearId: '', capacity: '' },
   });
 
   const createClass = useMutation({
