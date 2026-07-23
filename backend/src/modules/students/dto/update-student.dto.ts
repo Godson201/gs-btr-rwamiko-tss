@@ -32,6 +32,10 @@ export class UpdateStudentDto {
 
   @IsOptional()
   @IsString()
+  parentId?: string;
+
+  @IsOptional()
+  @IsString()
   academicYear?: string;
 
   @IsOptional()

@@ -9,25 +9,29 @@ async function proxy(request: NextRequest, path: string[]) {
   const targetUrl = new URL(`${process.env.API_URL}/${path.join('/')}`);
   targetUrl.search = request.nextUrl.search;
 
-  const headers: HeadersInit = { 'Content-Type': 'application/json' };
+  const headers: HeadersInit = {};
+  const incomingContentType = request.headers.get('content-type');
+  if (incomingContentType) {
+    headers['Content-Type'] = incomingContentType;
+  }
   if (token) {
     headers.Authorization = `Bearer ${token}`;
   }
 
   const hasBody = !['GET', 'HEAD', 'DELETE'].includes(request.method);
-  const body = hasBody ? await request.text() : undefined;
+  const body = hasBody ? await request.arrayBuffer() : undefined;
 
   const backendResponse = await fetch(targetUrl, {
     method: request.method,
     headers,
-    body: body || undefined,
+    body,
     cache: 'no-store',
   });
 
-  const responseText = await backendResponse.text();
+  const responseBuffer = await backendResponse.arrayBuffer();
   const contentType = backendResponse.headers.get('content-type') ?? 'application/json';
 
-  return new NextResponse(responseText, {
+  return new NextResponse(responseBuffer, {
     status: backendResponse.status,
     headers: { 'content-type': contentType },
   });

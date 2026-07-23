@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -7,12 +8,17 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { Role } from '@prisma/client';
+import { memoryStorage } from 'multer';
 import { Roles } from '../../decorators/roles.decorator';
 import { JwtAuthGuard } from '../../guards/jwt-auth.guard';
 import { RolesGuard } from '../../guards/roles.guard';
+import type { UploadedSpreadsheetFile } from '../../utils/uploaded-file.type';
 import { CreateModuleDto } from './dto/create-module.dto';
 import { UpdateModuleDto } from './dto/update-module.dto';
 import { ModulesService } from './modules.service';
@@ -26,6 +32,16 @@ export class ModulesController {
   @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.TEACHER)
   findAll(@Query('departmentId') departmentId?: string) {
     return this.modulesService.findAll(departmentId);
+  }
+
+  @Post('bulk-import')
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @UseInterceptors(FileInterceptor('file', { storage: memoryStorage() }))
+  bulkImport(@UploadedFile() file?: UploadedSpreadsheetFile) {
+    if (!file) {
+      throw new BadRequestException('No file uploaded');
+    }
+    return this.modulesService.bulkImport(file.buffer, file.originalname);
   }
 
   @Get(':id')

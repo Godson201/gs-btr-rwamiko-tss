@@ -2,8 +2,9 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 import { ConfigService } from '@nestjs/config';
 import { Prisma } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
-import { randomInt } from 'crypto';
+import { randomBytes, randomInt } from 'crypto';
 import { PrismaService } from '../../database/prisma.service';
+import { parseSpreadsheet } from '../../utils/parse-spreadsheet';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
 
@@ -19,7 +20,15 @@ const STUDENT_INCLUDE = {
     },
   },
   class: { select: { id: true, name: true, level: true, section: true } },
+  parent: {
+    select: { id: true, user: { select: { firstName: true, lastName: true } } },
+  },
 } satisfies Prisma.StudentInclude;
+
+export interface BulkImportResult {
+  created: { row: number; email: string; temporaryPassword?: string }[];
+  failed: { row: number; error: string }[];
+}
 
 @Injectable()
 export class StudentsService {
@@ -99,6 +108,7 @@ export class StudentsService {
           gender: dto.gender,
           address: dto.address,
           classId: dto.classId,
+          parentId: dto.parentId,
           academicYear: dto.academicYear,
         },
         include: STUDENT_INCLUDE,
@@ -129,6 +139,7 @@ export class StudentsService {
           gender: dto.gender,
           address: dto.address,
           classId: dto.classId,
+          parentId: dto.parentId,
           academicYear: dto.academicYear,
           isGraduated: dto.isGraduated,
         },
@@ -141,5 +152,67 @@ export class StudentsService {
     const student = await this.findOne(id);
     await this.prisma.user.delete({ where: { id: student.user.id } });
     return { success: true };
+  }
+
+  async bulkImport(buffer: Buffer, filename: string): Promise<BulkImportResult> {
+    const rows = await parseSpreadsheet(buffer, filename);
+    const result: BulkImportResult = { created: [], failed: [] };
+    const saltRounds = Number(this.configService.get('BCRYPT_SALT_ROUNDS', 10));
+
+    for (const [index, row] of rows.entries()) {
+      const rowNumber = index + 2; // +1 for 1-indexing, +1 for the header row
+      try {
+        const email = row.email?.trim();
+        const firstName = row.firstName?.trim();
+        const lastName = row.lastName?.trim();
+        const dateOfBirth = row.dateOfBirth?.trim();
+        const gender = row.gender?.trim().toUpperCase();
+        const academicYear = row.academicYear?.trim() || new Date().getFullYear().toString();
+
+        if (!email || !firstName || !lastName || !dateOfBirth) {
+          throw new Error('email, firstName, lastName and dateOfBirth are required');
+        }
+        if (gender && !['MALE', 'FEMALE', 'OTHER'].includes(gender)) {
+          throw new Error(`Invalid gender "${row.gender}"`);
+        }
+
+        const existing = await this.prisma.user.findUnique({ where: { email } });
+        if (existing) {
+          throw new Error('A user with this email already exists');
+        }
+
+        const temporaryPassword = row.password?.trim() || randomBytes(6).toString('hex');
+        const hashedPassword = await bcrypt.hash(temporaryPassword, saltRounds);
+
+        await this.prisma.$transaction(async (tx) => {
+          const user = await tx.user.create({
+            data: {
+              email,
+              password: hashedPassword,
+              firstName,
+              lastName,
+              role: 'STUDENT',
+            },
+          });
+
+          await tx.student.create({
+            data: {
+              userId: user.id,
+              admissionNo: `ADM-${new Date().getFullYear()}-${randomInt(100000, 999999)}`,
+              dateOfBirth: new Date(dateOfBirth),
+              gender: (gender as Prisma.StudentCreateInput['gender']) ?? 'OTHER',
+              classId: row.classId?.trim() || undefined,
+              academicYear,
+            },
+          });
+        });
+
+        result.created.push({ row: rowNumber, email, temporaryPassword: row.password ? undefined : temporaryPassword });
+      } catch (error) {
+        result.failed.push({ row: rowNumber, error: (error as Error).message });
+      }
+    }
+
+    return result;
   }
 }

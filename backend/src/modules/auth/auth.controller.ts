@@ -6,8 +6,11 @@ import { JwtAuthGuard } from '../../guards/jwt-auth.guard';
 import { RolesGuard } from '../../guards/roles.guard';
 import { AuthService } from './auth.service';
 import { AuthenticatedUser } from './auth.types';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { LoginDto } from './dto/login.dto';
+import { RegisterParentDto } from './dto/register-parent.dto';
 import { RegisterDto } from './dto/register.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -24,6 +27,24 @@ export class AuthController {
   @Roles(Role.ADMIN, Role.SUPER_ADMIN)
   register(@Body() dto: RegisterDto) {
     return this.authService.register(dto);
+  }
+
+  @Post('register-parent')
+  @HttpCode(HttpStatus.OK)
+  registerParent(@Body() dto: RegisterParentDto) {
+    return this.authService.registerParent(dto);
+  }
+
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(dto);
+  }
+
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  resetPassword(@Body() dto: ResetPasswordDto) {
+    return this.authService.resetPassword(dto);
   }
 
   @Get('me')

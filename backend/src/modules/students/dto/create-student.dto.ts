@@ -33,6 +33,10 @@ export class CreateStudentDto {
   @IsString()
   classId?: string;
 
+  @IsOptional()
+  @IsString()
+  parentId?: string;
+
   @IsString()
   academicYear: string;
 }

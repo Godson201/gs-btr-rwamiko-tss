@@ -1,8 +1,10 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Prisma } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
-import { randomInt } from 'crypto';
+import { randomBytes, randomInt } from 'crypto';
+import { AuthService } from '../auth/auth.service';
+import { MailService } from '../mail/mail.service';
 import { PrismaService } from '../../database/prisma.service';
 import { CreateTeacherDto } from './dto/create-teacher.dto';
 import { UpdateTeacherDto } from './dto/update-teacher.dto';
@@ -23,9 +25,13 @@ const TEACHER_INCLUDE = {
 
 @Injectable()
 export class TeachersService {
+  private readonly logger = new Logger(TeachersService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
+    private readonly authService: AuthService,
+    private readonly mailService: MailService,
   ) {}
 
   async findAll(params: { search?: string; departmentId?: string; page?: number; pageSize?: number }) {
@@ -76,10 +82,11 @@ export class TeachersService {
       throw new ConflictException('A user with this email already exists');
     }
 
+    const temporaryPassword = dto.password ?? randomBytes(8).toString('hex');
     const saltRounds = Number(this.configService.get('BCRYPT_SALT_ROUNDS', 10));
-    const hashedPassword = await bcrypt.hash(dto.password, saltRounds);
+    const hashedPassword = await bcrypt.hash(temporaryPassword, saltRounds);
 
-    return this.prisma.$transaction(async (tx) => {
+    const teacher = await this.prisma.$transaction(async (tx) => {
       const user = await tx.user.create({
         data: {
           email: dto.email,
@@ -104,6 +111,22 @@ export class TeachersService {
         include: TEACHER_INCLUDE,
       });
     });
+
+    try {
+      const { resetLink } = await this.authService.createPasswordResetToken(teacher.user.id);
+      await this.mailService.sendTeacherWelcomeEmail(
+        dto.email,
+        `${dto.firstName} ${dto.lastName}`,
+        temporaryPassword,
+        resetLink,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Teacher ${teacher.id} created but the welcome email failed to send: ${(error as Error).message}`,
+      );
+    }
+
+    return teacher;
   }
 
   async update(id: string, dto: UpdateTeacherDto) {
@@ -139,5 +162,21 @@ export class TeachersService {
     const teacher = await this.findOne(id);
     await this.prisma.user.delete({ where: { id: teacher.user.id } });
     return { success: true };
+  }
+
+  async findMyAssignments(userId: string) {
+    const teacher = await this.prisma.teacher.findUnique({ where: { userId } });
+    if (!teacher) {
+      throw new NotFoundException('Teacher profile not found');
+    }
+
+    return this.prisma.classSubject.findMany({
+      where: { teacherId: teacher.id },
+      include: {
+        class: { select: { id: true, name: true, level: true, section: true } },
+        subject: { select: { id: true, code: true, name: true, credits: true, learningHours: true } },
+      },
+      orderBy: { class: { name: 'asc' } },
+    });
   }
 }

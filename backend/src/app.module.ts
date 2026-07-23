@@ -12,7 +12,9 @@ import { ClassesModule } from './modules/classes/classes.module';
 import { ClassModulesModule } from './modules/class-modules/class-modules.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { DepartmentsModule } from './modules/departments/departments.module';
+import { MailModule } from './modules/mail/mail.module';
 import { ModulesModule } from './modules/modules/modules.module';
+import { ParentsModule } from './modules/parents/parents.module';
 
 @Module({
   imports: [
@@ -24,6 +26,7 @@ import { ModulesModule } from './modules/modules/modules.module';
       },
     ]),
     PrismaModule,
+    MailModule,
     AcademicYearsModule,
     AuthModule,
     UsersModule,
@@ -34,6 +37,7 @@ import { ModulesModule } from './modules/modules/modules.module';
     DashboardModule,
     DepartmentsModule,
     ModulesModule,
+    ParentsModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

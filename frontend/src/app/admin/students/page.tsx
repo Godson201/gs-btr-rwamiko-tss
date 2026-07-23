@@ -20,6 +20,7 @@ import {
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { BulkUploadDialog } from '@/components/shared/bulk-upload-dialog';
 import { DataTable, type DataTableColumn } from '@/components/shared/data-table';
 import { api } from '@/lib/api';
 
@@ -28,6 +29,11 @@ interface ClassOption {
   name: string;
   level: string;
   section?: string | null;
+}
+
+interface ParentOption {
+  id: string;
+  user: { firstName: string; lastName: string };
 }
 
 interface Student {
@@ -56,6 +62,7 @@ const studentSchema = z.object({
   gender: z.enum(['MALE', 'FEMALE', 'OTHER']),
   address: z.string().optional(),
   classId: z.string().optional(),
+  parentId: z.string().optional(),
   academicYear: z.string().min(1, 'Required'),
 });
 
@@ -77,6 +84,11 @@ export default function AdminStudentsPage() {
     queryFn: async () => (await api.get<ClassOption[]>('/classes')).data,
   });
 
+  const { data: parents } = useQuery({
+    queryKey: ['parents-options'],
+    queryFn: async () => (await api.get<ParentOption[]>('/parents')).data,
+  });
+
   const form = useForm<StudentFormValues>({
     resolver: zodResolver(studentSchema),
     defaultValues: {
@@ -89,6 +101,7 @@ export default function AdminStudentsPage() {
       gender: 'OTHER',
       address: '',
       classId: undefined,
+      parentId: undefined,
       academicYear: new Date().getFullYear().toString(),
     },
   });
@@ -168,13 +181,23 @@ export default function AdminStudentsPage() {
           <h2 className="text-2xl font-bold tracking-tight">Students</h2>
           <p className="text-sm text-muted-foreground">Manage student records and class placement</p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="size-4" />
-              Add Student
-            </Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          <BulkUploadDialog
+            title="Bulk Upload Students"
+            description="Upload a .csv or .xlsx file with columns: email, firstName, lastName, dateOfBirth, gender, classId (optional), academicYear (optional), password (optional — generated if omitted)."
+            endpoint="/students/bulk-import"
+            invalidateKeys={['students', 'dashboard-stats']}
+            createdLabel={(row) =>
+              `${row.email}${row.temporaryPassword ? ` (temp password: ${row.temporaryPassword})` : ''}`
+            }
+          />
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="size-4" />
+                Add Student
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
             <DialogHeader>
               <DialogTitle>Add Student</DialogTitle>
@@ -328,6 +351,30 @@ export default function AdminStudentsPage() {
                     </FormItem>
                   )}
                 />
+                <FormField
+                  control={form.control}
+                  name="parentId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Parent (optional)</FormLabel>
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <FormControl>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Not linked" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {parents?.map((parent) => (
+                            <SelectItem key={parent.id} value={parent.id}>
+                              {parent.user.firstName} {parent.user.lastName}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 <DialogFooter>
                   <Button type="submit" disabled={createStudent.isPending}>
                     {createStudent.isPending ? 'Saving…' : 'Save student'}
@@ -336,7 +383,8 @@ export default function AdminStudentsPage() {
               </form>
             </Form>
           </DialogContent>
-        </Dialog>
+          </Dialog>
+        </div>
       </div>
 
       <Input

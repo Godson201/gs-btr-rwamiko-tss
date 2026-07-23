@@ -40,7 +40,7 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  if (pathname === '/auth/login' && session) {
+  if ((pathname === '/auth/login' || pathname === '/auth/signup') && session) {
     return NextResponse.redirect(new URL(roleHomePath(session.role), request.url));
   }
 
@@ -48,5 +48,12 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/teacher/:path*', '/student/:path*', '/parent/:path*', '/auth/login'],
+  matcher: [
+    '/admin/:path*',
+    '/teacher/:path*',
+    '/student/:path*',
+    '/parent/:path*',
+    '/auth/login',
+    '/auth/signup',
+  ],
 };

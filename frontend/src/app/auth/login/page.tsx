@@ -2,8 +2,10 @@
 
 import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
+import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { AuthShowcasePanel } from '@/components/auth/auth-showcase-panel';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -36,49 +38,69 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-secondary/30 px-4">
-      <Card className="w-full max-w-sm">
-        <CardHeader className="text-center">
-          <CardTitle className="text-xl">G.S BTR RWAMIKO TSS</CardTitle>
-          <CardDescription>Sign in to the School Management System</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input type="email" placeholder="you@gsbtrrwamiko.rw" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              {serverError && <p className="text-sm text-destructive">{serverError}</p>}
-              <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? 'Signing in…' : 'Sign in'}
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+    <div className="grid min-h-screen lg:grid-cols-2">
+      <AuthShowcasePanel
+        title="Welcome back"
+        description="Sign in to manage classes, track progress, and stay connected with G.S BTR RWAMIKO TSS."
+      />
+      <div className="flex items-center justify-center bg-secondary/30 px-4 py-12">
+        <Card className="w-full max-w-sm">
+          <CardHeader className="text-center">
+            <CardTitle className="text-xl">G.S BTR RWAMIKO TSS</CardTitle>
+            <CardDescription>Sign in to the School Management System</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input type="email" placeholder="you@gsbtrrwamiko.rw" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <div className="flex items-center justify-between">
+                        <FormLabel>Password</FormLabel>
+                        <Link
+                          href="/auth/forgot-password"
+                          className="text-xs text-muted-foreground hover:text-primary hover:underline"
+                        >
+                          Forgot password?
+                        </Link>
+                      </div>
+                      <FormControl>
+                        <Input type="password" placeholder="••••••••" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                {serverError && <p className="text-sm text-destructive">{serverError}</p>}
+                <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+                  {form.formState.isSubmitting ? 'Signing in…' : 'Sign in'}
+                </Button>
+              </form>
+            </Form>
+            <p className="mt-6 text-center text-sm text-muted-foreground">
+              Are you a parent?{' '}
+              <Link href="/auth/signup" className="font-medium text-primary hover:underline">
+                Create an account
+              </Link>
+            </p>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

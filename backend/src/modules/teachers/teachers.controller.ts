@@ -10,9 +10,11 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Role } from '@prisma/client';
+import { CurrentUser } from '../../decorators/current-user.decorator';
 import { Roles } from '../../decorators/roles.decorator';
 import { JwtAuthGuard } from '../../guards/jwt-auth.guard';
 import { RolesGuard } from '../../guards/roles.guard';
+import { AuthenticatedUser } from '../auth/auth.types';
 import { CreateTeacherDto } from './dto/create-teacher.dto';
 import { UpdateTeacherDto } from './dto/update-teacher.dto';
 import { TeachersService } from './teachers.service';
@@ -36,6 +38,12 @@ export class TeachersController {
       page: page ? Number(page) : undefined,
       pageSize: pageSize ? Number(pageSize) : undefined,
     });
+  }
+
+  @Get('me/assignments')
+  @Roles(Role.TEACHER)
+  findMyAssignments(@CurrentUser() user: AuthenticatedUser) {
+    return this.teachersService.findMyAssignments(user.id);
   }
 
   @Get(':id')

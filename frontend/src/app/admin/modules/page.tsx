@@ -20,6 +20,7 @@ import {
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { BulkUploadDialog } from '@/components/shared/bulk-upload-dialog';
 import { DataTable, type DataTableColumn } from '@/components/shared/data-table';
 import { api } from '@/lib/api';
 
@@ -155,13 +156,21 @@ export default function AdminModulesPage() {
           <h2 className="text-2xl font-bold tracking-tight">Modules</h2>
           <p className="text-sm text-muted-foreground">Manage course modules (code, credits, competences)</p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="size-4" />
-              Add Module
-            </Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          <BulkUploadDialog
+            title="Bulk Upload Modules"
+            description="Upload a .csv or .xlsx file with columns: code, name, departmentCode (optional), credits (optional), learningHours (optional), competences (optional, semicolon-separated), isCore (true/false, optional)."
+            endpoint="/modules/bulk-import"
+            invalidateKeys={['modules']}
+            createdLabel={(row) => String(row.code)}
+          />
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="size-4" />
+                Add Module
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
             <DialogHeader>
               <DialogTitle>Add Module</DialogTitle>
@@ -294,7 +303,8 @@ export default function AdminModulesPage() {
               </form>
             </Form>
           </DialogContent>
-        </Dialog>
+          </Dialog>
+        </div>
       </div>
 
       <DataTable columns={columns} data={data ?? []} isLoading={isLoading} getRowKey={(row) => row.id} />

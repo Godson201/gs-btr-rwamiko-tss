@@ -37,15 +37,29 @@ model User {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
-  student       Student?
-  teacher       Teacher?
-  parent        Parent?
-  admin         Admin?
-  notifications Notification[]
-  auditLogs     AuditLog[]
-  announcements Announcement[]
+  student             Student?
+  teacher             Teacher?
+  parent              Parent?
+  admin               Admin?
+  notifications       Notification[]
+  auditLogs           AuditLog[]
+  announcements       Announcement[]
+  passwordResetTokens PasswordResetToken[]
 
   @@index([role])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model Student {

@@ -45,7 +45,6 @@ interface Teacher {
 
 const teacherSchema = z.object({
   email: z.string().email('Enter a valid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
   firstName: z.string().min(1, 'Required'),
   lastName: z.string().min(1, 'Required'),
   phone: z.string().optional(),
@@ -78,7 +77,6 @@ export default function AdminTeachersPage() {
     resolver: zodResolver(teacherSchema),
     defaultValues: {
       email: '',
-      password: '',
       firstName: '',
       lastName: '',
       phone: '',
@@ -92,8 +90,8 @@ export default function AdminTeachersPage() {
 
   const createTeacher = useMutation({
     mutationFn: async (values: TeacherFormValues) => api.post('/teachers', values),
-    onSuccess: () => {
-      toast.success('Teacher created');
+    onSuccess: (_response, values) => {
+      toast.success(`Teacher created — login details emailed to ${values.email}`);
       queryClient.invalidateQueries({ queryKey: ['teachers'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
       setIsDialogOpen(false);
@@ -213,19 +211,6 @@ export default function AdminTeachersPage() {
                       <FormLabel>Email</FormLabel>
                       <FormControl>
                         <Input type="email" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Temporary password</FormLabel>
-                      <FormControl>
-                        <Input type="password" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
