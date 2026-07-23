@@ -50,3 +50,6 @@ coverage/
 
 # TypeScript build info
 *.tsbuildinfo
+
+# User-uploaded media (runtime-generated)
+backend/uploads/

@@ -1,10 +1,11 @@
 'use client';
 
-import { LayoutDashboard, MessageCircle } from 'lucide-react';
+import { LayoutDashboard, Megaphone, MessageCircle } from 'lucide-react';
 import { PortalLayout, type PortalNavItem } from '@/components/shared/portal-layout';
 
 const navItems: PortalNavItem[] = [
   { label: 'Dashboard', href: '/parent/dashboard', icon: LayoutDashboard },
+  { label: 'Announcements', href: '/parent/announcements', icon: Megaphone },
   { label: 'Messages', href: '/parent/messages', icon: MessageCircle, disabled: true },
 ];
 

@@ -37,14 +37,16 @@ model User {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
-  student             Student?
-  teacher             Teacher?
-  parent              Parent?
-  admin               Admin?
-  notifications       Notification[]
-  auditLogs           AuditLog[]
-  announcements       Announcement[]
-  passwordResetTokens PasswordResetToken[]
+  student               Student?
+  teacher               Teacher?
+  parent                Parent?
+  admin                 Admin?
+  notifications         Notification[]
+  auditLogs             AuditLog[]
+  announcements         Announcement[]
+  passwordResetTokens   PasswordResetToken[]
+  announcementComments  AnnouncementComment[]
+  announcementReactions AnnouncementReaction[]
 
   @@index([role])
 }
@@ -436,9 +438,26 @@ model AssignmentSubmission {
 enum AnnouncementType {
   GENERAL
   ACADEMIC
-  ADMINISTRATIVE
-  EVENT
+  FEES_FINANCE
+  REGISTRATION
+  EVENT_ACTIVITY
+  DISCIPLINE
+  SAFETY_ALERT
   EMERGENCY
+}
+
+enum AttachmentType {
+  IMAGE
+  VIDEO
+}
+
+enum ReactionType {
+  LIKE
+  LOVE
+  HAHA
+  WOW
+  SAD
+  ANGRY
 }
 
 model Announcement {
@@ -454,8 +473,51 @@ model Announcement {
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
 
-  author        User           @relation(fields: [authorId], references: [id])
+  author        User                     @relation(fields: [authorId], references: [id])
   notifications Notification[]
+  attachments   AnnouncementAttachment[]
+  comments      AnnouncementComment[]
+  reactions     AnnouncementReaction[]
+}
+
+model AnnouncementAttachment {
+  id             String         @id @default(cuid())
+  announcementId String
+  url            String
+  type           AttachmentType
+  filename       String
+  createdAt      DateTime       @default(now())
+
+  announcement Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+
+  @@index([announcementId])
+}
+
+model AnnouncementComment {
+  id             String   @id @default(cuid())
+  announcementId String
+  authorId       String
+  content        String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  announcement Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  author       User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([announcementId])
+}
+
+model AnnouncementReaction {
+  id             String       @id @default(cuid())
+  announcementId String
+  userId         String
+  type           ReactionType
+  createdAt      DateTime     @default(now())
+
+  announcement Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([announcementId, userId])
 }
 
 enum NotificationType {

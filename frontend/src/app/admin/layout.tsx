@@ -7,6 +7,7 @@ import {
   GraduationCap,
   LayoutDashboard,
   LogOut,
+  Megaphone,
   School,
   Settings,
   Users,
@@ -23,13 +24,19 @@ import {
 import { useAuth } from '@/contexts/auth-context';
 import { cn } from '@/lib/utils';
 
-const navItems = [
+const navItems: {
+  label: string;
+  href: string;
+  icon: typeof LayoutDashboard;
+  disabled?: boolean;
+}[] = [
   { label: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
   { label: 'Students', href: '/admin/students', icon: GraduationCap },
   { label: 'Teachers', href: '/admin/teachers', icon: Users },
   { label: 'Classes', href: '/admin/classes', icon: School },
   { label: 'Modules', href: '/admin/modules', icon: BookMarked },
-  { label: 'Settings', href: '/admin/settings', icon: Settings, disabled: true },
+  { label: 'Announcements', href: '/admin/announcements', icon: Megaphone },
+  { label: 'Settings', href: '/admin/settings', icon: Settings },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

@@ -4,6 +4,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { PrismaModule } from './database/prisma.module';
 import { AcademicYearsModule } from './modules/academic-years/academic-years.module';
+import { AnnouncementsModule } from './modules/announcements/announcements.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { StudentsModule } from './modules/students/students.module';
@@ -28,6 +29,7 @@ import { ParentsModule } from './modules/parents/parents.module';
     PrismaModule,
     MailModule,
     AcademicYearsModule,
+    AnnouncementsModule,
     AuthModule,
     UsersModule,
     StudentsModule,
