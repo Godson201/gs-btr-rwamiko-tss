@@ -16,6 +16,16 @@ export async function POST(request: NextRequest) {
       firstName: body.firstName,
       lastName: body.lastName,
       phone: body.phone,
+      nickname: body.nickname,
+      jobTitle: body.jobTitle,
+      dateOfBirth: body.dateOfBirth,
+      relationship: body.relationship,
+      occupation: body.occupation,
+      residenceLocationId: body.residenceLocationId,
+      workplaceLocationId: body.workplaceLocationId,
+      requestedStudentId: body.requestedStudentId,
+      claimedStudentName: body.claimedStudentName,
+      claimedAdmissionNo: body.claimedAdmissionNo,
     }),
   });
 

@@ -11,7 +11,7 @@ const navItems: PortalNavItem[] = [
 
 export default function ParentLayout({ children }: { children: React.ReactNode }) {
   return (
-    <PortalLayout title="Parent Portal" navItems={navItems}>
+    <PortalLayout title="Parent Portal" navItems={navItems} profileHref="/parent/profile">
       {children}
     </PortalLayout>
   );

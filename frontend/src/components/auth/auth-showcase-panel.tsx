@@ -28,7 +28,7 @@ export function AuthShowcasePanel({
   }, []);
 
   return (
-    <div className="relative hidden flex-col justify-between overflow-hidden bg-gradient-to-br from-primary via-primary/90 to-primary/70 p-10 text-primary-foreground lg:flex">
+    <div className="relative hidden flex-col justify-between overflow-hidden bg-linear-to-br from-primary via-primary/90 to-primary/70 p-10 text-primary-foreground lg:flex">
       <div className="pointer-events-none absolute inset-0 opacity-10">
         <div className="absolute -top-16 -right-16 size-72 rounded-full bg-white blur-3xl" />
         <div className="absolute bottom-0 left-0 size-96 rounded-full bg-white blur-3xl" />

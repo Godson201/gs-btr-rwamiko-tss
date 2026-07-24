@@ -10,6 +10,7 @@ import {
   Patch,
   Post,
   Put,
+  Query,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
@@ -39,15 +40,15 @@ export class AnnouncementsController {
   constructor(private readonly announcementsService: AnnouncementsService) {}
 
   @Get()
-  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
-  findAllForAdmin() {
-    return this.announcementsService.findAllForAdmin();
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.TEACHER)
+  findAllForAdmin(@CurrentUser() user: AuthenticatedUser) {
+    return this.announcementsService.findAllForAdmin(user);
   }
 
   @Get('feed')
   @Roles(Role.PARENT, Role.TEACHER, Role.ADMIN, Role.SUPER_ADMIN)
-  findFeed(@CurrentUser() user: AuthenticatedUser) {
-    return this.announcementsService.findFeed(user);
+  findFeed(@CurrentUser() user: AuthenticatedUser, @Query('featuredOnly') featuredOnly?: string) {
+    return this.announcementsService.findFeed(user, featuredOnly === 'true');
   }
 
   @Get('category-visibility')
@@ -63,31 +64,31 @@ export class AnnouncementsController {
   }
 
   @Get(':id')
-  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
-  findOne(@Param('id') id: string) {
-    return this.announcementsService.findOne(id);
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.TEACHER)
+  findOne(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.announcementsService.findOne(id, user);
   }
 
   @Post()
-  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.TEACHER)
   create(@Body() dto: CreateAnnouncementDto, @CurrentUser() user: AuthenticatedUser) {
-    return this.announcementsService.create(dto, user.id);
+    return this.announcementsService.create(dto, user);
   }
 
   @Patch(':id')
-  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
-  update(@Param('id') id: string, @Body() dto: UpdateAnnouncementDto) {
-    return this.announcementsService.update(id, dto);
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.TEACHER)
+  update(@Param('id') id: string, @Body() dto: UpdateAnnouncementDto, @CurrentUser() user: AuthenticatedUser) {
+    return this.announcementsService.update(id, dto, user);
   }
 
   @Delete(':id')
-  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
-  remove(@Param('id') id: string) {
-    return this.announcementsService.remove(id);
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.TEACHER)
+  remove(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.announcementsService.remove(id, user);
   }
 
   @Post(':id/attachments')
-  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.TEACHER)
   @UseInterceptors(
     FilesInterceptor('files', 10, {
       storage: diskStorage({
@@ -118,17 +119,22 @@ export class AnnouncementsController {
   addAttachments(
     @Param('id') id: string,
     @UploadedFiles() files: UploadedMediaFile[],
+    @CurrentUser() user: AuthenticatedUser,
   ) {
     if (!files?.length) {
       throw new BadRequestException('No files uploaded');
     }
-    return this.announcementsService.addAttachments(id, files);
+    return this.announcementsService.addAttachments(id, files, user);
   }
 
   @Delete(':id/attachments/:attachmentId')
-  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
-  removeAttachment(@Param('id') id: string, @Param('attachmentId') attachmentId: string) {
-    return this.announcementsService.removeAttachment(id, attachmentId);
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.TEACHER)
+  removeAttachment(
+    @Param('id') id: string,
+    @Param('attachmentId') attachmentId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.announcementsService.removeAttachment(id, attachmentId, user);
   }
 
   @Post(':id/comments')

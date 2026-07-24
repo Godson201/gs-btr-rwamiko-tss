@@ -19,10 +19,14 @@ async function bootstrap() {
   // with net::ERR_BLOCKED_BY_RESPONSE.NotSameOrigin. Uploaded media is meant to be embedded
   // cross-origin by this app's architecture, so relax it just for this route (the rest of the
   // API keeps helmet's default same-origin policy).
+  // Static assets are served before enableCors() registers its middleware, so they never reach
+  // it — set the CORS header here too, otherwise fetch()-based downloads (which need real CORS,
+  // unlike plain <img>/<video> tags) are blocked cross-origin.
   app.useStaticAssets(join(process.cwd(), 'uploads'), {
     prefix: '/uploads',
     setHeaders: (res) => {
       res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+      res.setHeader('Access-Control-Allow-Origin', configService.get<string>('CORS_ORIGIN', 'http://localhost:3000'));
     },
   });
   app.enableCors({

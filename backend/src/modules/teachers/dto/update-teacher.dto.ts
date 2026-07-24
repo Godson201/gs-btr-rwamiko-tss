@@ -1,5 +1,5 @@
-import { Gender } from '@prisma/client';
-import { IsBoolean, IsOptional, IsString } from 'class-validator';
+import { Gender, StaffTitle } from '@prisma/client';
+import { IsBoolean, IsEnum, IsOptional, IsString, ValidateIf } from 'class-validator';
 
 export class UpdateTeacherDto {
   @IsOptional()
@@ -32,4 +32,9 @@ export class UpdateTeacherDto {
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
+
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null)
+  @IsEnum(StaffTitle)
+  staffTitle?: StaffTitle | null;
 }

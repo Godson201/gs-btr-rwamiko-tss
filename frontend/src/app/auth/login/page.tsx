@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/auth-context';
 
 const loginSchema = z.object({
-  email: z.string().email('Enter a valid email address'),
+  email: z.string().min(1, 'Enter your email or phone number'),
   password: z.string().min(1, 'Password is required'),
 });
 
@@ -57,9 +57,9 @@ export default function LoginPage() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel>Email or phone number</FormLabel>
                       <FormControl>
-                        <Input type="email" placeholder="you@gsbtrrwamiko.rw" {...field} />
+                        <Input type="text" placeholder="you@gsbtrrwamiko.rw or 078xxxxxxx" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

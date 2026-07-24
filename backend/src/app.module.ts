@@ -13,6 +13,7 @@ import { ClassesModule } from './modules/classes/classes.module';
 import { ClassModulesModule } from './modules/class-modules/class-modules.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { DepartmentsModule } from './modules/departments/departments.module';
+import { LocationsModule } from './modules/locations/locations.module';
 import { MailModule } from './modules/mail/mail.module';
 import { MessagesModule } from './modules/messages/messages.module';
 import { ModulesModule } from './modules/modules/modules.module';
@@ -39,6 +40,7 @@ import { ParentsModule } from './modules/parents/parents.module';
     ClassModulesModule,
     DashboardModule,
     DepartmentsModule,
+    LocationsModule,
     MessagesModule,
     ModulesModule,
     ParentsModule,

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query, UseGuards } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { CurrentUser } from '../../decorators/current-user.decorator';
 import { Roles } from '../../decorators/roles.decorator';
@@ -8,6 +8,7 @@ import { AuthService } from './auth.service';
 import { AuthenticatedUser } from './auth.types';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { LoginDto } from './dto/login.dto';
+import { LookupStudentDto } from './dto/lookup-student.dto';
 import { RegisterParentDto } from './dto/register-parent.dto';
 import { RegisterDto } from './dto/register.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
@@ -33,6 +34,11 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   registerParent(@Body() dto: RegisterParentDto) {
     return this.authService.registerParent(dto);
+  }
+
+  @Get('lookup-student')
+  lookupStudent(@Query() dto: LookupStudentDto) {
+    return this.authService.lookupStudent(dto);
   }
 
   @Post('forgot-password')

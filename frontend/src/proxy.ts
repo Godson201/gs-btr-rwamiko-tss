@@ -35,8 +35,13 @@ export async function proxy(request: NextRequest) {
       loginUrl.searchParams.set('next', pathname);
       return NextResponse.redirect(loginUrl);
     }
-    if (!PROTECTED_PREFIXES[matchedPrefix].includes(session.role)) {
+    const allowedRoles = PROTECTED_PREFIXES[matchedPrefix];
+    const portalAccess = session.portalAccess ?? [session.role];
+    if (!allowedRoles.some((role) => portalAccess.includes(role))) {
       return NextResponse.redirect(new URL(roleHomePath(session.role), request.url));
+    }
+    if (session.accountStatus && session.accountStatus !== 'ACTIVE') {
+      return NextResponse.redirect(new URL('/auth/pending-approval', request.url));
     }
   }
 

@@ -1,7 +1,7 @@
 'use client';
 
 import type { LucideIcon } from 'lucide-react';
-import { LogOut } from 'lucide-react';
+import { LogOut, User } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { UserAvatar } from '@/components/shared/user-avatar';
 import { useAuth } from '@/contexts/auth-context';
 import { cn } from '@/lib/utils';
 
@@ -26,10 +27,12 @@ export interface PortalNavItem {
 export function PortalLayout({
   title,
   navItems,
+  profileHref,
   children,
 }: {
   title: string;
   navItems: PortalNavItem[];
+  profileHref: string;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -71,13 +74,20 @@ export function PortalLayout({
           <h1 className="text-lg font-semibold">{title}</h1>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="h-auto py-1 pl-1.5">
+                <UserAvatar avatar={user?.avatar} firstName={user?.firstName} lastName={user?.lastName} className="size-6" />
                 {user ? `${user.firstName} ${user.lastName}` : 'Account'}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>{user?.email}</DropdownMenuLabel>
               <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href={profileHref}>
+                  <User className="mr-2 size-4" />
+                  Profile
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => logout()}>
                 <LogOut className="mr-2 size-4" />
                 Log out

@@ -18,6 +18,7 @@ const TEACHER_INCLUDE = {
       lastName: true,
       phone: true,
       isActive: true,
+      portalAccess: true,
     },
   },
   department: { select: { id: true, name: true, code: true } },
@@ -95,6 +96,7 @@ export class TeachersService {
           lastName: dto.lastName,
           phone: dto.phone,
           role: 'TEACHER',
+          portalAccess: ['TEACHER'],
         },
       });
 
@@ -152,6 +154,7 @@ export class TeachersService {
           qualification: dto.qualification,
           specialization: dto.specialization,
           departmentId: dto.departmentId,
+          staffTitle: dto.staffTitle,
         },
         include: TEACHER_INCLUDE,
       });

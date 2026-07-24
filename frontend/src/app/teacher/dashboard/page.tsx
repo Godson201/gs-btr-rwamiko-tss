@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { DataTable, type DataTableColumn } from '@/components/shared/data-table';
+import { FeaturedPostsWidget } from '@/components/shared/featured-posts-widget';
 import { useAuth } from '@/contexts/auth-context';
 import { api } from '@/lib/api';
 
@@ -42,6 +43,7 @@ export default function TeacherDashboardPage() {
         <h2 className="text-2xl font-bold tracking-tight">Welcome, {user?.firstName}</h2>
         <p className="text-sm text-muted-foreground">Your assigned classes and modules</p>
       </div>
+      <FeaturedPostsWidget viewAllHref="/teacher/announcements" />
       <DataTable
         columns={columns}
         data={data ?? []}

@@ -3,6 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { GraduationCap } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { FeaturedPostsWidget } from '@/components/shared/featured-posts-widget';
 import { useAuth } from '@/contexts/auth-context';
 import { api } from '@/lib/api';
 
@@ -28,6 +29,8 @@ export default function ParentDashboardPage() {
         <h2 className="text-2xl font-bold tracking-tight">Welcome, {user?.firstName}</h2>
         <p className="text-sm text-muted-foreground">Your linked children</p>
       </div>
+
+      <FeaturedPostsWidget viewAllHref="/parent/announcements" />
 
       {!isLoading && data && data.length === 0 && (
         <Card>

@@ -22,6 +22,12 @@ enum Gender {
   OTHER
 }
 
+enum AccountStatus {
+  ACTIVE
+  PENDING
+  REJECTED
+}
+
 model User {
   id        String    @id @default(cuid())
   email     String    @unique
@@ -29,13 +35,21 @@ model User {
   firstName String
   lastName  String
   middleName String?
-  phone     String?
+  phone     String?   @unique
   role      Role      @default(STUDENT)
   avatar    String?
   isActive  Boolean   @default(true)
   lastLogin DateTime?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+
+  nickname            String?
+  jobTitle            String?
+  dateOfBirth         DateTime?
+  accountStatus       AccountStatus @default(ACTIVE)
+  portalAccess        Role[]        @default([])
+  residenceLocationId String?
+  workplaceLocationId String?
 
   student               Student?
   teacher               Teacher?
@@ -49,8 +63,25 @@ model User {
   announcementReactions AnnouncementReaction[]
   conversation          Conversation?
   sentMessages          Message[]
+  residenceLocation     Location? @relation("ResidenceLocation", fields: [residenceLocationId], references: [id])
+  workplaceLocation     Location? @relation("WorkplaceLocation", fields: [workplaceLocationId], references: [id])
 
   @@index([role])
+}
+
+model Location {
+  id       String @id
+  province String
+  district String
+  sector   String
+  cell     String
+  village  String
+
+  residentsAt User[] @relation("ResidenceLocation")
+  workersAt   User[] @relation("WorkplaceLocation")
+
+  @@unique([province, district, sector, cell, village])
+  @@index([province, district, sector, cell])
 }
 
 model PasswordResetToken {
@@ -84,7 +115,8 @@ model Student {
 
   user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   class       Class?        @relation(fields: [classId], references: [id])
-  parent      Parent?       @relation(fields: [parentId], references: [id])
+  parent      Parent?       @relation("ParentOfStudent", fields: [parentId], references: [id])
+  requestedByParents Parent[] @relation("RequestedStudent")
   attendances Attendance[]
   examResults ExamResult[]
   submissions AssignmentSubmission[]
@@ -94,20 +126,31 @@ model Student {
   @@index([parentId])
 }
 
+enum StaffTitle {
+  HEAD_TEACHER
+  DIRECTOR_OF_STUDIES
+  DIRECTOR_OF_DISCIPLINE
+  PATRON
+  MATRON
+}
+
 model Teacher {
-  id             String   @id @default(cuid())
-  userId         String   @unique
-  employeeNo     String   @unique
-  nationalId     String?  @unique
+  id             String      @id @default(cuid())
+  userId         String      @unique
+  employeeNo     String      @unique
+  nationalId     String?     @unique
   dateOfBirth    DateTime
   gender         Gender
   qualification  String?
   specialization String?
-  hireDate       DateTime @default(now())
+  staffTitle     StaffTitle?
+  worksAtAnotherSchool Boolean @default(false)
+  otherSchoolName      String?
+  hireDate       DateTime    @default(now())
   departmentId   String?
-  isActive       Boolean  @default(true)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  isActive       Boolean     @default(true)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
 
   user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   department    Department?      @relation(fields: [departmentId], references: [id])
@@ -122,6 +165,12 @@ model Teacher {
   @@index([departmentId])
 }
 
+enum ParentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model Parent {
   id               String   @id @default(cuid())
   userId           String   @unique
@@ -129,12 +178,19 @@ model Parent {
   address          String?
   relationship     String?
   emergencyContact String?
+  status             ParentStatus @default(PENDING)
+  requestedStudentId String?
+  claimedStudentName String?
+  claimedAdmissionNo String?
+  approvedAt          DateTime?
+  approvedById         String?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
-  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  students Student[]
-  messages ParentMessage[]
+  user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  students         Student[]       @relation("ParentOfStudent")
+  requestedStudent Student?        @relation("RequestedStudent", fields: [requestedStudentId], references: [id])
+  messages         ParentMessage[]
 }
 
 model Admin {
@@ -472,6 +528,7 @@ model Announcement {
   targetAudience Role[]
   authorId       String
   isPublished    Boolean          @default(false)
+  isFeatured     Boolean          @default(false)
   publishedAt    DateTime?
   expiresAt      DateTime?
   createdAt      DateTime         @default(now())

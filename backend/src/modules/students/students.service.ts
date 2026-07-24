@@ -97,6 +97,7 @@ export class StudentsService {
           lastName: dto.lastName,
           phone: dto.phone,
           role: 'STUDENT',
+          portalAccess: ['STUDENT'],
         },
       });
 
@@ -192,6 +193,7 @@ export class StudentsService {
               firstName,
               lastName,
               role: 'STUDENT',
+              portalAccess: ['STUDENT'],
             },
           });
 

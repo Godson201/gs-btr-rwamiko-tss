@@ -11,8 +11,11 @@ import {
   MessageCircle,
   School,
   Settings,
+  UserCheck,
+  User,
   Users,
 } from 'lucide-react';
+import { UserAvatar } from '@/components/shared/user-avatar';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -36,6 +39,7 @@ const navItems: {
   { label: 'Teachers', href: '/admin/teachers', icon: Users },
   { label: 'Classes', href: '/admin/classes', icon: School },
   { label: 'Modules', href: '/admin/modules', icon: BookMarked },
+  { label: 'Parent Approvals', href: '/admin/parent-approvals', icon: UserCheck },
   { label: 'Announcements', href: '/admin/announcements', icon: Megaphone },
   { label: 'Messages', href: '/admin/messages', icon: MessageCircle },
   { label: 'Settings', href: '/admin/settings', icon: Settings },
@@ -81,13 +85,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <h1 className="text-lg font-semibold">Admin Portal</h1>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="h-auto py-1 pl-1.5">
+                <UserAvatar avatar={user?.avatar} firstName={user?.firstName} lastName={user?.lastName} className="size-6" />
                 {user ? `${user.firstName} ${user.lastName}` : 'Account'}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>{user?.email}</DropdownMenuLabel>
               <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/admin/profile">
+                  <User className="mr-2 size-4" />
+                  Profile
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => logout()}>
                 <LogOut className="mr-2 size-4" />
                 Log out

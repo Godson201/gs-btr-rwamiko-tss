@@ -31,6 +31,7 @@ export const announcementFormSchema = z.object({
   ]),
   targetAudience: z.array(z.enum(['PARENT', 'TEACHER', 'STUDENT'])).min(1, 'Select at least one audience'),
   isPublished: z.boolean(),
+  isFeatured: z.boolean(),
   expiresAt: z.string().optional(),
 });
 
@@ -42,6 +43,7 @@ export const defaultAnnouncementFormValues: AnnouncementFormValues = {
   type: 'GENERAL',
   targetAudience: ['PARENT', 'TEACHER'],
   isPublished: true,
+  isFeatured: false,
   expiresAt: '',
 };
 
@@ -174,6 +176,23 @@ export function AnnouncementForm({
             )}
           />
         </div>
+        <FormField
+          control={form.control}
+          name="isFeatured"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center justify-between rounded-md border p-3">
+              <div>
+                <FormLabel>Feature on all dashboards</FormLabel>
+                <p className="text-xs text-muted-foreground">
+                  Magazine-style post shown to every user, regardless of the audience selected above.
+                </p>
+              </div>
+              <FormControl>
+                <Switch checked={field.value} onCheckedChange={field.onChange} />
+              </FormControl>
+            </FormItem>
+          )}
+        />
         <Button type="submit" disabled={isSubmitting}>
           {isSubmitting ? 'Saving…' : submitLabel}
         </Button>

@@ -5,6 +5,15 @@ import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { roleHomePath } from '@/lib/session';
 
+export interface LocationSummary {
+  id: string;
+  province: string;
+  district: string;
+  sector: string;
+  cell: string;
+  village: string;
+}
+
 export interface CurrentUser {
   id: string;
   email: string;
@@ -13,6 +22,17 @@ export interface CurrentUser {
   role: 'STUDENT' | 'TEACHER' | 'PARENT' | 'ADMIN' | 'SUPER_ADMIN';
   avatar?: string | null;
   phone?: string | null;
+  staffTitle?: string | null;
+  nickname?: string | null;
+  jobTitle?: string | null;
+  dateOfBirth?: string | null;
+  accountStatus?: 'ACTIVE' | 'PENDING' | 'REJECTED';
+  portalAccess?: CurrentUser['role'][];
+  residenceLocation?: LocationSummary | null;
+  workplaceLocation?: LocationSummary | null;
+  worksAtAnotherSchool?: boolean;
+  otherSchoolName?: string | null;
+  parent?: { status: 'PENDING' | 'APPROVED' | 'REJECTED'; occupation?: string | null; relationship?: string | null } | null;
 }
 
 export interface RegisterParentInput {
@@ -21,6 +41,16 @@ export interface RegisterParentInput {
   email: string;
   phone?: string;
   password: string;
+  nickname?: string;
+  jobTitle?: string;
+  dateOfBirth?: string;
+  relationship?: string;
+  occupation?: string;
+  residenceLocationId?: string;
+  workplaceLocationId?: string;
+  requestedStudentId?: string;
+  claimedStudentName?: string;
+  claimedAdmissionNo?: string;
 }
 
 interface AuthContextValue {
@@ -29,6 +59,7 @@ interface AuthContextValue {
   login: (email: string, password: string) => Promise<void>;
   registerParent: (input: RegisterParentInput) => Promise<void>;
   logout: () => Promise<void>;
+  refresh: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -70,7 +101,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     async (email: string, password: string) => {
       const data = await postSession('/api/auth/login', { email, password });
       setUser(data.user);
-      router.push(roleHomePath(data.user.role));
+      const destination =
+        data.user.accountStatus && data.user.accountStatus !== 'ACTIVE'
+          ? '/auth/pending-approval'
+          : roleHomePath(data.user.role);
+      router.push(destination);
       router.refresh();
     },
     [router],
@@ -80,7 +115,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     async (input: RegisterParentInput) => {
       const data = await postSession('/api/auth/register-parent', input);
       setUser(data.user);
-      router.push(roleHomePath(data.user.role));
+      const destination =
+        data.user.accountStatus && data.user.accountStatus !== 'ACTIVE'
+          ? '/auth/pending-approval'
+          : roleHomePath(data.user.role);
+      router.push(destination);
       router.refresh();
     },
     [router],
@@ -94,7 +133,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [router]);
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, registerParent, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, login, registerParent, logout, refresh }}>
       {children}
     </AuthContext.Provider>
   );

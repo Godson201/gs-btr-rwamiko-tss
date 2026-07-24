@@ -1,13 +1,14 @@
 import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { Role } from '@prisma/client';
+import { AccountStatus, ParentStatus, Role } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 import { createHash, randomBytes, randomInt } from 'crypto';
 import { MailService } from '../mail/mail.service';
 import { PrismaService } from '../../database/prisma.service';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { LoginDto } from './dto/login.dto';
+import { LookupStudentDto } from './dto/lookup-student.dto';
 import { RegisterParentDto } from './dto/register-parent.dto';
 import { RegisterDto } from './dto/register.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
@@ -24,16 +25,20 @@ export class AuthService {
     private readonly mailService: MailService,
   ) {}
 
-  async validateUser(email: string, password: string): Promise<AuthenticatedUser> {
-    const user = await this.prisma.user.findUnique({ where: { email } });
+  async validateUser(identifier: string, password: string): Promise<AuthenticatedUser> {
+    // identifier is whatever the login form was given — an email or a phone number.
+    const user = await this.prisma.user.findFirst({
+      where: { OR: [{ email: identifier }, { phone: identifier }] },
+      include: { teacher: { select: { staffTitle: true } } },
+    });
 
     if (!user) {
-      throw new UnauthorizedException('Invalid email or password');
+      throw new UnauthorizedException('Invalid credentials');
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid email or password');
+      throw new UnauthorizedException('Invalid credentials');
     }
 
     if (!user.isActive) {
@@ -46,6 +51,9 @@ export class AuthService {
       role: user.role,
       firstName: user.firstName,
       lastName: user.lastName,
+      staffTitle: user.teacher?.staffTitle ?? null,
+      portalAccess: user.portalAccess,
+      accountStatus: user.accountStatus,
     };
   }
 
@@ -81,6 +89,7 @@ export class AuthService {
           lastName: dto.lastName,
           phone: dto.phone,
           role: dto.role,
+          portalAccess: [dto.role],
         },
       });
 
@@ -108,7 +117,9 @@ export class AuthService {
           });
           break;
         case Role.PARENT:
-          await tx.parent.create({ data: { userId: createdUser.id } });
+          // Admin-created parents are trusted immediately — the approval workflow only applies
+          // to the public self-registration path (registerParent()).
+          await tx.parent.create({ data: { userId: createdUser.id, status: ParentStatus.APPROVED } });
           break;
         case Role.ADMIN:
         case Role.SUPER_ADMIN:
@@ -140,15 +151,61 @@ export class AuthService {
           lastName: dto.lastName,
           phone: dto.phone,
           role: Role.PARENT,
+          portalAccess: [Role.PARENT],
+          accountStatus: AccountStatus.PENDING,
+          nickname: dto.nickname,
+          jobTitle: dto.jobTitle,
+          dateOfBirth: dto.dateOfBirth ? new Date(dto.dateOfBirth) : undefined,
+          residenceLocationId: dto.residenceLocationId,
+          workplaceLocationId: dto.workplaceLocationId,
         },
       });
 
-      await tx.parent.create({ data: { userId: createdUser.id } });
+      await tx.parent.create({
+        data: {
+          userId: createdUser.id,
+          status: ParentStatus.PENDING,
+          relationship: dto.relationship,
+          occupation: dto.occupation,
+          requestedStudentId: dto.requestedStudentId,
+          claimedStudentName: dto.claimedStudentName,
+          claimedAdmissionNo: dto.claimedAdmissionNo,
+        },
+      });
 
       return createdUser;
     });
 
     return this.login({ email: user.email, password: dto.password });
+  }
+
+  /**
+   * Public "find your child" lookup for the parent registration wizard. Requires an exact
+   * admission-number + last-name pair (a shared secret a real parent would have from school
+   * paperwork) rather than a general name search, so this can't be used to browse student records.
+   */
+  async lookupStudent(dto: LookupStudentDto) {
+    const student = await this.prisma.student.findFirst({
+      where: {
+        admissionNo: dto.admissionNo,
+        user: { lastName: { equals: dto.lastName, mode: 'insensitive' } },
+      },
+      include: {
+        user: { select: { firstName: true, lastName: true } },
+        class: { select: { name: true } },
+      },
+    });
+
+    if (!student) {
+      return null;
+    }
+
+    return {
+      id: student.id,
+      firstName: student.user.firstName,
+      lastName: student.user.lastName,
+      className: student.class?.name ?? null,
+    };
   }
 
   async forgotPassword(dto: ForgotPasswordDto): Promise<{ message: string }> {
@@ -228,6 +285,15 @@ export class AuthService {
         role: true,
         avatar: true,
         phone: true,
+        nickname: true,
+        jobTitle: true,
+        dateOfBirth: true,
+        accountStatus: true,
+        portalAccess: true,
+        residenceLocation: true,
+        workplaceLocation: true,
+        teacher: { select: { staffTitle: true, worksAtAnotherSchool: true, otherSchoolName: true } },
+        parent: { select: { status: true, occupation: true, relationship: true } },
       },
     });
 
@@ -235,11 +301,23 @@ export class AuthService {
       throw new UnauthorizedException('User not found');
     }
 
-    return user;
+    const { teacher, ...rest } = user;
+    return {
+      ...rest,
+      staffTitle: teacher?.staffTitle ?? null,
+      worksAtAnotherSchool: teacher?.worksAtAnotherSchool ?? false,
+      otherSchoolName: teacher?.otherSchoolName ?? null,
+    };
   }
 
   private signToken(user: AuthenticatedUser): string {
-    return this.jwtService.sign({ sub: user.id, email: user.email, role: user.role });
+    return this.jwtService.sign({
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+      portalAccess: user.portalAccess,
+      accountStatus: user.accountStatus,
+    });
   }
 
   private generateCode(prefix: string): string {

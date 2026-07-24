@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, UserPlus } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -22,6 +22,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DataTable, type DataTableColumn } from '@/components/shared/data-table';
 import { api } from '@/lib/api';
+import { STAFF_TITLE_OPTIONS, type StaffTitle } from '@/lib/staff-title';
 
 interface Department {
   id: string;
@@ -34,12 +35,15 @@ interface Teacher {
   employeeNo: string;
   qualification: string | null;
   specialization: string | null;
+  staffTitle: StaffTitle | null;
   department: Department | null;
   user: {
+    id: string;
     firstName: string;
     lastName: string;
     email: string;
     isActive: boolean;
+    portalAccess: ('STUDENT' | 'TEACHER' | 'PARENT' | 'ADMIN' | 'SUPER_ADMIN')[];
   };
 }
 
@@ -110,6 +114,25 @@ export default function AdminTeachersPage() {
     onError: (error: Error) => toast.error(error.message),
   });
 
+  const setStaffTitle = useMutation({
+    mutationFn: async ({ id, staffTitle }: { id: string; staffTitle: StaffTitle | null }) =>
+      api.patch(`/teachers/${id}`, { staffTitle }),
+    onSuccess: () => {
+      toast.success('Staff title updated');
+      queryClient.invalidateQueries({ queryKey: ['teachers'] });
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  const grantParentAccess = useMutation({
+    mutationFn: async (userId: string) => api.post(`/users/${userId}/grant-role`, { role: 'PARENT' }),
+    onSuccess: () => {
+      toast.success('Parent portal access granted');
+      queryClient.invalidateQueries({ queryKey: ['teachers'] });
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
   const columns: DataTableColumn<Teacher>[] = [
     {
       header: 'Name',
@@ -126,6 +149,29 @@ export default function AdminTeachersPage() {
     { header: 'Department', cell: (row) => row.department?.name ?? '—' },
     { header: 'Specialization', cell: (row) => row.specialization ?? '—' },
     {
+      header: 'Staff Title',
+      cell: (row) => (
+        <Select
+          value={row.staffTitle ?? 'NONE'}
+          onValueChange={(value) =>
+            setStaffTitle.mutate({ id: row.id, staffTitle: value === 'NONE' ? null : (value as StaffTitle) })
+          }
+        >
+          <SelectTrigger className="w-48">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="NONE">None</SelectItem>
+            {STAFF_TITLE_OPTIONS.map(([value, label]) => (
+              <SelectItem key={value} value={value}>
+                {label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      ),
+    },
+    {
       header: 'Status',
       cell: (row) => (
         <Badge variant={row.user.isActive ? 'default' : 'secondary'}>
@@ -137,17 +183,30 @@ export default function AdminTeachersPage() {
       header: '',
       className: 'text-right',
       cell: (row) => (
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => {
-            if (confirm(`Remove ${row.user.firstName} ${row.user.lastName}? This cannot be undone.`)) {
-              deleteTeacher.mutate(row.id);
-            }
-          }}
-        >
-          <Trash2 className="size-4 text-destructive" />
-        </Button>
+        <div className="flex justify-end gap-1">
+          {!row.user.portalAccess.includes('PARENT') && (
+            <Button
+              variant="ghost"
+              size="icon"
+              title="Also grant Parent portal access"
+              onClick={() => grantParentAccess.mutate(row.user.id)}
+              disabled={grantParentAccess.isPending}
+            >
+              <UserPlus className="size-4" />
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => {
+              if (confirm(`Remove ${row.user.firstName} ${row.user.lastName}? This cannot be undone.`)) {
+                deleteTeacher.mutate(row.id);
+              }
+            }}
+          >
+            <Trash2 className="size-4 text-destructive" />
+          </Button>
+        </div>
       ),
     },
   ];

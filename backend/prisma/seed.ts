@@ -21,6 +21,7 @@ async function main() {
         firstName: 'System',
         lastName: 'Administrator',
         role: 'SUPER_ADMIN',
+        portalAccess: ['SUPER_ADMIN'],
         admin: { create: { position: 'System Administrator', permissions: [] } },
       },
     });

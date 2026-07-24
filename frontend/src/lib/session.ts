@@ -5,6 +5,8 @@ export interface SessionPayload {
   sub: string;
   email: string;
   role: 'STUDENT' | 'TEACHER' | 'PARENT' | 'ADMIN' | 'SUPER_ADMIN';
+  portalAccess: SessionPayload['role'][];
+  accountStatus: 'ACTIVE' | 'PENDING' | 'REJECTED';
 }
 
 export function roleHomePath(role: SessionPayload['role']): string {

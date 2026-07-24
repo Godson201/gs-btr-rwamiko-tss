@@ -29,6 +29,10 @@ export class CreateAnnouncementDto {
   isPublished?: boolean;
 
   @IsOptional()
+  @IsBoolean()
+  isFeatured?: boolean;
+
+  @IsOptional()
   @IsDateString()
   expiresAt?: string;
 }

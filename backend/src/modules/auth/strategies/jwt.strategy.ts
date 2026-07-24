@@ -19,7 +19,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: JwtPayload): Promise<AuthenticatedUser> {
-    const user = await this.prisma.user.findUnique({ where: { id: payload.sub } });
+    const user = await this.prisma.user.findUnique({
+      where: { id: payload.sub },
+      include: { teacher: { select: { staffTitle: true } } },
+    });
 
     if (!user || !user.isActive) {
       throw new UnauthorizedException('Account is inactive or no longer exists');
@@ -31,6 +34,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       role: user.role,
       firstName: user.firstName,
       lastName: user.lastName,
+      staffTitle: user.teacher?.staffTitle ?? null,
+      portalAccess: user.portalAccess,
+      accountStatus: user.accountStatus,
     };
   }
 }

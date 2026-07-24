@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { GraduationCap, School, UserRound, Users } from 'lucide-react';
+import { FeaturedPostsWidget } from '@/components/shared/featured-posts-widget';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { api } from '@/lib/api';
 
@@ -44,6 +45,7 @@ export default function AdminDashboardPage() {
           </Card>
         ))}
       </div>
+      <FeaturedPostsWidget viewAllHref="/admin/announcements" />
     </div>
   );
 }

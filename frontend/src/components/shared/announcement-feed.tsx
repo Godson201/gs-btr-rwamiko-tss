@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { AttachmentPreview, type AttachmentLike } from '@/components/shared/attachment-preview';
+import { FeaturedPostCard } from '@/components/shared/featured-post-card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -16,6 +17,7 @@ import {
   type AnnouncementCategory,
   type ReactionType,
 } from '@/lib/announcement-constants';
+import type { PostAuthor } from '@/lib/staff-title';
 import { cn } from '@/lib/utils';
 
 type Attachment = AttachmentLike;
@@ -41,7 +43,8 @@ interface FeedItem {
   type: AnnouncementCategory;
   publishedAt: string | null;
   createdAt: string;
-  author: { firstName: string; lastName: string };
+  isFeatured: boolean;
+  author: PostAuthor;
   attachments: Attachment[];
   comments: Comment[];
   myReaction: ReactionType | null;
@@ -165,9 +168,18 @@ export function AnnouncementFeed() {
     );
   }
 
+  const featured = data.filter((item) => item.isFeatured);
+  const regular = data.filter((item) => !item.isFeatured);
+
   return (
     <div className="space-y-4">
-      {data.map((item) => (
+      {featured.map((item) => (
+        <FeaturedPostCard key={item.id} item={item}>
+          <ReactionBar item={item} />
+          <CommentBox announcementId={item.id} comments={item.comments} />
+        </FeaturedPostCard>
+      ))}
+      {regular.map((item) => (
         <Card key={item.id}>
           <CardHeader className="space-y-2">
             <div className="flex items-center justify-between">

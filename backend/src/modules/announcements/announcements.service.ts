@@ -2,6 +2,7 @@ import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/commo
 import { AnnouncementType, Prisma, ReactionType, Role } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
 import { attachmentTypeFromMime } from '../../utils/media-attachments';
+import { canManageSchoolWidePosts } from '../../utils/staff-permissions';
 import { AuthenticatedUser } from '../auth/auth.types';
 import { CreateAnnouncementDto } from './dto/create-announcement.dto';
 import { CreateCommentDto } from './dto/create-comment.dto';
@@ -12,7 +13,14 @@ import { UpdateAnnouncementDto } from './dto/update-announcement.dto';
 const CATEGORY_VISIBILITY_PREFIX = 'announcement_category_visible:';
 
 const AUTHOR_SELECT = {
-  select: { id: true, firstName: true, lastName: true, role: true },
+  select: {
+    id: true,
+    firstName: true,
+    lastName: true,
+    role: true,
+    teacher: { select: { staffTitle: true } },
+    admin: { select: { position: true } },
+  },
 } satisfies { select: Prisma.UserSelect };
 
 const FEED_INCLUDE = {
@@ -29,8 +37,10 @@ const FEED_INCLUDE = {
 export class AnnouncementsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  findAllForAdmin() {
+  findAllForAdmin(user: AuthenticatedUser) {
+    const isFullAdmin = user.role === Role.ADMIN || user.role === Role.SUPER_ADMIN;
     return this.prisma.announcement.findMany({
+      where: isFullAdmin ? undefined : { authorId: user.id },
       include: {
         author: AUTHOR_SELECT,
         _count: { select: { comments: true, reactions: true, attachments: true } },
@@ -39,7 +49,7 @@ export class AnnouncementsService {
     });
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, requestingUser?: AuthenticatedUser) {
     const announcement = await this.prisma.announcement.findUnique({
       where: { id },
       include: FEED_INCLUDE,
@@ -47,10 +57,16 @@ export class AnnouncementsService {
     if (!announcement) {
       throw new NotFoundException('Announcement not found');
     }
+    if (requestingUser) {
+      this.assertCanManage(announcement, requestingUser);
+    }
     return announcement;
   }
 
-  create(dto: CreateAnnouncementDto, authorId: string) {
+  create(dto: CreateAnnouncementDto, user: AuthenticatedUser) {
+    if (!canManageSchoolWidePosts(user)) {
+      throw new ForbiddenException('You do not have permission to create posts');
+    }
     return this.prisma.announcement.create({
       data: {
         title: dto.title,
@@ -58,16 +74,17 @@ export class AnnouncementsService {
         type: dto.type,
         targetAudience: dto.targetAudience,
         isPublished: dto.isPublished ?? true,
+        isFeatured: dto.isFeatured ?? false,
         publishedAt: dto.isPublished ?? true ? new Date() : null,
         expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : undefined,
-        authorId,
+        authorId: user.id,
       },
       include: { author: AUTHOR_SELECT },
     });
   }
 
-  async update(id: string, dto: UpdateAnnouncementDto) {
-    const existing = await this.findOne(id);
+  async update(id: string, dto: UpdateAnnouncementDto, user: AuthenticatedUser) {
+    const existing = await this.findOne(id, user);
 
     const willPublish = dto.isPublished ?? existing.isPublished;
     const isNewlyPublished = willPublish && !existing.isPublished;
@@ -80,6 +97,7 @@ export class AnnouncementsService {
         type: dto.type,
         targetAudience: dto.targetAudience,
         isPublished: dto.isPublished,
+        isFeatured: dto.isFeatured,
         publishedAt: isNewlyPublished ? new Date() : undefined,
         expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : undefined,
       },
@@ -87,17 +105,19 @@ export class AnnouncementsService {
     });
   }
 
-  async remove(id: string) {
-    await this.findOne(id);
+  async remove(id: string, user: AuthenticatedUser) {
+    await this.findOne(id, user);
     await this.prisma.announcement.delete({ where: { id } });
     return { success: true };
   }
 
-  async findFeed(user: AuthenticatedUser) {
+  async findFeed(user: AuthenticatedUser, featuredOnly?: boolean) {
     const where: Prisma.AnnouncementWhereInput = {
       isPublished: true,
-      targetAudience: { has: user.role },
       OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+      AND: featuredOnly
+        ? [{ isFeatured: true }]
+        : [{ OR: [{ targetAudience: { has: user.role } }, { isFeatured: true }] }],
     };
 
     const announcements = await this.prisma.announcement.findMany({
@@ -147,8 +167,9 @@ export class AnnouncementsService {
   async addAttachments(
     announcementId: string,
     files: { filename: string; originalname: string; mimetype: string }[],
+    user: AuthenticatedUser,
   ) {
-    await this.findOne(announcementId);
+    await this.findOne(announcementId, user);
 
     await this.prisma.announcementAttachment.createMany({
       data: files.map((file) => ({
@@ -162,7 +183,8 @@ export class AnnouncementsService {
     return this.prisma.announcementAttachment.findMany({ where: { announcementId } });
   }
 
-  async removeAttachment(announcementId: string, attachmentId: string) {
+  async removeAttachment(announcementId: string, attachmentId: string, user: AuthenticatedUser) {
+    await this.findOne(announcementId, user);
     const attachment = await this.prisma.announcementAttachment.findUnique({
       where: { id: attachmentId },
     });
@@ -217,6 +239,13 @@ export class AnnouncementsService {
   async removeReaction(announcementId: string, userId: string) {
     await this.prisma.announcementReaction.deleteMany({ where: { announcementId, userId } });
     return { success: true };
+  }
+
+  private assertCanManage(announcement: { authorId: string }, user: AuthenticatedUser): void {
+    const isFullAdmin = user.role === Role.ADMIN || user.role === Role.SUPER_ADMIN;
+    if (!isFullAdmin && announcement.authorId !== user.id) {
+      throw new ForbiddenException('You can only manage your own posts');
+    }
   }
 
   private async getHiddenCategories(): Promise<Set<AnnouncementType>> {
