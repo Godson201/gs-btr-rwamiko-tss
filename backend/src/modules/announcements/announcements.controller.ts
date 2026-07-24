@@ -1,5 +1,5 @@
 import { existsSync, mkdirSync } from 'fs';
-import { extname, join } from 'path';
+import { join } from 'path';
 import {
   BadRequestException,
   Body,
@@ -22,7 +22,7 @@ import { Roles } from '../../decorators/roles.decorator';
 import { JwtAuthGuard } from '../../guards/jwt-auth.guard';
 import { RolesGuard } from '../../guards/roles.guard';
 import { AuthenticatedUser } from '../auth/auth.types';
-import { MEDIA_MIME_PATTERN } from '../../utils/media-attachments';
+import { extensionFromMime, isAllowedMediaMime } from '../../utils/media-attachments';
 import type { UploadedMediaFile } from '../../utils/uploaded-file.type';
 import { AnnouncementsService } from './announcements.service';
 import { CreateAnnouncementDto } from './dto/create-announcement.dto';
@@ -98,12 +98,13 @@ export class AnnouncementsController {
           callback(null, UPLOAD_DIR);
         },
         filename: (_req, file, callback) => {
-          callback(null, `${Date.now()}-${Math.round(Math.random() * 1e9)}${extname(file.originalname)}`);
+          const ext = extensionFromMime(file.mimetype, file.originalname);
+          callback(null, `${Date.now()}-${Math.round(Math.random() * 1e9)}.${ext}`);
         },
       }),
-      limits: { fileSize: Number(process.env.MAX_FILE_SIZE ?? 5242880) },
+      limits: { fileSize: Number(process.env.MAX_FILE_SIZE ?? 20971520) },
       fileFilter: (_req, file, callback) => {
-        if (!MEDIA_MIME_PATTERN.test(file.mimetype)) {
+        if (!isAllowedMediaMime(file.mimetype)) {
           callback(
             new BadRequestException('Only image, video, audio, or document files are allowed'),
             false,

@@ -13,6 +13,7 @@ import {
   type AnnouncementFormValues,
 } from '@/components/shared/announcement-form';
 import { api } from '@/lib/api';
+import { ATTACHMENT_ACCEPT, MAX_FILE_SIZE_LABEL, isFileTooLarge } from '@/lib/attachment-limits';
 import type { AnnouncementCategory } from '@/lib/announcement-constants';
 
 type Attachment = AttachmentLike;
@@ -31,7 +32,7 @@ interface AnnouncementDetail {
 export default function AnnouncementDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const queryClient = useQueryClient();
-  const [files, setFiles] = useState<FileList | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
 
   const { data, isLoading } = useQuery({
     queryKey: ['announcement', id],
@@ -51,14 +52,14 @@ export default function AnnouncementDetailPage({ params }: { params: Promise<{ i
 
   const uploadAttachments = useMutation({
     mutationFn: async () => {
-      if (!files?.length) throw new Error('Choose at least one file first');
+      if (!files.length) throw new Error('Choose at least one file first');
       const formData = new FormData();
-      Array.from(files).forEach((file) => formData.append('files', file));
+      files.forEach((file) => formData.append('files', file));
       return api.post(`/announcements/${id}/attachments`, formData);
     },
     onSuccess: () => {
       toast.success('Media uploaded');
-      setFiles(null);
+      setFiles([]);
       queryClient.invalidateQueries({ queryKey: ['announcement', id] });
     },
     onError: (error: Error) => toast.error(error.message),
@@ -139,14 +140,27 @@ export default function AnnouncementDetailPage({ params }: { params: Promise<{ i
           <div className="flex items-center gap-2">
             <input
               type="file"
-              accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
+              accept={ATTACHMENT_ACCEPT}
               multiple
-              onChange={(event) => setFiles(event.target.files)}
+              onChange={(event) => {
+                const selected = event.target.files;
+                if (selected) {
+                  const accepted = Array.from(selected).filter((file) => {
+                    if (isFileTooLarge(file)) {
+                      toast.error(`${file.name} is larger than ${MAX_FILE_SIZE_LABEL} and was skipped`);
+                      return false;
+                    }
+                    return true;
+                  });
+                  setFiles(accepted);
+                }
+                event.target.value = '';
+              }}
               className="flex-1 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs file:mr-3 file:rounded-md file:border-0 file:bg-secondary file:px-3 file:py-1 file:text-sm"
             />
             <Button
               onClick={() => uploadAttachments.mutate()}
-              disabled={!files?.length || uploadAttachments.isPending}
+              disabled={files.length === 0 || uploadAttachments.isPending}
             >
               <Upload className="size-4" />
               {uploadAttachments.isPending ? 'Uploading…' : 'Upload'}

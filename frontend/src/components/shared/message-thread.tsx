@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/auth-context';
 import { api } from '@/lib/api';
+import { ATTACHMENT_ACCEPT, MAX_FILE_SIZE_LABEL, isFileTooLarge } from '@/lib/attachment-limits';
 import { cn } from '@/lib/utils';
 
 interface MessageSender {
@@ -136,10 +137,21 @@ export function MessageThread({
             ref={fileInputRef}
             type="file"
             multiple
+            accept={ATTACHMENT_ACCEPT}
             className="hidden"
             onChange={(event) => {
               const files = event.target.files;
-              if (files) setPendingFiles((current) => [...current, ...Array.from(files)]);
+              if (files) {
+                const accepted: File[] = [];
+                for (const file of Array.from(files)) {
+                  if (isFileTooLarge(file)) {
+                    toast.error(`${file.name} is larger than ${MAX_FILE_SIZE_LABEL} and was skipped`);
+                    continue;
+                  }
+                  accepted.push(file);
+                }
+                setPendingFiles((current) => [...current, ...accepted]);
+              }
               event.target.value = '';
             }}
           />
@@ -152,7 +164,15 @@ export function MessageThread({
           >
             <Paperclip className="size-4" />
           </Button>
-          <VoiceRecorderButton onRecorded={(file) => send.mutate(file)} />
+          <VoiceRecorderButton
+            onRecorded={(file) => {
+              if (isFileTooLarge(file)) {
+                toast.error(`Voice note is larger than ${MAX_FILE_SIZE_LABEL}`);
+                return;
+              }
+              send.mutate(file);
+            }}
+          />
           <Input
             value={content}
             onChange={(event) => setContent(event.target.value)}
