@@ -6,7 +6,7 @@ import { PortalLayout, type PortalNavItem } from '@/components/shared/portal-lay
 const navItems: PortalNavItem[] = [
   { label: 'Dashboard', href: '/parent/dashboard', icon: LayoutDashboard },
   { label: 'Announcements', href: '/parent/announcements', icon: Megaphone },
-  { label: 'Messages', href: '/parent/messages', icon: MessageCircle, disabled: true },
+  { label: 'Messages', href: '/parent/messages', icon: MessageCircle },
 ];
 
 export default function ParentLayout({ children }: { children: React.ReactNode }) {

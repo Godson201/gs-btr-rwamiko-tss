@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { AttachmentPreview, type AttachmentLike } from '@/components/shared/attachment-preview';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -17,14 +18,7 @@ import {
 } from '@/lib/announcement-constants';
 import { cn } from '@/lib/utils';
 
-const UPLOADS_BASE_URL = process.env.NEXT_PUBLIC_UPLOADS_BASE_URL ?? '';
-
-interface Attachment {
-  id: string;
-  url: string;
-  type: 'IMAGE' | 'VIDEO';
-  filename: string;
-}
+type Attachment = AttachmentLike;
 
 interface CommentAuthor {
   id: string;
@@ -191,24 +185,9 @@ export function AnnouncementFeed() {
             <p className="whitespace-pre-wrap text-sm">{item.content}</p>
             {item.attachments.length > 0 && (
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                {item.attachments.map((attachment) =>
-                  attachment.type === 'IMAGE' ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      key={attachment.id}
-                      src={`${UPLOADS_BASE_URL}${attachment.url}`}
-                      alt={attachment.filename}
-                      className="aspect-video w-full rounded-md object-cover"
-                    />
-                  ) : (
-                    <video
-                      key={attachment.id}
-                      src={`${UPLOADS_BASE_URL}${attachment.url}`}
-                      controls
-                      className="aspect-video w-full rounded-md"
-                    />
-                  ),
-                )}
+                {item.attachments.map((attachment) => (
+                  <AttachmentPreview key={attachment.id} attachment={attachment} />
+                ))}
               </div>
             )}
             <ReactionBar item={item} />

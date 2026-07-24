@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   LogOut,
   Megaphone,
+  MessageCircle,
   School,
   Settings,
   Users,
@@ -36,6 +37,7 @@ const navItems: {
   { label: 'Classes', href: '/admin/classes', icon: School },
   { label: 'Modules', href: '/admin/modules', icon: BookMarked },
   { label: 'Announcements', href: '/admin/announcements', icon: Megaphone },
+  { label: 'Messages', href: '/admin/messages', icon: MessageCircle },
   { label: 'Settings', href: '/admin/settings', icon: Settings },
 ];
 

@@ -22,6 +22,7 @@ import { Roles } from '../../decorators/roles.decorator';
 import { JwtAuthGuard } from '../../guards/jwt-auth.guard';
 import { RolesGuard } from '../../guards/roles.guard';
 import { AuthenticatedUser } from '../auth/auth.types';
+import { MEDIA_MIME_PATTERN } from '../../utils/media-attachments';
 import type { UploadedMediaFile } from '../../utils/uploaded-file.type';
 import { AnnouncementsService } from './announcements.service';
 import { CreateAnnouncementDto } from './dto/create-announcement.dto';
@@ -31,7 +32,6 @@ import { SetReactionDto } from './dto/set-reaction.dto';
 import { UpdateAnnouncementDto } from './dto/update-announcement.dto';
 
 const UPLOAD_DIR = join(process.cwd(), 'uploads', 'announcements');
-const ALLOWED_MIME = /^(image\/(png|jpe?g|gif|webp)|video\/(mp4|webm|quicktime))$/;
 
 @Controller('announcements')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -103,8 +103,11 @@ export class AnnouncementsController {
       }),
       limits: { fileSize: Number(process.env.MAX_FILE_SIZE ?? 5242880) },
       fileFilter: (_req, file, callback) => {
-        if (!ALLOWED_MIME.test(file.mimetype)) {
-          callback(new BadRequestException('Only image or video files are allowed'), false);
+        if (!MEDIA_MIME_PATTERN.test(file.mimetype)) {
+          callback(
+            new BadRequestException('Only image, video, audio, or document files are allowed'),
+            false,
+          );
           return;
         }
         callback(null, true);

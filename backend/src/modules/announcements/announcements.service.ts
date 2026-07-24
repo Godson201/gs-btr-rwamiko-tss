@@ -1,6 +1,7 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { AnnouncementType, AttachmentType, Prisma, ReactionType, Role } from '@prisma/client';
+import { AnnouncementType, Prisma, ReactionType, Role } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
+import { attachmentTypeFromMime } from '../../utils/media-attachments';
 import { AuthenticatedUser } from '../auth/auth.types';
 import { CreateAnnouncementDto } from './dto/create-announcement.dto';
 import { CreateCommentDto } from './dto/create-comment.dto';
@@ -153,7 +154,7 @@ export class AnnouncementsService {
       data: files.map((file) => ({
         announcementId,
         url: `/uploads/announcements/${file.filename}`,
-        type: file.mimetype.startsWith('video/') ? AttachmentType.VIDEO : AttachmentType.IMAGE,
+        type: attachmentTypeFromMime(file.mimetype),
         filename: file.originalname,
       })),
     });

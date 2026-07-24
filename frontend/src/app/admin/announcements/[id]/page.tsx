@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Trash2, Upload } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { AttachmentPreview, type AttachmentLike } from '@/components/shared/attachment-preview';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -14,14 +15,7 @@ import {
 import { api } from '@/lib/api';
 import type { AnnouncementCategory } from '@/lib/announcement-constants';
 
-const UPLOADS_BASE_URL = process.env.NEXT_PUBLIC_UPLOADS_BASE_URL ?? '';
-
-interface Attachment {
-  id: string;
-  url: string;
-  type: 'IMAGE' | 'VIDEO';
-  filename: string;
-}
+type Attachment = AttachmentLike;
 
 interface AnnouncementDetail {
   id: string;
@@ -129,20 +123,7 @@ export default function AnnouncementDetailPage({ params }: { params: Promise<{ i
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
               {data.attachments.map((attachment) => (
                 <div key={attachment.id} className="relative">
-                  {attachment.type === 'IMAGE' ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={`${UPLOADS_BASE_URL}${attachment.url}`}
-                      alt={attachment.filename}
-                      className="aspect-video w-full rounded-md object-cover"
-                    />
-                  ) : (
-                    <video
-                      src={`${UPLOADS_BASE_URL}${attachment.url}`}
-                      controls
-                      className="aspect-video w-full rounded-md"
-                    />
-                  )}
+                  <AttachmentPreview attachment={attachment} />
                   <Button
                     variant="destructive"
                     size="icon"
@@ -158,7 +139,7 @@ export default function AnnouncementDetailPage({ params }: { params: Promise<{ i
           <div className="flex items-center gap-2">
             <input
               type="file"
-              accept="image/*,video/*"
+              accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
               multiple
               onChange={(event) => setFiles(event.target.files)}
               className="flex-1 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs file:mr-3 file:rounded-md file:border-0 file:bg-secondary file:px-3 file:py-1 file:text-sm"
