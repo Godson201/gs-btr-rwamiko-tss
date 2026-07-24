@@ -14,7 +14,17 @@ async function bootstrap() {
 
   app.use(helmet());
   app.use(compression());
-  app.useStaticAssets(join(process.cwd(), 'uploads'), { prefix: '/uploads' });
+  // helmet defaults Cross-Origin-Resource-Policy to "same-origin", which makes browsers block
+  // <img>/<video>/<audio> loaded from the frontend's origin (a different port = different origin)
+  // with net::ERR_BLOCKED_BY_RESPONSE.NotSameOrigin. Uploaded media is meant to be embedded
+  // cross-origin by this app's architecture, so relax it just for this route (the rest of the
+  // API keeps helmet's default same-origin policy).
+  app.useStaticAssets(join(process.cwd(), 'uploads'), {
+    prefix: '/uploads',
+    setHeaders: (res) => {
+      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    },
+  });
   app.enableCors({
     origin: configService.get<string>('CORS_ORIGIN', 'http://localhost:3000'),
     credentials: true,

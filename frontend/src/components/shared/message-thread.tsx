@@ -187,6 +187,7 @@ export function MessageThread({
           <Button
             type="button"
             size="icon"
+            aria-label="Send message"
             onClick={() => send.mutate(undefined)}
             disabled={send.isPending || !canSend}
           >
