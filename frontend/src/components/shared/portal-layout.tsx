@@ -56,14 +56,14 @@ export function PortalLayout({
   const messageKey: TranslationKey = title === 'Admin Portal' ? 'message.admin' : title === 'Teacher Portal' ? 'message.teacher' : 'message.parent';
 
   return (
-    <div className="grid min-h-screen grid-cols-[240px_1fr]">
-      <aside className="flex flex-col border-r bg-card">
-        <div className="flex h-16 items-center border-b px-4">
+    <div className="grid min-h-screen grid-cols-[76px_minmax(0,1fr)] lg:grid-cols-[240px_minmax(0,1fr)]">
+      <aside className="sticky top-0 flex h-screen flex-col overflow-hidden border-r bg-card">
+        <div className="flex h-16 items-center justify-center border-b px-2 lg:justify-start lg:px-4">
           <Link href="/" aria-label="G.S BTR RWAMIKO TSS home">
             <SchoolBrand compact />
           </Link>
         </div>
-        <nav className="flex-1 space-y-1 p-3">
+        <nav className="flex-1 space-y-1 overflow-y-auto p-2 lg:p-3">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname.startsWith(item.href);
@@ -73,7 +73,7 @@ export function PortalLayout({
                 href={item.disabled ? '#' : item.href}
                 aria-disabled={item.disabled}
                 className={cn(
-                  'flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                  'flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors lg:justify-start',
                   item.disabled
                     ? 'cursor-not-allowed text-muted-foreground/50'
                     : isActive
@@ -82,14 +82,14 @@ export function PortalLayout({
                 )}
               >
                 <Icon className="size-4" />
-                {navTranslationKeys[item.label] ? t(navTranslationKeys[item.label]) : item.label}
+                <span className="hidden lg:inline">{navTranslationKeys[item.label] ? t(navTranslationKeys[item.label]) : item.label}</span>
               </Link>
             );
           })}
         </nav>
       </aside>
       <div className="flex flex-col">
-        <header className="flex h-16 items-center justify-between border-b bg-background px-6">
+        <header className="flex h-16 items-center justify-between border-b bg-background px-3 sm:px-6">
           <h1 className="text-lg font-semibold">{t(portalKey)}</h1>
           <div className="flex items-center gap-3"><LanguageSwitcher compact /><DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -114,7 +114,7 @@ export function PortalLayout({
             </DropdownMenuContent>
           </DropdownMenu></div>
         </header>
-        <main className="relative flex-1 overflow-hidden bg-slate-100 p-4 sm:p-6 lg:p-8">
+        <main className="relative min-w-0 flex-1 overflow-hidden bg-slate-100 p-3 sm:p-6 lg:p-8">
           <Image src={backgroundImage} alt="" fill sizes="calc(100vw - 240px)" className="pointer-events-none object-cover object-center opacity-35" priority />
           <div className="pointer-events-none absolute inset-0 bg-linear-to-br from-white/30 via-transparent to-cyan-50/35" />
           <div className="relative z-10 mb-5 flex items-center gap-3 rounded-2xl border border-white bg-white px-5 py-3 shadow-xl">

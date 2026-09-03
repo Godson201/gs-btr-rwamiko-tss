@@ -103,6 +103,21 @@ const phraseRw: Record<string, string> = {
   'Teacher details': 'Amakuru y’umwarimu', 'Other school name': 'Izina ry’irindi shuri', 'Parent / guardian details': 'Amakuru y’umubyeyi cyangwa umurera',
   'Emergency contact': 'Telefoni y’ubutabazi', 'Residence': 'Aho atuye', 'Workplace': 'Aho akorera', 'Media': 'Amafoto n’inyandiko',
   'No messages yet. Say hello!': 'Nta butumwa buraboneka. Tangira ikiganiro!', 'Loading announcements…': 'Amatangazo arimo gutegurwa…',
+  'Classes & Trades': 'Amashuri n’amashami', 'Teaching Modules': 'Amasomo yigishwa', 'Attendance': 'Kwitabira ishuri',
+  'Assessments': 'Isuzumabumenyi', 'Marks': 'Amanota', 'Question Bank': 'Ikigega cy’ibibazo', 'Notes & Manuals': 'Inyandiko n’imfashanyigisho',
+  'Good Conduct': 'Imyitwarire myiza', 'Teacher command centre': 'Ihuriro ry’imirimo y’umwarimu', 'Welcome back,': 'Murakaza neza nanone,',
+  'Teaching tools': 'Ibikoresho by’umwarimu', 'Assigned classes': 'Amashuri washinzwe', 'Teaching modules': 'Amasomo wigisha',
+  'Active learners': 'Abanyeshuri biga', 'Current term': 'Igihembwe turimo', 'Take attendance': 'Andika abitabiriye',
+  'Assessments & exams': 'Isuzumabumenyi n’ibizamini', 'Marks management': 'Imicungire y’amanota', 'Question bank': 'Ikigega cy’ibibazo',
+  'Notes & manuals': 'Inyandiko n’imfashanyigisho', 'Student conduct': 'Imyitwarire y’abanyeshuri', 'My teaching allocation': 'Amasomo n’amashuri nshinzwe',
+  'View all': 'Reba byose', 'Class Attendance': 'Kwitabira ishuri', 'Learner Conduct': 'Imyitwarire y’abanyeshuri',
+  'Marks Management': 'Imicungire y’amanota', 'Assessments & Exams': 'Isuzumabumenyi n’ibizamini', 'Workspace records': 'Inyandiko zakozwe',
+  'Class and module': 'Ishuri n’isomo', 'Date': 'Itariki', 'Mark all present': 'Shyiraho ko bose bahari', 'Learner': 'Umunyeshuri',
+  'Attendance status': 'Uko yitabiriye', 'Select status': 'Hitamo uko yitabiriye', 'Present': 'Yahari', 'Absent': 'Yasibye',
+  'Late': 'Yakererewe', 'Excused': 'Yasabwe uruhushya', 'Save attendance register': 'Bika urutonde rw’abitabiriye',
+  'Add question': 'Ongeraho ikibazo', 'Upload resource': 'Ohereza imfashanyigisho', 'Add conduct record': 'Andika imyitwarire',
+  'Create assessment': 'Kora isuzumabumenyi', 'Enter marks': 'Andika amanota', 'Plan module': 'Tegura isomo', 'Type': 'Ubwoko',
+  'Save draft': 'Bika umushinga', 'Cancel': 'Hagarika', 'Filter': 'Shungura', 'Manage': 'Genzura',
 };
 
 const originalText = new WeakMap<Text, string>();
