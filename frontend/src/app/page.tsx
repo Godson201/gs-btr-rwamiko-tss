@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, BookOpen, CheckCircle2, Cpu, MapPin, Menu, ShieldCheck, Sparkles, Wrench } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { LanguageSwitcher } from '@/components/shared/language-switcher';
 
 const programmes = ['Computer Systems & Architecture', 'Software Development', 'Network & Internet Technology', 'Electrical Technology', 'Electronics & Telecommunication', 'Building Construction', 'Professional Accounting'];
 
@@ -15,7 +16,7 @@ export default function HomePage() {
             <span className="leading-tight"><span className="block text-sm font-black tracking-wide">G.S BTR RWAMIKO TSS</span><span className="block text-[10px] uppercase tracking-[0.19em] text-cyan-100">Skills • Character • Future</span></span>
           </Link>
           <nav className="hidden items-center gap-7 text-sm font-semibold text-white/85 md:flex"><a href="#story" className="transition hover:text-white">Our story</a><a href="#programmes" className="transition hover:text-white">Programmes</a><a href="#student-life" className="transition hover:text-white">Student life</a></nav>
-          <div className="hidden items-center gap-3 sm:flex"><Link href="/admissions" className="text-sm font-bold text-white hover:text-cyan-200">Apply now</Link><Button asChild className="rounded-full bg-cyan-400 text-slate-950 shadow-lg hover:bg-cyan-300"><Link href="/auth/login">Portal login <ArrowRight className="size-4" /></Link></Button></div>
+          <div className="hidden items-center gap-3 sm:flex"><LanguageSwitcher compact /><Link href="/admissions" className="text-sm font-bold text-white hover:text-cyan-200">Apply now</Link><Button asChild className="rounded-full bg-cyan-400 text-slate-950 shadow-lg hover:bg-cyan-300"><Link href="/auth/login">Portal login <ArrowRight className="size-4" /></Link></Button></div>
           <Link href="/auth/login" className="rounded-full border border-white/30 p-2 text-white sm:hidden" aria-label="Open portal"><Menu className="size-5" /></Link>
         </div>
       </header>

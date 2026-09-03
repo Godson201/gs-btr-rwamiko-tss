@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Switch } from '@/components/ui/switch';
 import { api } from '@/lib/api';
 import { ANNOUNCEMENT_CATEGORIES, type AnnouncementCategory } from '@/lib/announcement-constants';
+import { LanguageSettings } from '@/components/shared/language-settings';
 
 type VisibilityMap = Record<AnnouncementCategory, boolean>;
 
@@ -55,6 +56,7 @@ export default function AdminSettingsPage() {
           ))}
         </CardContent>
       </Card>
+      <LanguageSettings />
     </div>
   );
 }

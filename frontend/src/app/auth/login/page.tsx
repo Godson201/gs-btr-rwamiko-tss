@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/auth-context';
+import { LanguageSwitcher } from '@/components/shared/language-switcher';
 
 const loginSchema = z.object({
   email: z.string().min(1, 'Enter your email or phone number'),
@@ -43,7 +44,8 @@ export default function LoginPage() {
         title="Welcome back"
         description="Sign in to manage classes, track progress, and stay connected with G.S BTR RWAMIKO TSS."
       />
-      <div className="flex items-center justify-center bg-secondary/30 px-4 py-12">
+      <div className="relative flex items-center justify-center bg-secondary/30 px-4 py-12">
+        <div className="absolute right-4 top-4 lg:hidden"><LanguageSwitcher compact /></div>
         <Card className="w-full max-w-sm">
           <CardHeader className="text-center">
             <CardTitle className="text-xl">G.S BTR RWAMIKO TSS</CardTitle>

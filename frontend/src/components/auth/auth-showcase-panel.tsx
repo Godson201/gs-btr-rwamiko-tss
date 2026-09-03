@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { GraduationCap, Wrench, Zap } from 'lucide-react';
 import Image from 'next/image';
+import { LanguageSwitcher } from '@/components/shared/language-switcher';
 
 const QUOTES = [
   '"Skill is the bridge between a dream and reality." — TVET Rwanda',
@@ -34,6 +35,7 @@ export function AuthShowcasePanel({
       <div className="absolute inset-0 bg-linear-to-r from-slate-950 via-slate-950/80 to-slate-950/20" />
       <div className="absolute inset-0 bg-linear-to-t from-slate-950 via-transparent to-slate-950/50" />
       <div className="school-grid pointer-events-none absolute inset-0 opacity-20" />
+      <div className="absolute right-6 top-6 z-20"><LanguageSwitcher compact /></div>
 
       <div className="relative z-10 space-y-3">
         <div className="w-fit rounded-2xl bg-white/95 p-2 shadow-lg ring-1 ring-white/30">

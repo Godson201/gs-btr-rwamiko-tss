@@ -14,6 +14,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/auth-context';
 import { api } from '@/lib/api';
+import { LanguageSwitcher } from '@/components/shared/language-switcher';
 
 const signupSchema = z
   .object({
@@ -139,7 +140,8 @@ export default function SignupPage() {
         title="Join as a parent"
         description="Create an account to stay connected with your child's learning journey at G.S BTR RWAMIKO TSS."
       />
-      <div className="flex items-center justify-center bg-secondary/30 px-4 py-12">
+      <div className="relative flex items-center justify-center bg-secondary/30 px-4 py-12">
+        <div className="absolute right-4 top-4 lg:hidden"><LanguageSwitcher compact /></div>
         <Card className="w-full max-w-lg">
           <CardHeader className="text-center">
             <CardTitle className="text-xl">Create a parent account</CardTitle>

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Toaster } from '@/components/ui/sonner';
 import { QueryProvider } from '@/components/providers/query-provider';
 import { AuthProvider } from '@/contexts/auth-context';
+import { LanguageProvider } from '@/contexts/language-context';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -18,10 +19,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" suppressHydrationWarning>
       <body className="antialiased">
         <QueryProvider>
-          <AuthProvider>
+          <LanguageProvider><AuthProvider>
             {children}
             <Toaster richColors position="top-right" />
-          </AuthProvider>
+          </AuthProvider></LanguageProvider>
         </QueryProvider>
       </body>
     </html>

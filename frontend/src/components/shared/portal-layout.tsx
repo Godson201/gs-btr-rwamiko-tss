@@ -16,7 +16,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { UserAvatar } from '@/components/shared/user-avatar';
 import { SchoolBrand } from '@/components/shared/school-brand';
+import { LanguageSwitcher } from '@/components/shared/language-switcher';
 import { useAuth } from '@/contexts/auth-context';
+import { useLanguage, type TranslationKey } from '@/contexts/language-context';
 import { cn } from '@/lib/utils';
 
 export interface PortalNavItem {
@@ -25,6 +27,12 @@ export interface PortalNavItem {
   icon: LucideIcon;
   disabled?: boolean;
 }
+
+const navTranslationKeys: Record<string, TranslationKey> = {
+  Dashboard: 'nav.dashboard', Students: 'nav.students', Teachers: 'nav.teachers', Classes: 'nav.classes', Modules: 'nav.modules',
+  'Parent Approvals': 'nav.parentApprovals', Admissions: 'nav.admissions', Announcements: 'nav.announcements', Messages: 'nav.messages',
+  Settings: 'nav.settings', 'School Posts': 'nav.schoolPosts', 'Apply for Admission': 'nav.apply',
+};
 
 export function PortalLayout({
   title,
@@ -43,6 +51,9 @@ export function PortalLayout({
 }) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const { t } = useLanguage();
+  const portalKey: TranslationKey = title === 'Admin Portal' ? 'portal.admin' : title === 'Teacher Portal' ? 'portal.teacher' : 'portal.parent';
+  const messageKey: TranslationKey = title === 'Admin Portal' ? 'message.admin' : title === 'Teacher Portal' ? 'message.teacher' : 'message.parent';
 
   return (
     <div className="grid min-h-screen grid-cols-[240px_1fr]">
@@ -71,7 +82,7 @@ export function PortalLayout({
                 )}
               >
                 <Icon className="size-4" />
-                {item.label}
+                {navTranslationKeys[item.label] ? t(navTranslationKeys[item.label]) : item.label}
               </Link>
             );
           })}
@@ -79,12 +90,12 @@ export function PortalLayout({
       </aside>
       <div className="flex flex-col">
         <header className="flex h-16 items-center justify-between border-b bg-background px-6">
-          <h1 className="text-lg font-semibold">{title}</h1>
-          <DropdownMenu>
+          <h1 className="text-lg font-semibold">{t(portalKey)}</h1>
+          <div className="flex items-center gap-3"><LanguageSwitcher compact /><DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="h-auto py-1 pl-1.5">
                 <UserAvatar avatar={user?.avatar} firstName={user?.firstName} lastName={user?.lastName} className="size-6" />
-                {user ? `${user.firstName} ${user.lastName}` : 'Account'}
+                {user ? `${user.firstName} ${user.lastName}` : t('account')}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -93,22 +104,22 @@ export function PortalLayout({
               <DropdownMenuItem asChild>
                 <Link href={profileHref}>
                   <User className="mr-2 size-4" />
-                  Profile
+                  {t('profile')}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => logout()}>
                 <LogOut className="mr-2 size-4" />
-                Log out
+                {t('logout')}
               </DropdownMenuItem>
             </DropdownMenuContent>
-          </DropdownMenu>
+          </DropdownMenu></div>
         </header>
         <main className="relative flex-1 overflow-hidden bg-slate-100 p-4 sm:p-6 lg:p-8">
           <Image src={backgroundImage} alt="" fill sizes="calc(100vw - 240px)" className="pointer-events-none object-cover object-center opacity-35" priority />
           <div className="pointer-events-none absolute inset-0 bg-linear-to-br from-white/30 via-transparent to-cyan-50/35" />
           <div className="relative z-10 mb-5 flex items-center gap-3 rounded-2xl border border-white bg-white px-5 py-3 shadow-xl">
             <span className="h-8 w-1 rounded-full bg-cyan-500" />
-            <p className="text-sm font-semibold italic text-slate-700">“{message}”</p>
+            <p className="text-sm font-semibold italic text-slate-700">“{t(messageKey) || message}”</p>
           </div>
           <div className="relative z-10 rounded-[2rem] border border-white bg-white p-5 shadow-2xl sm:p-6">{children}</div>
         </main>
