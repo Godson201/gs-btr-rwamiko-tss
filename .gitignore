@@ -53,3 +53,5 @@ coverage/
 
 # User-uploaded media (runtime-generated)
 backend/uploads/
+# Project-local development services
+.local/

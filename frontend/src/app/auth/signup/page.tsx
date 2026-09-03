@@ -134,7 +134,7 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="grid min-h-screen lg:grid-cols-2">
+    <div className="auth-shell grid min-h-screen lg:grid-cols-2">
       <AuthShowcasePanel
         title="Join as a parent"
         description="Create an account to stay connected with your child's learning journey at G.S BTR RWAMIKO TSS."

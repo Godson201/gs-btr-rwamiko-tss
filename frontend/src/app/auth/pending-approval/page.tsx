@@ -12,7 +12,7 @@ export default function PendingApprovalPage() {
   const isRejected = user?.accountStatus === 'REJECTED';
 
   return (
-    <div className="grid min-h-screen lg:grid-cols-2">
+    <div className="auth-shell grid min-h-screen lg:grid-cols-2">
       <AuthShowcasePanel
         title={isRejected ? 'Registration declined' : 'Almost there'}
         description="Every parent account is verified by the school office before it can access the parent portal."

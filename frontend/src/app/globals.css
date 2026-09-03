@@ -26,6 +26,55 @@
   --ring: oklch(0.32 0.12 265);
 }
 
+@keyframes school-float {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(24px, -28px, 0) scale(1.08); }
+}
+
+@keyframes school-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@keyframes auth-story-pan {
+  0%, 100% { transform: scale(1.03) translate3d(0, 0, 0); }
+  50% { transform: scale(1.09) translate3d(-1.5%, -1%, 0); }
+}
+
+.school-grid {
+  background-image: linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: linear-gradient(to bottom, black, transparent 72%);
+}
+
+.school-orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(60px);
+  pointer-events: none;
+  animation: school-float 9s ease-in-out infinite;
+}
+
+.school-orb-one { width: 22rem; height: 22rem; top: 16%; left: -8rem; background: rgba(34, 211, 238, .24); }
+.school-orb-two { width: 18rem; height: 18rem; right: 7%; bottom: 5%; background: rgba(16, 185, 129, .18); animation-delay: -4s; }
+.school-orb-three { width: 20rem; height: 20rem; right: -6rem; top: 0; background: rgba(34, 211, 238, .2); animation-delay: -2s; }
+.school-marquee { animation: school-marquee 36s linear infinite; }
+.auth-story-image { animation: auth-story-pan 18s ease-in-out infinite; }
+
+@media (max-width: 1023px) {
+  .auth-shell {
+    background-image: linear-gradient(rgba(248,250,252,.9), rgba(236,254,255,.92)), url('/students-campus.png');
+    background-position: center;
+    background-size: cover;
+    background-attachment: fixed;
+  }
+  .auth-shell > :last-child { background-color: transparent; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .school-orb, .school-marquee, .auth-story-image { animation: none; }
+}
+
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.98 0 0);

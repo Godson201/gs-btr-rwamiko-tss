@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { GraduationCap, Wrench, Zap } from 'lucide-react';
+import Image from 'next/image';
 
 const QUOTES = [
   '"Skill is the bridge between a dream and reality." — TVET Rwanda',
@@ -28,22 +29,32 @@ export function AuthShowcasePanel({
   }, []);
 
   return (
-    <div className="relative hidden flex-col justify-between overflow-hidden bg-linear-to-br from-primary via-primary/90 to-primary/70 p-10 text-primary-foreground lg:flex">
-      <div className="pointer-events-none absolute inset-0 opacity-10">
-        <div className="absolute -top-16 -right-16 size-72 rounded-full bg-white blur-3xl" />
-        <div className="absolute bottom-0 left-0 size-96 rounded-full bg-white blur-3xl" />
-      </div>
+    <div className="relative hidden flex-col justify-between overflow-hidden bg-slate-950 p-10 text-white lg:flex">
+      <Image src="/students-campus.png" alt="Students arriving on campus" fill priority sizes="50vw" className="auth-story-image object-cover object-center" />
+      <div className="absolute inset-0 bg-linear-to-r from-slate-950 via-slate-950/80 to-slate-950/20" />
+      <div className="absolute inset-0 bg-linear-to-t from-slate-950 via-transparent to-slate-950/50" />
+      <div className="school-grid pointer-events-none absolute inset-0 opacity-20" />
 
-      <div className="relative z-10 space-y-1">
+      <div className="relative z-10 space-y-3">
+        <div className="w-fit rounded-2xl bg-white/95 p-2 shadow-lg ring-1 ring-white/30">
+          <Image
+            src="/school-logo.png"
+            alt="G.S Benjamin Tito Robert Rwamiko TSS crest"
+            width={150}
+            height={100}
+            className="h-24 w-auto object-contain"
+            priority
+          />
+        </div>
         <p className="text-sm font-semibold tracking-wide uppercase opacity-80">
           G.S BTR RWAMIKO TSS
         </p>
         <p className="text-xs opacity-70">&ldquo;Through Here, Wealth is Flash&rdquo;</p>
       </div>
 
-      <div className="relative z-10 space-y-4">
-        <h2 className="text-3xl font-bold leading-tight">{title}</h2>
-        <p className="max-w-sm text-sm opacity-90">{description}</p>
+      <div className="relative z-10 max-w-md space-y-4 rounded-3xl border border-white/15 bg-slate-950/35 p-6 shadow-2xl backdrop-blur-sm">
+        <h2 className="text-4xl font-black leading-tight tracking-tight">{title}</h2>
+        <p className="max-w-sm text-sm leading-6 text-slate-100">{description}</p>
         <div className="flex gap-3 pt-2 opacity-80">
           <GraduationCap className="size-5" />
           <Wrench className="size-5" />
@@ -51,7 +62,7 @@ export function AuthShowcasePanel({
         </div>
       </div>
 
-      <div className="relative z-10 min-h-16 max-w-sm text-sm italic opacity-90">
+      <div className="relative z-10 min-h-16 max-w-sm border-l-2 border-cyan-300 pl-4 text-sm italic text-cyan-50">
         {QUOTES[quoteIndex]}
       </div>
     </div>

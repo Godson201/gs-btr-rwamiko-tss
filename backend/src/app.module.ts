@@ -18,6 +18,7 @@ import { MailModule } from './modules/mail/mail.module';
 import { MessagesModule } from './modules/messages/messages.module';
 import { ModulesModule } from './modules/modules/modules.module';
 import { ParentsModule } from './modules/parents/parents.module';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { ParentsModule } from './modules/parents/parents.module';
     ModulesModule,
     ParentsModule,
   ],
+  controllers: [AppController],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModule {}

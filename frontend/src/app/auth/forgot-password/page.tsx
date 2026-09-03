@@ -36,7 +36,7 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="grid min-h-screen lg:grid-cols-2">
+    <div className="auth-shell grid min-h-screen lg:grid-cols-2">
       <AuthShowcasePanel
         title="Forgot your password?"
         description="No problem — we'll email you a secure link to set a new one."

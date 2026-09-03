@@ -38,7 +38,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="grid min-h-screen lg:grid-cols-2">
+    <div className="auth-shell grid min-h-screen lg:grid-cols-2">
       <AuthShowcasePanel
         title="Welcome back"
         description="Sign in to manage classes, track progress, and stay connected with G.S BTR RWAMIKO TSS."

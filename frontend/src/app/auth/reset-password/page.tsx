@@ -81,7 +81,7 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <div className="grid min-h-screen lg:grid-cols-2">
+    <div className="auth-shell grid min-h-screen lg:grid-cols-2">
       <AuthShowcasePanel
         title="Choose a new password"
         description="Pick a strong password you haven't used before."

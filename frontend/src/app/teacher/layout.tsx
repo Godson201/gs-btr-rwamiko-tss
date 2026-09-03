@@ -18,7 +18,7 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
   }
 
   return (
-    <PortalLayout title="Teacher Portal" navItems={navItems} profileHref="/teacher/profile">
+    <PortalLayout title="Teacher Portal" navItems={navItems} profileHref="/teacher/profile" backgroundImage="/students-classroom.png" message="A great teacher does more than share knowledge—they awaken possibility.">
       {children}
     </PortalLayout>
   );

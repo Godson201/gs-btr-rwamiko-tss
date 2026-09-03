@@ -3,6 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { SchoolBrand } from '@/components/shared/school-brand';
 
 export function Header() {
   const pathname = usePathname();
@@ -10,8 +11,8 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white">
       <div className="container flex h-16 items-center justify-between">
-        <Link href="/" className="flex items-center space-x-2">
-          <span className="text-sm font-bold text-blue-900">G.S BTR RWAMIKO TSS</span>
+        <Link href="/" aria-label="G.S BTR RWAMIKO TSS home">
+          <SchoolBrand compact />
         </Link>
         <nav className="hidden md:flex items-center space-x-6">
           <Link href="/" className="text-sm font-medium hover:text-blue-900">Home</Link>
