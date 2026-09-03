@@ -50,27 +50,27 @@ export default function HomePage() {
 
       <section id="student-life" className="relative overflow-hidden px-5 py-24 sm:px-8 lg:py-32">
         <div className="school-orb school-orb-three" />
-        <div className="relative mx-auto grid max-w-6xl overflow-hidden rounded-[2.5rem] bg-cyan-400 text-slate-950 shadow-2xl lg:grid-cols-[.9fr_1.1fr]">
-          <div className="flex flex-col justify-center px-6 py-14 text-center sm:px-12 lg:text-left">
-            <MapPin className="mx-auto size-7 lg:mx-0" />
+        <div className="relative mx-auto max-w-6xl overflow-hidden rounded-[2.5rem] bg-cyan-400 text-slate-950 shadow-2xl">
+          <div className="flex flex-col items-center justify-center px-6 py-14 text-center sm:px-12">
+            <MapPin className="size-7" />
             <p className="mt-5 text-xs font-black uppercase tracking-[0.22em]">Ruramba Sector • Nyaruguru District</p>
             <h2 className="mt-5 text-4xl font-black tracking-[-0.04em] sm:text-5xl">Your journey can start here.</h2>
             <p className="mt-5 max-w-xl text-base leading-7 text-slate-800">Join a community shaped by ambition, practical knowledge, and a shared commitment to progress.</p>
-            <div className="mt-8 flex flex-wrap justify-center gap-3 lg:justify-start">
+            <div className="mt-8 flex flex-wrap justify-center gap-3">
               <Button asChild size="lg" className="h-13 rounded-full bg-slate-950 px-7 font-bold text-white hover:bg-slate-800"><Link href="/auth/login">Enter the school portal <ArrowRight className="size-4" /></Link></Button>
-              <Button asChild size="lg" variant="outline" className="h-13 rounded-full border-slate-900/30 bg-white/35 px-7 font-bold hover:bg-white/60"><a href="https://www.google.com/maps/search/?api=1&query=GS+BTR+Rwamiko+TSS%2C+Ruramba%2C+Nyaruguru%2C+Rwanda" target="_blank" rel="noreferrer">Open in Google Maps <MapPin className="size-4" /></a></Button>
             </div>
           </div>
-          <div className="min-h-[420px] border-t-4 border-white/40 bg-white lg:border-l-4 lg:border-t-0">
-            <iframe
-              title="G.S BTR Rwamiko TSS location on Google Maps"
-              src="https://www.google.com/maps?q=GS+BTR+Rwamiko+TSS,+Ruramba,+Nyaruguru,+Rwanda&output=embed"
-              className="h-full min-h-[420px] w-full"
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              allowFullScreen
-            />
-          </div>
+          <details className="group border-t border-slate-900/15 bg-white">
+            <summary className="flex cursor-pointer list-none items-center justify-center gap-2 px-6 py-5 font-bold text-slate-900 transition hover:bg-cyan-50 [&::-webkit-details-marker]:hidden">
+              <MapPin className="size-5 text-cyan-700" />
+              <span className="group-open:hidden">View Google Map</span>
+              <span className="hidden group-open:inline">Hide Google Map</span>
+            </summary>
+            <div className="border-t">
+              <iframe title="G.S BTR Rwamiko TSS location on Google Maps" src="https://www.google.com/maps?q=GS+BTR+Rwamiko+TSS,+Ruramba,+Nyaruguru,+Rwanda&output=embed" className="h-[420px] w-full" loading="lazy" referrerPolicy="no-referrer-when-downgrade" allowFullScreen />
+              <div className="flex justify-center border-t bg-white p-4"><Button asChild variant="outline" className="rounded-full"><a href="https://www.google.com/maps/search/?api=1&query=GS+BTR+Rwamiko+TSS%2C+Ruramba%2C+Nyaruguru%2C+Rwanda" target="_blank" rel="noreferrer">Open directions in Google Maps <ArrowRight className="size-4" /></a></Button></div>
+            </div>
+          </details>
         </div>
       </section>
 
