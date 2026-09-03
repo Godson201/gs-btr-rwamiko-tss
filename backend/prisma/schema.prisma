@@ -703,3 +703,53 @@ model SystemSetting {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+
+// ==================== Admissions ====================
+
+enum AdmissionApplicantType {
+  STUDENT
+  PARENT
+}
+
+enum AdmissionStatus {
+  PENDING
+  UNDER_REVIEW
+  ACCEPTED
+  REJECTED
+}
+
+model AdmissionApplication {
+  id                   String                 @id @default(cuid())
+  applicationNo        String                 @unique
+  applicantType        AdmissionApplicantType
+  studentFirstName     String
+  studentLastName      String
+  studentDateOfBirth   DateTime
+  studentGender        Gender
+  previousSchool       String
+  previousSchoolLocation String
+  transferReason       String
+  averageMarks         Float
+  applyingLevel        String
+  preferredProgramme   String
+  guardianFirstName    String
+  guardianLastName     String
+  guardianRelationship String
+  guardianEmail        String
+  guardianPhone        String
+  residence            String
+  resultDocumentUrl    String
+  resultDocumentName   String
+  profilePictureUrl    String
+  profilePictureName   String
+  notes                String
+  status               AdmissionStatus        @default(PENDING)
+  reviewedById         String?
+  reviewNotes          String?
+  reviewedAt           DateTime?
+  createdAt            DateTime                @default(now())
+  updatedAt            DateTime                @updatedAt
+
+  @@index([status, createdAt])
+  @@index([guardianEmail])
+}

@@ -1,0 +1,6 @@
+ALTER TABLE "AdmissionApplication"
+ADD COLUMN "previousSchoolLocation" TEXT NOT NULL DEFAULT '',
+ADD COLUMN "transferReason" TEXT NOT NULL DEFAULT '',
+ADD COLUMN "averageMarks" DOUBLE PRECISION NOT NULL DEFAULT 0,
+ADD COLUMN "profilePictureUrl" TEXT NOT NULL DEFAULT '',
+ADD COLUMN "profilePictureName" TEXT NOT NULL DEFAULT '';

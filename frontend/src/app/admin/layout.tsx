@@ -1,6 +1,6 @@
 'use client';
 
-import { BookMarked, GraduationCap, LayoutDashboard, Megaphone, MessageCircle, School, Settings, UserCheck, Users } from 'lucide-react';
+import { BookMarked, ClipboardList, GraduationCap, LayoutDashboard, Megaphone, MessageCircle, School, Settings, UserCheck, Users } from 'lucide-react';
 import { PortalLayout, type PortalNavItem } from '@/components/shared/portal-layout';
 
 const navItems: PortalNavItem[] = [
@@ -9,6 +9,7 @@ const navItems: PortalNavItem[] = [
   { label: 'Teachers', href: '/admin/teachers', icon: Users },
   { label: 'Classes', href: '/admin/classes', icon: School },
   { label: 'Modules', href: '/admin/modules', icon: BookMarked },
+  { label: 'Admissions', href: '/admin/admissions', icon: ClipboardList },
   { label: 'Parent Approvals', href: '/admin/parent-approvals', icon: UserCheck },
   { label: 'Announcements', href: '/admin/announcements', icon: Megaphone },
   { label: 'Messages', href: '/admin/messages', icon: MessageCircle },

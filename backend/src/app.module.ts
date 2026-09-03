@@ -19,6 +19,7 @@ import { MessagesModule } from './modules/messages/messages.module';
 import { ModulesModule } from './modules/modules/modules.module';
 import { ParentsModule } from './modules/parents/parents.module';
 import { AppController } from './app.controller';
+import { AdmissionsModule } from './modules/admissions/admissions.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { AppController } from './app.controller';
     MessagesModule,
     ModulesModule,
     ParentsModule,
+    AdmissionsModule,
   ],
   controllers: [AppController],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],

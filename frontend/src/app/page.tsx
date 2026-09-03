@@ -15,7 +15,7 @@ export default function HomePage() {
             <span className="leading-tight"><span className="block text-sm font-black tracking-wide">G.S BTR RWAMIKO TSS</span><span className="block text-[10px] uppercase tracking-[0.19em] text-cyan-100">Skills • Character • Future</span></span>
           </Link>
           <nav className="hidden items-center gap-7 text-sm font-semibold text-white/85 md:flex"><a href="#story" className="transition hover:text-white">Our story</a><a href="#programmes" className="transition hover:text-white">Programmes</a><a href="#student-life" className="transition hover:text-white">Student life</a></nav>
-          <Button asChild className="hidden rounded-full bg-cyan-400 text-slate-950 shadow-lg hover:bg-cyan-300 sm:inline-flex"><Link href="/auth/login">Portal login <ArrowRight className="size-4" /></Link></Button>
+          <div className="hidden items-center gap-3 sm:flex"><Link href="/admissions" className="text-sm font-bold text-white hover:text-cyan-200">Apply now</Link><Button asChild className="rounded-full bg-cyan-400 text-slate-950 shadow-lg hover:bg-cyan-300"><Link href="/auth/login">Portal login <ArrowRight className="size-4" /></Link></Button></div>
           <Link href="/auth/login" className="rounded-full border border-white/30 p-2 text-white sm:hidden" aria-label="Open portal"><Menu className="size-5" /></Link>
         </div>
       </header>
@@ -29,7 +29,7 @@ export default function HomePage() {
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-cyan-300/30 bg-cyan-300/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-cyan-200 backdrop-blur"><Sparkles className="size-4" /> Excellent education, practical skills</div>
             <h1 className="text-balance text-5xl font-black leading-[0.95] tracking-[-0.045em] text-white sm:text-6xl lg:text-8xl">Learning today.<span className="mt-2 block text-cyan-300">Building tomorrow.</span></h1>
             <p className="mt-7 max-w-2xl text-lg leading-8 text-slate-200 sm:text-xl">At G.S BTR Rwamiko TSS, knowledge meets practice. We prepare young people to think boldly, master real skills, and create a prosperous Rwanda.</p>
-            <div className="mt-9 flex flex-wrap gap-3"><Button asChild size="lg" className="h-13 rounded-full bg-cyan-400 px-7 font-bold text-slate-950 hover:bg-cyan-300"><Link href="/auth/login">Access school portal <ArrowRight className="size-4" /></Link></Button><Button asChild size="lg" variant="outline" className="h-13 rounded-full border-white/30 bg-white/5 px-7 text-white backdrop-blur hover:bg-white/15 hover:text-white"><a href="#story">Discover our school</a></Button></div>
+            <div className="mt-9 flex flex-wrap gap-3"><Button asChild size="lg" className="h-13 rounded-full bg-cyan-400 px-7 font-bold text-slate-950 hover:bg-cyan-300"><Link href="/admissions">Apply for admission <ArrowRight className="size-4" /></Link></Button><Button asChild size="lg" variant="outline" className="h-13 rounded-full border-white/30 bg-white/5 px-7 text-white backdrop-blur hover:bg-white/15 hover:text-white"><Link href="/auth/login">Access school portal</Link></Button></div>
           </div>
         </div>
       </section>
@@ -48,7 +48,31 @@ export default function HomePage() {
         <div><p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-300">Technical pathways</p><h2 className="mt-4 text-4xl font-black tracking-[-0.04em] sm:text-5xl">Skills built for the real world.</h2><div className="mt-8 grid gap-3 sm:grid-cols-2">{programmes.map(programme => <div key={programme} className="flex gap-3 rounded-xl border border-white/10 bg-white/5 p-4 text-sm font-semibold text-slate-200"><CheckCircle2 className="mt-0.5 size-4 shrink-0 text-cyan-300" />{programme}</div>)}</div></div>
       </div></div></section>
 
-      <section id="student-life" className="relative overflow-hidden px-5 py-24 sm:px-8 lg:py-32"><div className="school-orb school-orb-three" /><div className="relative mx-auto max-w-5xl rounded-[2.5rem] bg-cyan-400 px-6 py-16 text-center text-slate-950 shadow-2xl sm:px-12"><MapPin className="mx-auto size-7" /><p className="mt-5 text-xs font-black uppercase tracking-[0.22em]">Ruramba Sector • Nyaruguru District</p><h2 className="mx-auto mt-5 max-w-3xl text-4xl font-black tracking-[-0.04em] sm:text-6xl">Your journey can start here.</h2><p className="mx-auto mt-5 max-w-xl text-base leading-7 text-slate-800">Join a community shaped by ambition, practical knowledge, and a shared commitment to progress.</p><Button asChild size="lg" className="mt-8 h-13 rounded-full bg-slate-950 px-8 font-bold text-white hover:bg-slate-800"><Link href="/auth/login">Enter the school portal <ArrowRight className="size-4" /></Link></Button></div></section>
+      <section id="student-life" className="relative overflow-hidden px-5 py-24 sm:px-8 lg:py-32">
+        <div className="school-orb school-orb-three" />
+        <div className="relative mx-auto grid max-w-6xl overflow-hidden rounded-[2.5rem] bg-cyan-400 text-slate-950 shadow-2xl lg:grid-cols-[.9fr_1.1fr]">
+          <div className="flex flex-col justify-center px-6 py-14 text-center sm:px-12 lg:text-left">
+            <MapPin className="mx-auto size-7 lg:mx-0" />
+            <p className="mt-5 text-xs font-black uppercase tracking-[0.22em]">Ruramba Sector • Nyaruguru District</p>
+            <h2 className="mt-5 text-4xl font-black tracking-[-0.04em] sm:text-5xl">Your journey can start here.</h2>
+            <p className="mt-5 max-w-xl text-base leading-7 text-slate-800">Join a community shaped by ambition, practical knowledge, and a shared commitment to progress.</p>
+            <div className="mt-8 flex flex-wrap justify-center gap-3 lg:justify-start">
+              <Button asChild size="lg" className="h-13 rounded-full bg-slate-950 px-7 font-bold text-white hover:bg-slate-800"><Link href="/auth/login">Enter the school portal <ArrowRight className="size-4" /></Link></Button>
+              <Button asChild size="lg" variant="outline" className="h-13 rounded-full border-slate-900/30 bg-white/35 px-7 font-bold hover:bg-white/60"><a href="https://www.google.com/maps/search/?api=1&query=GS+BTR+Rwamiko+TSS%2C+Ruramba%2C+Nyaruguru%2C+Rwanda" target="_blank" rel="noreferrer">Open in Google Maps <MapPin className="size-4" /></a></Button>
+            </div>
+          </div>
+          <div className="min-h-[420px] border-t-4 border-white/40 bg-white lg:border-l-4 lg:border-t-0">
+            <iframe
+              title="G.S BTR Rwamiko TSS location on Google Maps"
+              src="https://www.google.com/maps?q=GS+BTR+Rwamiko+TSS,+Ruramba,+Nyaruguru,+Rwanda&output=embed"
+              className="h-full min-h-[420px] w-full"
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              allowFullScreen
+            />
+          </div>
+        </div>
+      </section>
 
       <footer className="border-t border-slate-200 bg-white px-5 py-8 sm:px-8"><div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-5 text-center sm:flex-row sm:text-left"><div className="flex items-center gap-3"><Image src="/school-logo.png" alt="School crest" width={64} height={43} className="h-12 w-auto object-contain" /><div><p className="text-sm font-black">G.S BTR RWAMIKO TSS</p><p className="text-xs text-slate-500">Through Here, Wealth is Flash</p></div></div><p className="text-xs text-slate-500">© {new Date().getFullYear()} G.S BTR Rwamiko TSS. Learning with purpose.</p></div></footer>
     </main>
