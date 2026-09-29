@@ -25,7 +25,7 @@ async function main() {
         admin: { create: { position: 'System Administrator', permissions: [] } },
       },
     });
-    console.log(`Seeded admin user: ${adminEmail} / ${adminPassword}`);
+    console.log(`Seeded admin user: ${adminEmail}`);
   } else {
     console.log('Admin user already exists, skipping.');
   }
