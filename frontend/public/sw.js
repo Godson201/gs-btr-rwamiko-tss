@@ -1,5 +1,5 @@
-const CACHE = 'btr-app-shell-v1';
-const PUBLIC_ASSETS = ['/offline.html', '/app-icons/icon-192.png', '/app-icons/icon-512.png'];
+const CACHE = 'btr-app-shell-v2';
+const PUBLIC_ASSETS = ['/offline.html', '/app-icons/icon-192-v2.png', '/app-icons/icon-512-v2.png'];
 
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(PUBLIC_ASSETS)).then(() => self.skipWaiting()));

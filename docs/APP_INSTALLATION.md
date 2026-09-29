@@ -24,28 +24,14 @@ forcing a reload while users are editing forms.
 
 ## Branding
 
-The open book represents learning; circuit connections represent technical
-skills and school communication; the gold arrow represents growth. Navy, cyan,
-white, and gold match the system’s visual direction. The official school crest
-remains available for school identity.
+The app icon shows a boy and girl reading together, with course symbols on
+an open book. Circuits represent computing and communication; a drafting
+square represents construction; a lightning bolt represents electrical
+technology; a rising chart represents accounting and growth.
 
-Generated with the built-in imagegen tool. The final source is
-`frontend/public/app-icons/btr-app-source.png`. Production exports include
-32px browser, 180px Apple, 192px and 512px app icons, and a padded 512px maskable
-icon. PNG exports were resized from the final generated artwork.
-
-### Final image editing prompt
-
-“Polish this BTR school app icon into a production icon. Preserve the concept:
-white open book, cyan circuit traces, golden upward arrow, bold BTR letters.
-Place it on a completely solid opaque deep navy #0b1831 square background
-filling the entire image edge to edge. NO transparency anywhere. Refine all
-edges to smooth crisp vector-like edges. Make all BTR letters clean solid
-white with correctly shaped negative spaces. Use flat colors, no shading or
-texture. Scale the entire emblem and BTR text down so all important artwork
-fits within the centered circle with radius 36% of the square width, with
-generous navy padding around it for Android maskable icon crops. One finished
-icon only, no mockup, no extra text, 1024x1024.”
+The current artwork is `frontend/public/app-icons/btr-app-source-v2.png`.
+See [the design notes and generation prompt](APP_ICON_V2.md) for details.
+The official school crest remains available for school identity.
 
 ## Verification
 

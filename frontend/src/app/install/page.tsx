@@ -22,7 +22,7 @@ export default function InstallPage() {
             <AppInstallPanel />
           </div>
           <div className="relative mx-auto w-full max-w-sm rounded-[2rem] border border-white/15 bg-white/5 p-8 text-center shadow-2xl">
-            <Image src="/app-icons/icon-512.png" alt="BTR app icon: an open book with circuits and a gold growth arrow" width={192} height={192} priority className="mx-auto rounded-[2rem] ring-1 ring-white/15" />
+            <Image src="/app-icons/icon-512-v2.png" alt="BTR app icon: a boy and girl reading an open book with technical education symbols" width={192} height={192} priority className="mx-auto rounded-[2rem] ring-1 ring-white/15" />
             <h2 className="mt-6 text-2xl font-bold">BTR Rwamiko</h2>
             <p className="mt-2 text-sm text-cyan-200">Learning. Innovation. Growth.</p>
             <div className="mt-8 grid grid-cols-2 gap-3 text-left text-xs font-semibold">
@@ -52,7 +52,7 @@ export default function InstallPage() {
       <p className="mt-5 text-sm leading-6 text-slate-500">If you opened a link inside a messaging app, open it in your browser first. Installation options depend on your device and browser.</p>
       <div className="mt-12 rounded-2xl border border-cyan-200 bg-cyan-50 p-6 sm:p-8">
         <h2 className="text-xl font-bold">A symbol of a smarter future.</h2>
-        <p className="mt-3 max-w-3xl leading-7 text-slate-600">The open book represents learning. The circuit connections reflect technical skills and a connected school. The gold arrow points toward growth and opportunity at BTR Rwamiko TSS.</p>
+        <p className="mt-3 max-w-3xl leading-7 text-slate-600">A boy and girl reading together represent shared opportunity through education. Circuit lines reflect computer systems, software development, networking, electronics and telecommunications. A drafting square represents construction, a lightning bolt represents electrical technology, and a rising chart represents accounting and growth.</p>
       </div>
     </section>
   </main>;

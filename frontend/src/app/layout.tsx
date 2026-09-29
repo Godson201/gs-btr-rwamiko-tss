@@ -11,8 +11,8 @@ export const metadata: Metadata = {
   manifest: '/manifest.webmanifest',
   appleWebApp: { capable: true, title: 'BTR Rwamiko', statusBarStyle: 'default' },
   icons: {
-    icon: [{ url: '/app-icons/icon-32.png', sizes: '32x32', type: 'image/png' }, { url: '/app-icons/icon-192.png', sizes: '192x192', type: 'image/png' }],
-    apple: [{ url: '/app-icons/icon-180.png', sizes: '180x180', type: 'image/png' }],
+    icon: [{ url: '/app-icons/icon-32-v2.png', sizes: '32x32', type: 'image/png' }, { url: '/app-icons/icon-192-v2.png', sizes: '192x192', type: 'image/png' }],
+    apple: [{ url: '/app-icons/icon-180-v2.png', sizes: '180x180', type: 'image/png' }],
   },
   title: {
     default: 'G.S BTR RWAMIKO TSS',

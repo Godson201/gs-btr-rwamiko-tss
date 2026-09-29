@@ -15,7 +15,7 @@ function worker({ offline = false } = {}) {
     self: { location: { origin: 'https://school.example' }, addEventListener: (event, handler) => { listeners[event] = handler; },
       skipWaiting: async () => {}, clients: { claim: async () => {} } },
     caches: { open: async () => ({ addAll: async paths => cached.push(...paths) }), match: async () => offlinePage,
-      keys: async () => ['unrelated-cache', 'btr-app-shell-old', 'btr-app-shell-v1'], delete: async key => removed.push(key) },
+      keys: async () => ['unrelated-cache', 'btr-app-shell-old', 'btr-app-shell-v2'], delete: async key => removed.push(key) },
     fetch: async () => { if (offline) throw new Error('Offline'); return networkPage; },
   });
   return { listeners, offlinePage, networkPage, cached, removed };
@@ -25,7 +25,7 @@ test('Only the public offline screen and icons are precached; unrelated caches s
   const w = worker();
   let done;
   w.listeners.install({ waitUntil: p => { done = p; } }); await done;
-  assert.deepEqual(w.cached.sort(), ['/app-icons/icon-192.png', '/app-icons/icon-512.png', '/offline.html'].sort());
+  assert.deepEqual(w.cached.sort(), ['/app-icons/icon-192-v2.png', '/app-icons/icon-512-v2.png', '/offline.html'].sort());
   w.listeners.activate({ waitUntil: p => { done = p; } }); await done;
   assert.deepEqual(w.removed, ['btr-app-shell-old']);
 });
