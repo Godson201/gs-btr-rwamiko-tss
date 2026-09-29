@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { UserAvatar } from '@/components/shared/user-avatar';
 import { SchoolBrand } from '@/components/shared/school-brand';
+import { InstallAppLink } from '@/components/shared/install-app-link';
 import { LanguageSwitcher } from '@/components/shared/language-switcher';
 import { useAuth } from '@/contexts/auth-context';
 import { useLanguage, type TranslationKey } from '@/contexts/language-context';
@@ -137,7 +138,7 @@ export function PortalLayout({
                 {t('logout')}
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href="/install"><Download className="mr-2 size-4" />Get the app</Link>
+                <InstallAppLink><Download className="mr-2 size-4" />Get the app</InstallAppLink>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu></div>

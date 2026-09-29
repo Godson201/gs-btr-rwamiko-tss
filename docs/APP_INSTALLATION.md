@@ -11,8 +11,12 @@ link to this page. Users keep their existing accounts and role permissions.
   “Open as Web App” enabled when shown.
 - Desktop: open in Chrome or Edge and use the install button or browser install menu.
 
-The install button appears only when the browser supplies an install prompt.
-Otherwise, the page shows instructions. Accepting a prompt is reported as an
+The `/install` link opens a page with an install button and a copy-link action.
+Homepage and portal “Get the app” links open the native installation prompt
+directly when the browser makes it available. Otherwise, they open `/install`.
+The install button shows device guidance when native installation is unavailable.
+Browsers require a user click and confirmation; opening a shared link cannot
+silently install the app. Accepting a prompt is reported as an
 installation request; only the `appinstalled` event or standalone display mode
 marks the app installed.
 
