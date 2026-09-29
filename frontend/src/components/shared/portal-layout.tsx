@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import type { LucideIcon } from 'lucide-react';
-import { LogOut, Menu, User } from 'lucide-react';
+import { Download, LogOut, Menu, User } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -135,6 +135,9 @@ export function PortalLayout({
               <DropdownMenuItem onClick={() => logout()}>
                 <LogOut className="mr-2 size-4" />
                 {t('logout')}
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/install"><Download className="mr-2 size-4" />Get the app</Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu></div>

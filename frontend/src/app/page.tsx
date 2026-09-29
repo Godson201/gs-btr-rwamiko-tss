@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { SchoolUpdates } from '@/components/shared/school-updates';
+import { AppPromo } from '@/components/shared/app-promo';
 import Link from 'next/link';
 import { ArrowRight, BookOpen, CheckCircle2, Cpu, MapPin, ShieldCheck, Sparkles, Wrench } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -40,6 +41,7 @@ export default function HomePage() {
       <div className="overflow-hidden bg-cyan-400 py-3 text-slate-950"><div className="school-marquee flex w-max items-center gap-8 whitespace-nowrap text-xs font-black uppercase tracking-[0.22em]">{[...programmes, ...programmes].map((item, index) => <span key={`${item}-${index}`} className="flex items-center gap-8"><span>{item}</span><span aria-hidden>◆</span></span>)}</div></div>
 
       <SchoolUpdates />
+      <AppPromo />
 
       <section id="story" className="relative mx-auto grid max-w-7xl gap-14 px-5 py-24 sm:px-8 lg:grid-cols-[.9fr_1.1fr] lg:items-center lg:py-32">
         <div><p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-700">Our purpose</p><h2 className="mt-4 text-4xl font-black tracking-[-0.04em] sm:text-5xl">A school where potential becomes purpose.</h2><p className="mt-6 text-lg leading-8 text-slate-600">Rooted in Rwamiko and focused on the future, our learning community combines strong academics, technical mastery, discipline, and collaboration.</p>

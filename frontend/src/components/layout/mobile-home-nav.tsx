@@ -19,7 +19,7 @@ export function MobileHomeNav() {
         {[
           ['School updates', '/#school-updates'], ['Our story', '/#story'], ['Programmes', '/#programmes'],
           ['Student life', '/#student-life'], ['Apply now', '/admissions'],
-          ['Portal login', '/auth/login'],
+          ['Portal login', '/auth/login'], ['Get the app', '/install'],
         ].map(([label, href]) => <Link key={href} href={href} onClick={() => setOpen(false)} className="flex min-h-11 items-center rounded-md px-3 py-2 font-medium hover:bg-accent">{label}</Link>)}
       </nav>
       <LanguageSwitcher />
