@@ -1,7 +1,8 @@
 # Admin activity logs
 
-The admin dashboard shows the five latest entries. **Activity Logs** opens the full,
-paginated history with user/action search, HTTP action, result and date filters.
+Open **Admin > Settings > Activity logs** for the full, paginated history with
+user/action search, HTTP action, result and date filters. The previous activity-log
+URL redirects to this section in Settings.
 Only accounts with ADMIN or SUPER_ADMIN portal access can read the API. There are
 no application endpoints to edit or delete audit entries.
 
@@ -45,6 +46,6 @@ in-memory persistence and exercise the real routing, guards, validation and audi
 capture without contacting the school database.
 
 After deployment, sign in as an admin, perform a normal update and check its entry
-under **Activity Logs**. Confirm teacher and parent accounts cannot access
+under **Settings > Activity logs**. Confirm teacher and parent accounts cannot access
 `GET /api/audit-logs`. Filters use local-day boundaries, and pagination keeps a
 time snapshot until Refresh or Apply filters is used.

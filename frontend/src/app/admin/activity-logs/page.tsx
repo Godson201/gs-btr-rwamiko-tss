@@ -1,5 +1,5 @@
-import { ActivityLogs } from '@/components/admin/activity-logs';
+import { redirect } from 'next/navigation';
 
 export default function ActivityLogsPage() {
-  return <ActivityLogs />;
+  redirect('/admin/settings#activity-logs');
 }

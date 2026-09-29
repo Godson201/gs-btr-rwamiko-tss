@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Switch } from '@/components/ui/switch';
 import { api } from '@/lib/api';
 import { ANNOUNCEMENT_CATEGORIES, type AnnouncementCategory } from '@/lib/announcement-constants';
+import { ActivityLogs } from '@/components/admin/activity-logs';
 import { LanguageSettings } from '@/components/shared/language-settings';
 
 type VisibilityMap = Record<AnnouncementCategory, boolean>;
@@ -32,7 +33,7 @@ export default function AdminSettingsPage() {
     <div className="max-w-2xl space-y-6">
       <div>
         <h2 className="text-2xl font-bold tracking-tight">Settings</h2>
-        <p className="text-sm text-muted-foreground">Control what parents can see on their dashboard</p>
+        <p className="text-sm text-muted-foreground">Manage parent visibility, language preferences and activity logs</p>
       </div>
 
       <Card>
@@ -57,6 +58,9 @@ export default function AdminSettingsPage() {
         </CardContent>
       </Card>
       <LanguageSettings />
+      <section id="activity-logs" className="scroll-mt-32">
+        <ActivityLogs />
+      </section>
     </div>
   );
 }
