@@ -10,6 +10,7 @@ const prisma = new PrismaClient({
 async function main() {
   const adminEmail = process.env.SEED_ADMIN_EMAIL ?? 'admin@gsbtrrwamiko.rw';
   const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? 'ChangeMe123!';
+  const resetAdminPassword = process.env.SEED_ADMIN_RESET_PASSWORD === 'true';
 
   const existingAdmin = await prisma.user.findUnique({ where: { email: adminEmail } });
   if (!existingAdmin) {
@@ -26,8 +27,20 @@ async function main() {
       },
     });
     console.log(`Seeded admin user: ${adminEmail}`);
+  } else if (resetAdminPassword) {
+    const hashedPassword = await bcrypt.hash(adminPassword, 10);
+    await prisma.user.update({
+      where: { id: existingAdmin.id },
+      data: {
+        password: hashedPassword,
+        isActive: true,
+        role: 'SUPER_ADMIN',
+        portalAccess: ['SUPER_ADMIN'],
+      },
+    });
+    console.log(`Reset seeded admin password: ${adminEmail}`);
   } else {
-    console.log('Admin user already exists, skipping.');
+    console.log('Admin user already exists; password unchanged.');
   }
 
   const currentYearName = new Date().getFullYear().toString();
