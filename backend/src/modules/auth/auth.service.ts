@@ -176,6 +176,15 @@ export class AuthService {
       return createdUser;
     });
 
+    try {
+      await this.mailService.sendParentRegistrationEmail(
+        user.email,
+        `${user.firstName} ${user.lastName}`,
+      );
+    } catch {
+      // Account creation must succeed even if the email provider is temporarily unavailable.
+    }
+
     return this.login({ email: user.email, password: dto.password });
   }
 

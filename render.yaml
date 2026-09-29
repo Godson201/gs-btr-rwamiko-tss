@@ -41,7 +41,15 @@ services:
       - key: UPLOAD_PATH
         value: uploads
       - key: MAIL_ENABLED
-        value: false
+        value: true
+      - key: MAIL_PROVIDER
+        value: brevo
+      - key: BREVO_API_KEY
+        sync: false
+      - key: MAIL_FROM_EMAIL
+        sync: false
+      - key: MAIL_FROM_NAME
+        value: G.S BTR RWAMIKO TSS
       - key: SEED_ADMIN_EMAIL
         sync: false
       - key: SEED_ADMIN_PASSWORD
