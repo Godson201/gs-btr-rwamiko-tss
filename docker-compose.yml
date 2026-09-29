@@ -9,7 +9,8 @@ services:
       POSTGRES_PASSWORD: secure_password_here
       POSTGRES_DB: gs_btr_rwamiko
     ports:
-      - "5432:5432"
+      # 5433 avoids conflicts with other local PostgreSQL projects.
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
