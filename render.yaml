@@ -40,6 +40,8 @@ services:
         value: 10485760
       - key: UPLOAD_PATH
         value: uploads
+      - key: MAIL_ENABLED
+        value: false
       - key: SEED_ADMIN_EMAIL
         sync: false
       - key: SEED_ADMIN_PASSWORD

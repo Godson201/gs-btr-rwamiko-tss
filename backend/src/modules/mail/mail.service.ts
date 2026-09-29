@@ -1,11 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class MailService {
   private readonly logger = new Logger(MailService.name);
 
-  constructor(private readonly mailerService: MailerService) {}
+  constructor(
+    private readonly mailerService: MailerService,
+    private readonly configService: ConfigService,
+  ) {}
 
   async sendTeacherWelcomeEmail(
     to: string,
@@ -46,6 +50,10 @@ export class MailService {
   }
 
   private async send(to: string, subject: string, html: string): Promise<void> {
+    if (this.configService.get<string>('MAIL_ENABLED', 'true') !== 'true') {
+      this.logger.warn(`Email delivery is disabled; skipped message to ${to}`);
+      throw new Error('Email delivery is disabled');
+    }
     try {
       await this.mailerService.sendMail({ to, subject, html });
     } catch (error) {
