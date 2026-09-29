@@ -5,6 +5,7 @@
   "scripts": {
     "build": "nest build",
     "test:audit": "ts-node test/audit.integration.ts",
+    "test:public-updates": "ts-node test/public-updates.integration.ts",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",

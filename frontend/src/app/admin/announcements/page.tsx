@@ -15,6 +15,7 @@ interface AdminAnnouncement {
   title: string;
   type: AnnouncementCategory;
   isPublished: boolean;
+  isPublic: boolean;
   createdAt: string;
   author: { firstName: string; lastName: string };
   _count: { comments: number; reactions: number; attachments: number };
@@ -51,6 +52,7 @@ export default function AdminAnnouncementsPage() {
       header: 'Status',
       cell: (row) => <Badge variant={row.isPublished ? 'default' : 'secondary'}>{row.isPublished ? 'Published' : 'Draft'}</Badge>,
     },
+    { header: 'Homepage', cell: (row) => <Badge variant={row.isPublic ? 'default' : 'secondary'}>{row.isPublic ? 'School update' : 'Portal only'}</Badge> },
     { header: 'Author', cell: (row) => `${row.author.firstName} ${row.author.lastName}` },
     {
       header: 'Engagement',

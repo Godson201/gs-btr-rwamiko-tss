@@ -32,6 +32,7 @@ export const announcementFormSchema = z.object({
   targetAudience: z.array(z.enum(['PARENT', 'TEACHER', 'STUDENT'])).min(1, 'Select at least one audience'),
   isPublished: z.boolean(),
   isFeatured: z.boolean(),
+  isPublic: z.boolean(),
   expiresAt: z.string().optional(),
 });
 
@@ -44,6 +45,7 @@ export const defaultAnnouncementFormValues: AnnouncementFormValues = {
   targetAudience: ['PARENT', 'TEACHER'],
   isPublished: true,
   isFeatured: false,
+  isPublic: false,
   expiresAt: '',
 };
 
@@ -52,11 +54,13 @@ export function AnnouncementForm({
   onSubmit,
   isSubmitting,
   submitLabel,
+  canPublishPublic = false,
 }: {
   defaultValues: AnnouncementFormValues;
   onSubmit: (values: AnnouncementFormValues) => void;
   isSubmitting: boolean;
   submitLabel: string;
+  canPublishPublic?: boolean;
 }) {
   const form = useForm<AnnouncementFormValues>({
     resolver: zodResolver(announcementFormSchema),
@@ -126,7 +130,7 @@ export function AnnouncementForm({
           render={({ field }) => (
             <FormItem>
               <FormLabel>Audience</FormLabel>
-              <div className="flex gap-4">
+              <div className="flex flex-wrap gap-4">
                 {AUDIENCE_OPTIONS.map((option) => (
                   <label key={option.value} className="flex items-center gap-2 text-sm">
                     <input
@@ -193,6 +197,18 @@ export function AnnouncementForm({
             </FormItem>
           )}
         />
+        {canPublishPublic && <FormField
+          control={form.control}
+          name="isPublic"
+          render={({ field }) => (
+            <FormItem className="flex items-center justify-between gap-3 rounded-md border border-cyan-200 bg-cyan-50 p-3">
+              <div><FormLabel>Show on homepage as a school update</FormLabel>
+                <p className="mt-1 text-xs text-muted-foreground">Anyone, including guests without an account, can read this post and open its attached media when Published is on.</p>
+              </div>
+              <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+            </FormItem>
+          )}
+        />}
         <Button type="submit" disabled={isSubmitting}>
           {isSubmitting ? 'Saving…' : submitLabel}
         </Button>

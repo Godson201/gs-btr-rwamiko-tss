@@ -1,5 +1,6 @@
 'use client';
 
+import { useAuth } from '@/contexts/auth-context';
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Trash2, Upload } from 'lucide-react';
@@ -26,6 +27,7 @@ interface AnnouncementDetail {
   targetAudience: ('PARENT' | 'TEACHER' | 'STUDENT' | 'ADMIN' | 'SUPER_ADMIN')[];
   isPublished: boolean;
   isFeatured: boolean;
+  isPublic: boolean;
   expiresAt: string | null;
   attachments: AttachmentLike[];
 }
@@ -37,6 +39,8 @@ interface AnnouncementDetail {
  */
 export function AnnouncementEditor({ id, basePath, listQueryKey }: { id?: string; basePath: string; listQueryKey: string[] }) {
   const router = useRouter();
+  const { user } = useAuth();
+  const canPublishPublic = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
   const queryClient = useQueryClient();
   const [files, setFiles] = useState<File[]>([]);
 
@@ -112,6 +116,7 @@ export function AnnouncementEditor({ id, basePath, listQueryKey }: { id?: string
         ),
         isPublished: data.isPublished,
         isFeatured: data.isFeatured,
+        isPublic: data.isPublic ?? false,
         expiresAt: data.expiresAt ? data.expiresAt.slice(0, 10) : '',
       }
     : defaultAnnouncementFormValues;
@@ -129,6 +134,8 @@ export function AnnouncementEditor({ id, basePath, listQueryKey }: { id?: string
         </CardHeader>
         <CardContent>
           <AnnouncementForm
+            key={data?.id ?? 'new'}
+            canPublishPublic={canPublishPublic}
             defaultValues={defaultValues}
             onSubmit={(values) => (id ? update.mutate(values) : create.mutate(values))}
             isSubmitting={id ? update.isPending : create.isPending}
@@ -160,7 +167,7 @@ export function AnnouncementEditor({ id, basePath, listQueryKey }: { id?: string
                 ))}
               </div>
             )}
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <input
                 type="file"
                 accept={ATTACHMENT_ACCEPT}
@@ -179,7 +186,7 @@ export function AnnouncementEditor({ id, basePath, listQueryKey }: { id?: string
                   }
                   event.target.value = '';
                 }}
-                className="flex-1 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs file:mr-3 file:rounded-md file:border-0 file:bg-secondary file:px-3 file:py-1 file:text-sm"
+                className="min-w-0 flex-1 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs file:mr-3 file:rounded-md file:border-0 file:bg-secondary file:px-3 file:py-1 file:text-sm"
               />
               <Button onClick={() => uploadAttachments.mutate()} disabled={files.length === 0 || uploadAttachments.isPending}>
                 <Upload className="size-4" />

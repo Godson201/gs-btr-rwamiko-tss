@@ -64,6 +64,7 @@ export class AnnouncementsService {
   }
 
   create(dto: CreateAnnouncementDto, user: AuthenticatedUser) {
+    this.assertPublicPermission(dto.isPublic, user);
     if (!canManageSchoolWidePosts(user)) {
       throw new ForbiddenException('You do not have permission to create posts');
     }
@@ -75,6 +76,7 @@ export class AnnouncementsService {
         targetAudience: dto.targetAudience,
         isPublished: dto.isPublished ?? true,
         isFeatured: dto.isFeatured ?? false,
+        isPublic: dto.isPublic ?? false,
         publishedAt: dto.isPublished ?? true ? new Date() : null,
         expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : undefined,
         authorId: user.id,
@@ -84,6 +86,7 @@ export class AnnouncementsService {
   }
 
   async update(id: string, dto: UpdateAnnouncementDto, user: AuthenticatedUser) {
+    this.assertPublicPermission(dto.isPublic, user);
     const existing = await this.findOne(id, user);
 
     const willPublish = dto.isPublished ?? existing.isPublished;
@@ -98,6 +101,7 @@ export class AnnouncementsService {
         targetAudience: dto.targetAudience,
         isPublished: dto.isPublished,
         isFeatured: dto.isFeatured,
+        isPublic: dto.isPublic,
         publishedAt: isNewlyPublished ? new Date() : undefined,
         expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : undefined,
       },
@@ -241,11 +245,50 @@ export class AnnouncementsService {
     return { success: true };
   }
 
-  private assertCanManage(announcement: { authorId: string }, user: AuthenticatedUser): void {
+  private assertCanManage(announcement: { authorId: string; isPublic?: boolean }, user: AuthenticatedUser): void {
     const isFullAdmin = user.role === Role.ADMIN || user.role === Role.SUPER_ADMIN;
+    if (!isFullAdmin && announcement.isPublic) {
+      throw new ForbiddenException('Only administrators can change public school updates');
+    }
     if (!isFullAdmin && announcement.authorId !== user.id) {
       throw new ForbiddenException('You can only manage your own posts');
     }
+  }
+
+  private assertPublicPermission(isPublic: boolean | undefined, user: AuthenticatedUser) {
+    if (isPublic && user.role !== Role.ADMIN && user.role !== Role.SUPER_ADMIN) {
+      throw new ForbiddenException('Only administrators can publish public school updates');
+    }
+  }
+
+  private publicWhere(): Prisma.AnnouncementWhereInput {
+    return { isPublic: true, isPublished: true, publishedAt: { lte: new Date() },
+      OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] };
+  }
+
+  async findPublic(page: number) {
+    const rows = await this.prisma.announcement.findMany({
+      where: this.publicWhere(), skip: (page - 1) * 6, take: 7,
+      orderBy: [{ publishedAt: 'desc' }, { id: 'desc' }],
+      select: { id: true, title: true, content: true, type: true, publishedAt: true,
+        attachments: { orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+          select: { id: true, type: true, filename: true } } },
+    });
+    return { hasMore: rows.length > 6, items: rows.slice(0, 6).map(row => ({ ...row,
+      attachments: row.attachments.map(file => ({ ...file,
+        url: `/api/public-media/${row.id}/${file.id}` })),
+    })) };
+  }
+
+  async findPublicMedia(id: string, attachmentId: string) {
+    const attachment = await this.prisma.announcementAttachment.findFirst({
+      where: { id: attachmentId, announcementId: id, announcement: { is: this.publicWhere() } },
+      select: { url: true },
+    });
+    if (!attachment || !/^\/uploads\/announcements\/[a-zA-Z0-9_.-]+$/.test(attachment.url)) {
+      throw new NotFoundException('School update media not found');
+    }
+    return attachment.url.split('/').pop()!;
   }
 
   private async getHiddenCategories(): Promise<Set<AnnouncementType>> {

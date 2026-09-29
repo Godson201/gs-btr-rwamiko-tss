@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { Download, FileText, Share2 } from 'lucide-react';
+import { Download, FileText, Play, Share2 } from 'lucide-react';
 import { downloadAttachment, MediaLightbox, shareAttachment } from '@/components/shared/media-lightbox';
 import { cn } from '@/lib/utils';
 
-const UPLOADS_BASE_URL = process.env.NEXT_PUBLIC_UPLOADS_BASE_URL ?? '';
+import { mediaUrl } from '@/lib/media-url';
 
 export interface AttachmentLike {
   id: string;
@@ -51,7 +51,7 @@ export function AttachmentPreview({
   className?: string;
 }) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
-  const src = `${UPLOADS_BASE_URL}${attachment.url}`;
+  const src = mediaUrl(attachment.url);
 
   if (attachment.type === 'IMAGE') {
     return (
@@ -61,12 +61,13 @@ export function AttachmentPreview({
           tabIndex={0}
           onClick={() => setLightboxOpen(true)}
           onKeyDown={(event) => {
-            if (event.key === 'Enter' || event.key === ' ') setLightboxOpen(true);
+            if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setLightboxOpen(true); }
           }}
           className={cn('group relative block w-full cursor-pointer', className)}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
+            loading="lazy"
             src={src}
             alt={attachment.filename}
             className="aspect-video w-full rounded-md object-cover"
@@ -79,17 +80,19 @@ export function AttachmentPreview({
   }
 
   if (attachment.type === 'VIDEO') {
-    return (
-      <div className={cn('group relative w-full', className)}>
-        <video
-          src={src}
-          controls
-          preload="metadata"
-          className="aspect-video w-full rounded-md"
-        />
-        <HoverToolbar src={src} filename={attachment.filename} />
-      </div>
-    );
+    return <>
+      <button type="button" onClick={() => setLightboxOpen(true)}
+        aria-label={`Play video: ${attachment.filename}`}
+        className={cn('group relative block aspect-video w-full overflow-hidden rounded-md bg-slate-900', className)}>
+        <video src={`${src}#t=0.1`} muted playsInline preload="metadata" aria-hidden="true"
+          className="pointer-events-none aspect-video w-full object-cover" />
+        <span className="absolute inset-0 flex items-center justify-center bg-black/15">
+          <span className="flex size-12 items-center justify-center rounded-full bg-white/95 text-slate-900 shadow-lg"><Play className="size-6" /></span>
+        </span>
+        <span className="absolute bottom-2 left-2 rounded bg-black/70 px-2 py-1 text-xs text-white">Play video</span>
+      </button>
+      <MediaLightbox attachment={attachment} open={lightboxOpen} onOpenChange={setLightboxOpen} />
+    </>;
   }
 
   if (attachment.type === 'AUDIO') {

@@ -11,13 +11,13 @@ export function MobileHomeNav() {
   const [open, setOpen] = useState(false);
   return <Dialog open={open} onOpenChange={setOpen}>
     <DialogTrigger asChild>
-      <Button variant="ghost" size="icon" className="shrink-0 border border-white/30 text-white lg:hidden" aria-label="Open navigation"><Menu /></Button>
+      <Button variant="ghost" size="icon" className="shrink-0 border border-white/30 text-white xl:hidden" aria-label="Open navigation"><Menu /></Button>
     </DialogTrigger>
     <DialogContent>
       <DialogTitle>G.S BTR RWAMIKO TSS</DialogTitle>
       <nav aria-label="School navigation" className="grid gap-2">
         {[
-          ['Our story', '/#story'], ['Programmes', '/#programmes'],
+          ['School updates', '/#school-updates'], ['Our story', '/#story'], ['Programmes', '/#programmes'],
           ['Student life', '/#student-life'], ['Apply now', '/admissions'],
           ['Portal login', '/auth/login'],
         ].map(([label, href]) => <Link key={href} href={href} onClick={() => setOpen(false)} className="flex min-h-11 items-center rounded-md px-3 py-2 font-medium hover:bg-accent">{label}</Link>)}

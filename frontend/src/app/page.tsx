@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { SchoolUpdates } from '@/components/shared/school-updates';
 import Link from 'next/link';
 import { ArrowRight, BookOpen, CheckCircle2, Cpu, MapPin, ShieldCheck, Sparkles, Wrench } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -16,7 +17,7 @@ export default function HomePage() {
             <span className="flex size-11 shrink-0 sm:size-14 items-center justify-center rounded-2xl bg-white p-1.5 shadow-lg"><Image src="/school-logo.png" alt="G.S BTR Rwamiko TSS crest" width={62} height={42} className="h-auto w-full" priority /></span>
             <span className="leading-tight"><span className="block text-xs font-black tracking-wide sm:text-sm">G.S BTR RWAMIKO TSS</span><span className="block text-[9px] uppercase tracking-wide sm:text-[10px] sm:tracking-[0.19em] text-cyan-100">Skills • Character • Future</span></span>
           </Link>
-          <nav className="hidden items-center gap-7 text-sm font-semibold text-white/85 lg:flex"><a href="#story" className="transition hover:text-white">Our story</a><a href="#programmes" className="transition hover:text-white">Programmes</a><a href="#student-life" className="transition hover:text-white">Student life</a></nav>
+          <nav className="hidden items-center gap-7 text-sm font-semibold text-white/85 xl:flex"><a href="#school-updates" className="transition hover:text-white">School updates</a><a href="#story" className="transition hover:text-white">Our story</a><a href="#programmes" className="transition hover:text-white">Programmes</a><a href="#student-life" className="transition hover:text-white">Student life</a></nav>
           <div className="hidden items-center gap-3 sm:flex"><LanguageSwitcher compact /><Link href="/admissions" className="text-sm font-bold text-white hover:text-cyan-200">Apply now</Link><Button asChild className="rounded-full bg-cyan-400 text-slate-950 shadow-lg hover:bg-cyan-300"><Link href="/auth/login">Portal login <ArrowRight className="size-4" /></Link></Button></div>
           <MobileHomeNav />
         </div>
@@ -37,6 +38,8 @@ export default function HomePage() {
       </section>
 
       <div className="overflow-hidden bg-cyan-400 py-3 text-slate-950"><div className="school-marquee flex w-max items-center gap-8 whitespace-nowrap text-xs font-black uppercase tracking-[0.22em]">{[...programmes, ...programmes].map((item, index) => <span key={`${item}-${index}`} className="flex items-center gap-8"><span>{item}</span><span aria-hidden>◆</span></span>)}</div></div>
+
+      <SchoolUpdates />
 
       <section id="story" className="relative mx-auto grid max-w-7xl gap-14 px-5 py-24 sm:px-8 lg:grid-cols-[.9fr_1.1fr] lg:items-center lg:py-32">
         <div><p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-700">Our purpose</p><h2 className="mt-4 text-4xl font-black tracking-[-0.04em] sm:text-5xl">A school where potential becomes purpose.</h2><p className="mt-6 text-lg leading-8 text-slate-600">Rooted in Rwamiko and focused on the future, our learning community combines strong academics, technical mastery, discipline, and collaboration.</p>
