@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 // Stream range requests rather than buffering whole videos in server memory.
-export async function proxyMedia(request: NextRequest, target: URL) {
+export async function proxyMedia(request: NextRequest, target: URL, authorization?: string) {
   try {
     const headers = new Headers();
+    if (authorization) headers.set('Authorization', authorization);
     for (const name of ['range', 'if-range']) {
       const value = request.headers.get(name);
       if (value) headers.set(name, value);

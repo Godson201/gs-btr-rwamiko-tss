@@ -548,6 +548,8 @@ model AnnouncementAttachment {
   url            String
   type           AttachmentType
   filename       String
+  data           Bytes?
+  mimeType       String?
   createdAt      DateTime       @default(now())
 
   announcement Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)

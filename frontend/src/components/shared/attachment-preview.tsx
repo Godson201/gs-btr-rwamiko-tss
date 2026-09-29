@@ -51,7 +51,16 @@ export function AttachmentPreview({
   className?: string;
 }) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [mediaError, setMediaError] = useState(false);
   const src = mediaUrl(attachment.url);
+
+  if (mediaError) {
+    return <div className={cn('flex aspect-video w-full flex-col items-center justify-center gap-2 rounded-md border bg-slate-50 p-4 text-center text-sm text-slate-600', className)} role="status">
+      <FileText className="size-7" />
+      <p>{attachment.type === 'VIDEO' ? 'Video unavailable' : 'Photo unavailable'}</p>
+      <p className="text-xs">The school needs to upload this file again.</p>
+    </div>;
+  }
 
   if (attachment.type === 'IMAGE') {
     return (
@@ -67,6 +76,7 @@ export function AttachmentPreview({
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
+            onError={() => setMediaError(true)}
             loading="lazy"
             src={src}
             alt={attachment.filename}
@@ -84,7 +94,7 @@ export function AttachmentPreview({
       <button type="button" onClick={() => setLightboxOpen(true)}
         aria-label={`Play video: ${attachment.filename}`}
         className={cn('group relative block aspect-video w-full overflow-hidden rounded-md bg-slate-900', className)}>
-        <video src={`${src}#t=0.1`} muted playsInline preload="metadata" aria-hidden="true"
+        <video src={`${src}#t=0.1`} muted playsInline preload="metadata" aria-hidden="true" onError={() => setMediaError(true)}
           className="pointer-events-none aspect-video w-full object-cover" />
         <span className="absolute inset-0 flex items-center justify-center bg-black/15">
           <span className="flex size-12 items-center justify-center rounded-full bg-white/95 text-slate-900 shadow-lg"><Play className="size-6" /></span>

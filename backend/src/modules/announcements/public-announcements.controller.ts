@@ -1,8 +1,8 @@
-import { Controller, Get, Header, Param, Query, Res } from '@nestjs/common';
+import { Controller, Get, Header, Param, Query, Req, Res } from '@nestjs/common';
 import { Type } from 'class-transformer';
 import { IsInt, Max, Min } from 'class-validator';
-import { Response } from 'express';
-import { join } from 'path';
+import { Request, Response } from 'express';
+import { sendAnnouncementMedia } from './send-announcement-media';
 import { AnnouncementsService } from './announcements.service';
 
 class PublicUpdatesQuery {
@@ -19,9 +19,8 @@ export class PublicAnnouncementsController {
   list(@Query() query: PublicUpdatesQuery) { return this.announcements.findPublic(query.page); }
 
   @Get(':id/media/:attachmentId')
-  async media(@Param('id') id: string, @Param('attachmentId') attachmentId: string, @Res() response: Response) {
-    const filename = await this.announcements.findPublicMedia(id, attachmentId);
-    response.setHeader('Cache-Control', 'no-store');
-    response.sendFile(filename, { root: join(process.cwd(), 'uploads', 'announcements'), cacheControl: false });
+  async media(@Param('id') id: string, @Param('attachmentId') attachmentId: string, @Req() request: Request, @Res() response: Response) {
+    const media = await this.announcements.findPublicMedia(id, attachmentId);
+    sendAnnouncementMedia(request, response, media);
   }
 }

@@ -1,3 +1,6 @@
+import { readFile, unlink } from 'fs/promises';
+import { join } from 'path';
+import { lookup } from 'mime-types';
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { AnnouncementType, Prisma, ReactionType, Role } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
@@ -23,9 +26,13 @@ const AUTHOR_SELECT = {
   },
 } satisfies { select: Prisma.UserSelect };
 
+const ATTACHMENT_SELECT = {
+  id: true, announcementId: true, url: true, type: true, filename: true, createdAt: true,
+} satisfies Prisma.AnnouncementAttachmentSelect;
+
 const FEED_INCLUDE = {
   author: AUTHOR_SELECT,
-  attachments: true,
+  attachments: { select: ATTACHMENT_SELECT },
   comments: {
     orderBy: { createdAt: 'asc' },
     include: { author: AUTHOR_SELECT },
@@ -176,21 +183,26 @@ export class AnnouncementsService {
     await this.findOne(announcementId, user);
 
     await this.prisma.announcementAttachment.createMany({
-      data: files.map((file) => ({
+      data: await Promise.all(files.map(async (file) => ({
         announcementId,
         url: `/uploads/announcements/${file.filename}`,
         type: attachmentTypeFromMime(file.mimetype),
         filename: file.originalname,
-      })),
+        mimeType: file.mimetype,
+        data: await readFile(join(process.cwd(), 'uploads', 'announcements', file.filename)),
+      }))),
     });
 
-    return this.prisma.announcementAttachment.findMany({ where: { announcementId } });
+    // Only remove temporary copies after the durable database write succeeds.
+    await Promise.all(files.map(file => unlink(join(process.cwd(), 'uploads', 'announcements', file.filename)).catch(() => undefined)));
+    return this.prisma.announcementAttachment.findMany({ where: { announcementId }, select: ATTACHMENT_SELECT });
   }
 
   async removeAttachment(announcementId: string, attachmentId: string, user: AuthenticatedUser) {
     await this.findOne(announcementId, user);
     const attachment = await this.prisma.announcementAttachment.findUnique({
       where: { id: attachmentId },
+      select: ATTACHMENT_SELECT,
     });
     if (!attachment || attachment.announcementId !== announcementId) {
       throw new NotFoundException('Attachment not found');
@@ -283,12 +295,46 @@ export class AnnouncementsService {
   async findPublicMedia(id: string, attachmentId: string) {
     const attachment = await this.prisma.announcementAttachment.findFirst({
       where: { id: attachmentId, announcementId: id, announcement: { is: this.publicWhere() } },
-      select: { url: true },
+      select: { id: true, url: true, data: true, mimeType: true },
     });
     if (!attachment || !/^\/uploads\/announcements\/[a-zA-Z0-9_.-]+$/.test(attachment.url)) {
       throw new NotFoundException('School update media not found');
     }
-    return attachment.url.split('/').pop()!;
+    return this.loadMedia(attachment);
+  }
+
+  async findPortalMedia(filename: string, user: AuthenticatedUser) {
+    if (!/^[a-zA-Z0-9_-][a-zA-Z0-9_.-]*$/.test(filename)) throw new NotFoundException('Media not found');
+    const attachment = await this.prisma.announcementAttachment.findFirst({
+      where: { url: `/uploads/announcements/${filename}` },
+      select: { id: true, url: true, data: true, mimeType: true,
+        announcement: { select: { authorId: true, isPublished: true, expiresAt: true, targetAudience: true, isFeatured: true, type: true } } },
+    });
+    if (!attachment) throw new NotFoundException('Media not found');
+    const post = attachment.announcement;
+    const manager = user.role === Role.ADMIN || user.role === Role.SUPER_ADMIN || post.authorId === user.id;
+    if (!manager && (!post.isPublished || (post.expiresAt && post.expiresAt <= new Date()) ||
+      (!post.isFeatured && !post.targetAudience.includes(user.role)) ||
+      (user.role === Role.PARENT && (await this.getHiddenCategories()).has(post.type)))) {
+      throw new NotFoundException('Media not found');
+    }
+    return this.loadMedia(attachment);
+  }
+
+  private async loadMedia(attachment: { id: string; url: string; data: Uint8Array | null; mimeType: string | null }) {
+    let data = attachment.data;
+    const mimeType = attachment.mimeType || lookup(attachment.url) || 'application/octet-stream';
+    if (!data) {
+      const filename = attachment.url.split('/').pop()!;
+      try {
+        data = await readFile(join(process.cwd(), 'uploads', 'announcements', filename));
+      } catch {
+        throw new NotFoundException('This file is no longer available. An administrator needs to upload it again.');
+      }
+      // Upgrade any surviving legacy files when they are first opened.
+      await this.prisma.announcementAttachment.update({ where: { id: attachment.id }, data: { data: new Uint8Array(data), mimeType }, select: { id: true } });
+    }
+    return { data: Buffer.from(data), mimeType };
   }
 
   private async getHiddenCategories(): Promise<Set<AnnouncementType>> {

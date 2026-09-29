@@ -1,5 +1,7 @@
 import 'reflect-metadata';
 import assert from 'node:assert/strict';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { AddressInfo } from 'node:net';
 import { Global, Module, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
@@ -16,6 +18,7 @@ const users = ['ADMIN', 'SUPER_ADMIN', 'TEACHER'].map(role => ({ id: role, role,
 let saved: Record<string, any> = {};
 let listQuery: Record<string, any> = {};
 let mediaQuery: Record<string, any> = {};
+let mediaRecord: any = null;
 const prisma = {
   user: { findUnique: async ({ where }: any) => users.find(user => user.id === where.id) },
   announcement: {
@@ -32,7 +35,14 @@ const prisma = {
         attachments: [{ id: 'photo', type: 'IMAGE', filename: 'photo.jpg' }] }];
     },
   },
-  announcementAttachment: { findFirst: async (query: any) => { mediaQuery = query; return null; } },
+  announcementAttachment: {
+    createMany: async ({ data }: any) => { mediaRecord = { id: 'stored-media', ...data[0] }; return { count: data.length }; },
+    findMany: async ({ select }: any) => { assert.equal(select.data, undefined); return [Object.fromEntries(Object.entries(mediaRecord).filter(([key]) => select[key]))]; },
+    findFirst: async (query: any) => { mediaQuery = query;
+      if (query.where.announcement && (!saved.isPublic || !saved.isPublished || (saved.expiresAt && saved.expiresAt <= new Date()))) return null;
+      return mediaRecord ? { ...mediaRecord, announcement: saved } : null;
+    },
+  },
 };
 @Global()
 @Module({ providers: [ { provide: PrismaService, useValue: prisma },
@@ -79,6 +89,38 @@ async function main() {
     assert.equal(mediaQuery.where.announcement.is.isPublic, true);
     assert.equal(mediaQuery.where.announcement.is.isPublished, true);
     assert.ok(mediaQuery.where.announcement.is.OR[1].expiresAt.gt instanceof Date);
+    // Upload through the real multipart controller, then serve from stored bytes
+    // after the temporary file has been removed (as on a deployment restart).
+    assert.equal((await request('/announcements', 'ADMIN', 'POST', { ...post, isPublic: true })).status, 201);
+    const upload = new FormData();
+    const bytes = Buffer.from('durable-media-fixture');
+    upload.append('files', new Blob([bytes], { type: 'video/mp4' }), 'clip.mp4');
+    const uploadResponse = await fetch(base + '/announcements/post/attachments', { method: 'POST',
+      headers: { Authorization: `Bearer ${jwt.sign({ sub: 'ADMIN' })}` }, body: upload });
+    assert.equal(uploadResponse.status, 201);
+    const uploadJson = await uploadResponse.json() as any;
+    assert.equal(uploadJson[0].data, undefined, 'Binary content must not leak into JSON feeds');
+    assert.deepEqual(Buffer.from(mediaRecord.data), bytes);
+    assert.equal(existsSync(join(process.cwd(), mediaRecord.url)), false, 'Uploaded temp file was removed');
+    const mediaUrl = base + '/public/school-updates/post/media/stored-media';
+    const fullMedia = await fetch(mediaUrl);
+    assert.equal(fullMedia.status, 200); assert.equal(fullMedia.headers.get('content-type'), 'video/mp4');
+    assert.deepEqual(Buffer.from(await fullMedia.arrayBuffer()), bytes);
+    for (const [range, expected] of [['bytes=0-6', bytes.subarray(0, 7)], ['bytes=8-', bytes.subarray(8)], ['bytes=-7', bytes.subarray(-7)]] as const) {
+      const partial = await fetch(mediaUrl, { headers: { Range: range } });
+      assert.equal(partial.status, 206); assert.deepEqual(Buffer.from(await partial.arrayBuffer()), expected);
+    }
+    assert.equal((await fetch(mediaUrl, { headers: { Range: 'bytes=999-1000' } })).status, 416);
+    const filename = mediaRecord.url.split('/').pop();
+    assert.equal((await request(`/announcements/media/${filename}`)).status, 401);
+    assert.equal((await request(`/announcements/media/${filename}`, 'ADMIN')).status, 200);
+    assert.equal((await request(`/announcements/media/${filename}`, 'TEACHER')).status, 404);
+    saved.isPublic = false;
+    assert.equal((await fetch(mediaUrl)).status, 404, 'Unpublishing revokes the public media endpoint');
+    saved.isPublic = true;
+    saved.expiresAt = new Date('2000-01-01');
+    assert.equal((await fetch(mediaUrl)).status, 404, 'Expired posts do not serve public media');
+    console.log('Durable uploads passed: no filesystem dependency, private bytes, full media, seeking, invalid ranges and access control.');
     console.log('Public update checks passed: guest access, safe projection, visibility constraints, pagination, admin-only publishing and media authorization.');
   } finally { await app.close(); }
 }

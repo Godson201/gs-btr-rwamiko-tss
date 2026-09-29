@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { api } from '@/lib/api';
 import { authorByline, type PostAuthor } from '@/lib/staff-title';
 
-const UPLOADS_BASE_URL = process.env.NEXT_PUBLIC_UPLOADS_BASE_URL ?? '';
+import { mediaUrl } from '@/lib/media-url';
 
 interface FeaturedFeedItem {
   id: string;
@@ -47,7 +47,7 @@ export function FeaturedPostsWidget({ viewAllHref }: { viewAllHref: string }) {
                 {hero ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={`${UPLOADS_BASE_URL}${hero.url}`}
+                    src={mediaUrl(hero.url)}
                     alt=""
                     className="aspect-video w-20 shrink-0 rounded-md object-cover sm:w-full"
                   />

@@ -11,10 +11,14 @@ import {
   Post,
   Put,
   Query,
+  Req,
+  Res,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { Request, Response } from 'express';
+import { sendAnnouncementMedia } from './send-announcement-media';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { Role } from '@prisma/client';
 import { diskStorage } from 'multer';
@@ -61,6 +65,13 @@ export class AnnouncementsController {
   @Roles(Role.ADMIN, Role.SUPER_ADMIN)
   setCategoryVisibility(@Body() dto: SetCategoryVisibilityDto) {
     return this.announcementsService.setCategoryVisibility(dto);
+  }
+
+  @Get('media/:filename')
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.TEACHER, Role.PARENT, Role.STUDENT)
+  async media(@Param('filename') filename: string, @CurrentUser() user: AuthenticatedUser,
+    @Req() request: Request, @Res() response: Response) {
+    sendAnnouncementMedia(request, response, await this.announcementsService.findPortalMedia(filename, user));
   }
 
   @Get(':id')

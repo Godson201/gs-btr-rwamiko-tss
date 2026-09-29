@@ -18,13 +18,19 @@ does not return authors' accounts, target audiences, comments or reactions.
 
 Media links returned by the public feed check current publication eligibility
 before serving a file. The frontend streams media and forwards byte ranges for
-video seeking. The `/uploads` frontend route also fixes existing relative media
-URLs in the portal; it proxies the backend's existing static upload service.
-This feature does not change the storage or access policy of that static service.
+video seeking. Announcement uploads are stored as binary data in PostgreSQL, alongside their
+metadata, so they survive web-service restarts and deployments. Upload size limits
+still apply; these files count toward database storage usage. Media is excluded
+from announcement JSON responses. The `/uploads/announcements` frontend route
+forwards the signed-in session to an authorized backend media endpoint.
+Other upload categories continue to use the existing static upload service.
 
 Deploy the Prisma schema before the updated backend. Render's existing startup
 command applies it with `prisma db push`; the new `isPublic` field defaults to
-false. Existing Render free-tier upload persistence limitations still apply.
+false. The nullable `data` and `mimeType` attachment columns store new uploads.
+Surviving old announcement files are copied into the database when opened. Files
+that were already lost must be uploaded again; metadata alone cannot restore them.
+Other upload categories retain their existing storage limitations.
 
 Run `npm run test:public-updates` in `backend` for isolated HTTP checks covering
 guest access, admin-only publication, safe field selection, visibility filters,
