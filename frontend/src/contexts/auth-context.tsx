@@ -64,17 +64,32 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-async function postSession(url: string, body: unknown) {
+async function postSession(url: string, body: unknown): Promise<{ user: CurrentUser }> {
   const response = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data?.message ?? 'Something went wrong. Please try again.');
+  const responseText = await response.text();
+  let data: Record<string, unknown> = {};
+  if (responseText) {
+    try {
+      data = JSON.parse(responseText) as Record<string, unknown>;
+    } catch {
+      data = {};
+    }
   }
-  return data;
+  if (!response.ok) {
+    throw new Error(
+      typeof data.message === 'string'
+        ? data.message
+        : 'The service is temporarily unavailable. Please try again.',
+    );
+  }
+  if (!data.user || typeof data.user !== 'object') {
+    throw new Error('The service returned an invalid response. Please try again.');
+  }
+  return { user: data.user as CurrentUser };
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {

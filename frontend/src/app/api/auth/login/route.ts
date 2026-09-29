@@ -7,16 +7,39 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: 'Email and password are required' }, { status: 400 });
   }
 
-  const backendResponse = await fetch(`${process.env.API_URL}/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: body.email, password: body.password }),
-  });
+  let backendResponse: Response;
+  try {
+    backendResponse = await fetch(`${process.env.API_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: body.email, password: body.password }),
+    });
+  } catch {
+    return NextResponse.json(
+      { message: 'The login service is temporarily unavailable. Please try again shortly.' },
+      { status: 503 },
+    );
+  }
 
-  const data = await backendResponse.json().catch(() => null);
+  const responseText = await backendResponse.text();
+  let data: Record<string, unknown> | null = null;
+  if (responseText) {
+    try {
+      data = JSON.parse(responseText) as Record<string, unknown>;
+    } catch {
+      data = null;
+    }
+  }
 
   if (!backendResponse.ok) {
     return NextResponse.json(data ?? { message: 'Login failed' }, { status: backendResponse.status });
+  }
+
+  if (!data?.user || typeof data.accessToken !== 'string') {
+    return NextResponse.json(
+      { message: 'The login service returned an invalid response. Please try again shortly.' },
+      { status: 502 },
+    );
   }
 
   const response = NextResponse.json({ user: data.user });
