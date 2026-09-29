@@ -1,7 +1,9 @@
 'use client';
 
+import { useState } from 'react';
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import type { LucideIcon } from 'lucide-react';
-import { LogOut, User } from 'lucide-react';
+import { LogOut, Menu, User } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -50,14 +52,15 @@ export function PortalLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const [menuOpen, setMenuOpen] = useState(false);
   const { user, logout } = useAuth();
   const { t } = useLanguage();
   const portalKey: TranslationKey = title === 'Admin Portal' ? 'portal.admin' : title === 'Teacher Portal' ? 'portal.teacher' : 'portal.parent';
   const messageKey: TranslationKey = title === 'Admin Portal' ? 'message.admin' : title === 'Teacher Portal' ? 'message.teacher' : 'message.parent';
 
   return (
-    <div className="grid min-h-screen grid-cols-[76px_minmax(0,1fr)] lg:grid-cols-[240px_minmax(0,1fr)]">
-      <aside className="sticky top-0 flex h-screen flex-col overflow-hidden border-r bg-card">
+    <div className="grid min-h-dvh grid-cols-[minmax(0,1fr)] md:grid-cols-[76px_minmax(0,1fr)] lg:grid-cols-[240px_minmax(0,1fr)]">
+      <aside className="sticky top-0 hidden h-dvh md:flex flex-col overflow-hidden border-r bg-card">
         <div className="flex h-16 items-center justify-center border-b px-2 lg:justify-start lg:px-4">
           <Link href="/" aria-label="G.S BTR RWAMIKO TSS home">
             <SchoolBrand compact />
@@ -72,8 +75,11 @@ export function PortalLayout({
                 key={item.href}
                 href={item.disabled ? '#' : item.href}
                 aria-disabled={item.disabled}
+                aria-label={navTranslationKeys[item.label] ? t(navTranslationKeys[item.label]) : item.label}
+                aria-current={isActive ? 'page' : undefined}
+                onClick={(event) => { if (item.disabled) event.preventDefault(); }}
                 className={cn(
-                  'flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors lg:justify-start',
+                  'flex items-center justify-center gap-2 min-h-11 rounded-md px-3 py-2 text-sm font-medium transition-colors lg:justify-start',
                   item.disabled
                     ? 'cursor-not-allowed text-muted-foreground/50'
                     : isActive
@@ -88,14 +94,33 @@ export function PortalLayout({
           })}
         </nav>
       </aside>
-      <div className="flex flex-col">
-        <header className="flex h-16 items-center justify-between border-b bg-background px-3 sm:px-6">
-          <h1 className="text-lg font-semibold">{t(portalKey)}</h1>
-          <div className="flex items-center gap-3"><LanguageSwitcher compact /><DropdownMenu>
+      <div className="flex min-w-0 flex-col">
+        <header className="sticky top-0 z-40 flex min-h-16 flex-wrap items-center justify-between gap-2 border-b bg-background px-3 py-2 sm:px-6">
+          <div className="flex min-w-0 items-center gap-2">
+            <Dialog open={menuOpen} onOpenChange={setMenuOpen}>
+              <DialogTrigger asChild><Button variant="outline" size="icon" className="md:hidden" aria-label="Open navigation"><Menu /></Button></DialogTrigger>
+              <DialogContent className="md:hidden">
+                <DialogTitle>{t(portalKey)}</DialogTitle>
+                <nav aria-label="Portal navigation" className="grid gap-1">
+                  {navItems.map((item) => {
+                    const Icon = item.icon;
+                    return <Link key={item.href} href={item.disabled ? '#' : item.href}
+                      aria-disabled={item.disabled} aria-current={pathname.startsWith(item.href) ? 'page' : undefined}
+                      onClick={(event) => { if (item.disabled) event.preventDefault(); else setMenuOpen(false); }}
+                      className={cn('flex min-h-11 items-center gap-3 rounded-md px-3 py-2 text-sm font-medium', item.disabled ? 'text-muted-foreground/50' : pathname.startsWith(item.href) ? 'bg-primary text-primary-foreground' : 'hover:bg-accent')}>
+                      <Icon className="size-5 shrink-0" />{navTranslationKeys[item.label] ? t(navTranslationKeys[item.label]) : item.label}
+                    </Link>;
+                  })}
+                </nav>
+              </DialogContent>
+            </Dialog>
+            <h1 className="text-base font-semibold sm:text-lg">{t(portalKey)}</h1>
+          </div>
+          <div className="flex items-center gap-2"><LanguageSwitcher compact /><DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-auto py-1 pl-1.5">
+              <Button variant="outline" size="sm" className="min-h-11 px-2 sm:pl-1.5" aria-label={user ? `${user.firstName} ${user.lastName}: account menu` : t('account')}>
                 <UserAvatar avatar={user?.avatar} firstName={user?.firstName} lastName={user?.lastName} className="size-6" />
-                {user ? `${user.firstName} ${user.lastName}` : t('account')}
+                <span className="hidden max-w-40 truncate sm:inline">{user ? `${user.firstName} ${user.lastName}` : t('account')}</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -115,13 +140,13 @@ export function PortalLayout({
           </DropdownMenu></div>
         </header>
         <main className="relative min-w-0 flex-1 overflow-hidden bg-slate-100 p-3 sm:p-6 lg:p-8">
-          <Image src={backgroundImage} alt="" fill sizes="calc(100vw - 240px)" className="pointer-events-none object-cover object-center opacity-35" priority />
+          <Image src={backgroundImage} alt="" fill sizes="(min-width: 1024px) calc(100vw - 240px), (min-width: 768px) calc(100vw - 76px), 100vw" className="pointer-events-none object-cover object-center opacity-35" priority />
           <div className="pointer-events-none absolute inset-0 bg-linear-to-br from-white/30 via-transparent to-cyan-50/35" />
           <div className="relative z-10 mb-5 flex items-center gap-3 rounded-2xl border border-white bg-white px-5 py-3 shadow-xl">
             <span className="h-8 w-1 rounded-full bg-cyan-500" />
             <p className="text-sm font-semibold italic text-slate-700">“{t(messageKey) || message}”</p>
           </div>
-          <div className="relative z-10 rounded-[2rem] border border-white bg-white p-5 shadow-2xl sm:p-6">{children}</div>
+          <div className="relative z-10 min-w-0 rounded-2xl border border-white bg-white p-3 sm:rounded-[2rem] shadow-2xl sm:p-6">{children}</div>
         </main>
       </div>
     </div>

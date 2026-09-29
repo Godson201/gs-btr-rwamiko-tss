@@ -9,7 +9,7 @@ async function proxy(request: NextRequest, path: string[]) {
   const targetUrl = new URL(`${process.env.API_URL}/${path.join('/')}`);
   targetUrl.search = request.nextUrl.search;
 
-  const headers: HeadersInit = {};
+  const headers: HeadersInit = { 'User-Agent': request.headers.get('user-agent') ?? '' };
   const incomingContentType = request.headers.get('content-type');
   if (incomingContentType) {
     headers['Content-Type'] = incomingContentType;

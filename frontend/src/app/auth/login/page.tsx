@@ -72,7 +72,7 @@ export default function LoginPage() {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <div className="flex items-center justify-between">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
                         <FormLabel>Password</FormLabel>
                         <Link
                           href="/auth/forgot-password"

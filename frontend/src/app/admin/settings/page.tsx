@@ -46,7 +46,7 @@ export default function AdminSettingsPage() {
         <CardContent className="space-y-4">
           {isLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
           {ANNOUNCEMENT_CATEGORIES.map((category) => (
-            <div key={category.value} className="flex items-center justify-between">
+            <div key={category.value} className="flex flex-wrap items-center justify-between gap-3">
               <span className="text-sm">{category.label}</span>
               <Switch
                 checked={data?.[category.value] ?? true}

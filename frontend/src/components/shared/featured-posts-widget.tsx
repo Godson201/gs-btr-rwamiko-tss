@@ -28,7 +28,7 @@ export function FeaturedPostsWidget({ viewAllHref }: { viewAllHref: string }) {
   return (
     <Card>
       <CardContent className="space-y-3 p-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <h3 className="text-sm font-semibold">Featured Posts</h3>
           <Link href={viewAllHref} className="text-xs text-primary hover:underline">
             View all

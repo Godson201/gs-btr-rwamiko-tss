@@ -130,7 +130,7 @@ export default function AdminClassesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Classes</h2>
           <p className="text-sm text-muted-foreground">Manage class groups and capacity</p>
@@ -151,7 +151,7 @@ export default function AdminClassesPage() {
                 onSubmit={form.handleSubmit((values) => createClass.mutate(values))}
                 className="space-y-4"
               >
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <FormField
                     control={form.control}
                     name="name"
@@ -179,7 +179,7 @@ export default function AdminClassesPage() {
                     )}
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <FormField
                     control={form.control}
                     name="section"

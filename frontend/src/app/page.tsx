@@ -1,7 +1,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, BookOpen, CheckCircle2, Cpu, MapPin, Menu, ShieldCheck, Sparkles, Wrench } from 'lucide-react';
+import { ArrowRight, BookOpen, CheckCircle2, Cpu, MapPin, ShieldCheck, Sparkles, Wrench } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { MobileHomeNav } from '@/components/layout/mobile-home-nav';
 import { LanguageSwitcher } from '@/components/shared/language-switcher';
 
 const programmes = ['Computer Systems & Architecture', 'Software Development', 'Network & Internet Technology', 'Electrical Technology', 'Electronics & Telecommunication', 'Building Construction', 'Professional Accounting'];
@@ -11,24 +12,24 @@ export default function HomePage() {
     <main className="min-h-screen overflow-hidden bg-[#f7faf9] text-slate-950">
       <header className="absolute inset-x-0 top-0 z-30 border-b border-white/15 bg-slate-950/20 backdrop-blur-md">
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 sm:px-8">
-          <Link href="/" className="flex items-center gap-3 text-white" aria-label="School home">
-            <span className="flex size-14 items-center justify-center rounded-2xl bg-white p-1.5 shadow-lg"><Image src="/school-logo.png" alt="G.S BTR Rwamiko TSS crest" width={62} height={42} className="h-auto w-full" priority /></span>
-            <span className="leading-tight"><span className="block text-sm font-black tracking-wide">G.S BTR RWAMIKO TSS</span><span className="block text-[10px] uppercase tracking-[0.19em] text-cyan-100">Skills • Character • Future</span></span>
+          <Link href="/" className="flex items-center gap-2 text-white" aria-label="School home">
+            <span className="flex size-11 shrink-0 sm:size-14 items-center justify-center rounded-2xl bg-white p-1.5 shadow-lg"><Image src="/school-logo.png" alt="G.S BTR Rwamiko TSS crest" width={62} height={42} className="h-auto w-full" priority /></span>
+            <span className="leading-tight"><span className="block text-xs font-black tracking-wide sm:text-sm">G.S BTR RWAMIKO TSS</span><span className="block text-[9px] uppercase tracking-wide sm:text-[10px] sm:tracking-[0.19em] text-cyan-100">Skills • Character • Future</span></span>
           </Link>
-          <nav className="hidden items-center gap-7 text-sm font-semibold text-white/85 md:flex"><a href="#story" className="transition hover:text-white">Our story</a><a href="#programmes" className="transition hover:text-white">Programmes</a><a href="#student-life" className="transition hover:text-white">Student life</a></nav>
+          <nav className="hidden items-center gap-7 text-sm font-semibold text-white/85 lg:flex"><a href="#story" className="transition hover:text-white">Our story</a><a href="#programmes" className="transition hover:text-white">Programmes</a><a href="#student-life" className="transition hover:text-white">Student life</a></nav>
           <div className="hidden items-center gap-3 sm:flex"><LanguageSwitcher compact /><Link href="/admissions" className="text-sm font-bold text-white hover:text-cyan-200">Apply now</Link><Button asChild className="rounded-full bg-cyan-400 text-slate-950 shadow-lg hover:bg-cyan-300"><Link href="/auth/login">Portal login <ArrowRight className="size-4" /></Link></Button></div>
-          <Link href="/auth/login" className="rounded-full border border-white/30 p-2 text-white sm:hidden" aria-label="Open portal"><Menu className="size-5" /></Link>
+          <MobileHomeNav />
         </div>
       </header>
 
-      <section className="relative flex min-h-[760px] items-end overflow-hidden bg-slate-950 lg:min-h-screen">
+      <section className="relative flex min-h-[640px] sm:min-h-[760px] items-end overflow-hidden bg-slate-950 lg:min-h-screen">
         <Image src="/students-campus.png" alt="Students walking together on a green school campus" fill className="object-cover object-center" priority sizes="100vw" />
         <div className="absolute inset-0 bg-linear-to-r from-slate-950 via-slate-950/75 to-slate-950/10" /><div className="absolute inset-0 bg-linear-to-t from-slate-950 via-transparent to-slate-950/20" />
         <div className="school-orb school-orb-one" /><div className="school-orb school-orb-two" /><div className="school-grid absolute inset-0 opacity-20" />
         <div className="relative z-10 mx-auto w-full max-w-7xl px-5 pb-20 pt-36 sm:px-8 lg:pb-28">
           <div className="max-w-3xl">
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-cyan-300/30 bg-cyan-300/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-cyan-200 backdrop-blur"><Sparkles className="size-4" /> Excellent education, practical skills</div>
-            <h1 className="text-balance text-5xl font-black leading-[0.95] tracking-[-0.045em] text-white sm:text-6xl lg:text-8xl">Learning today.<span className="mt-2 block text-cyan-300">Building tomorrow.</span></h1>
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-cyan-300/30 bg-cyan-300/10 px-4 py-2 text-[10px] font-bold uppercase tracking-wide sm:text-xs sm:tracking-[0.18em] text-cyan-200 backdrop-blur"><Sparkles className="size-4" /> Excellent education, practical skills</div>
+            <h1 className="text-balance text-4xl font-black leading-[0.95] tracking-[-0.045em] text-white sm:text-6xl lg:text-8xl">Learning today.<span className="mt-2 block text-cyan-300">Building tomorrow.</span></h1>
             <p className="mt-7 max-w-2xl text-lg leading-8 text-slate-200 sm:text-xl">At G.S BTR Rwamiko TSS, knowledge meets practice. We prepare young people to think boldly, master real skills, and create a prosperous Rwanda.</p>
             <div className="mt-9 flex flex-wrap gap-3"><Button asChild size="lg" className="h-13 rounded-full bg-cyan-400 px-7 font-bold text-slate-950 hover:bg-cyan-300"><Link href="/admissions">Apply for admission <ArrowRight className="size-4" /></Link></Button><Button asChild size="lg" variant="outline" className="h-13 rounded-full border-white/30 bg-white/5 px-7 text-white backdrop-blur hover:bg-white/15 hover:text-white"><Link href="/auth/login">Access school portal</Link></Button></div>
           </div>

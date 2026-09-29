@@ -681,17 +681,26 @@ model MessageAttachment {
 // ==================== System ====================
 
 model AuditLog {
-  id        String   @id @default(cuid())
-  userId    String
-  action    String
-  details   String?
-  ipAddress String?
-  userAgent String?
-  createdAt DateTime @default(now())
+  id         String   @id @default(cuid())
+  userId     String?
+  actorName  String?
+  actorEmail String?
+  actorRole  String?
+  action     String
+  method     String?
+  resource   String?
+  resourceId String?
+  statusCode Int?
+  details    String?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
 
-  user User @relation(fields: [userId], references: [id])
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([userId])
+  @@index([createdAt, id])
+  @@index([resource, createdAt])
 }
 
 model SystemSetting {

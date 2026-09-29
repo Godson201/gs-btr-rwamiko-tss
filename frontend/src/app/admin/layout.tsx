@@ -1,10 +1,11 @@
 'use client';
 
-import { BookMarked, ClipboardList, GraduationCap, LayoutDashboard, Megaphone, MessageCircle, School, Settings, UserCheck, Users } from 'lucide-react';
+import { ClipboardClock, BookMarked, ClipboardList, GraduationCap, LayoutDashboard, Megaphone, MessageCircle, School, Settings, UserCheck, Users } from 'lucide-react';
 import { PortalLayout, type PortalNavItem } from '@/components/shared/portal-layout';
 
 const navItems: PortalNavItem[] = [
   { label: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
+  { label: 'Activity Logs', href: '/admin/activity-logs', icon: ClipboardClock },
   { label: 'Students', href: '/admin/students', icon: GraduationCap },
   { label: 'Teachers', href: '/admin/teachers', icon: Users },
   { label: 'Classes', href: '/admin/classes', icon: School },

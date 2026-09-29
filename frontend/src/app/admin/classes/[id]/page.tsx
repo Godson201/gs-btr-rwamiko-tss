@@ -190,7 +190,7 @@ export default function ClassDetailPage({ params }: { params: Promise<{ id: stri
           <ArrowLeft className="size-4" />
           Back to classes
         </Link>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-2xl font-bold tracking-tight">
               {schoolClass ? `${schoolClass.name}${schoolClass.section ? ` - ${schoolClass.section}` : ''}` : '…'}

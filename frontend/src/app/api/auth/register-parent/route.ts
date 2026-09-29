@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
 
   const backendResponse = await fetch(`${process.env.API_URL}/auth/register-parent`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'User-Agent': request.headers.get('user-agent') ?? '' },
     body: JSON.stringify({
       email: body.email,
       password: body.password,

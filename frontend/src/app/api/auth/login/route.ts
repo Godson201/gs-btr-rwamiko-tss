@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
   try {
     backendResponse = await fetch(`${process.env.API_URL}/auth/login`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'User-Agent': request.headers.get('user-agent') ?? '' },
       body: JSON.stringify({ email: body.email, password: body.password }),
     });
   } catch {

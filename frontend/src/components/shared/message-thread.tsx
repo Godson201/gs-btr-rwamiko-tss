@@ -78,7 +78,7 @@ export function MessageThread({
   }
 
   return (
-    <div className="flex h-[calc(100vh-220px)] flex-col rounded-md border">
+    <div className="flex h-[calc(100dvh-220px)] min-h-80 min-w-0 flex-col rounded-md border">
       <div className="flex-1 space-y-3 overflow-y-auto p-4">
         {data?.messages.length === 0 && (
           <p className="text-center text-sm text-muted-foreground">No messages yet. Say hello!</p>
@@ -89,7 +89,7 @@ export function MessageThread({
             <div key={message.id} className={cn('flex', isMine ? 'justify-end' : 'justify-start')}>
               <div
                 className={cn(
-                  'max-w-[75%] space-y-2 rounded-lg px-3 py-2 text-sm',
+                  'min-w-0 max-w-[90%] wrap-anywhere sm:max-w-[75%] space-y-2 rounded-lg px-3 py-2 text-sm',
                   isMine ? 'bg-primary text-primary-foreground' : 'bg-secondary',
                 )}
               >
@@ -132,7 +132,7 @@ export function MessageThread({
             ))}
           </div>
         )}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <input
             ref={fileInputRef}
             type="file"
@@ -174,6 +174,8 @@ export function MessageThread({
             }}
           />
           <Input
+            className="order-first w-full sm:order-none sm:w-auto sm:flex-1"
+            aria-label="Message"
             value={content}
             onChange={(event) => setContent(event.target.value)}
             placeholder="Type a message…"

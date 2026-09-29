@@ -163,7 +163,7 @@ export default function SignupPage() {
               >
                 {step === 1 && (
                   <>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <FormField
                         control={form.control}
                         name="firstName"
@@ -220,7 +220,7 @@ export default function SignupPage() {
                         </FormItem>
                       )}
                     />
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <FormField
                         control={form.control}
                         name="password"
@@ -253,7 +253,7 @@ export default function SignupPage() {
 
                 {step === 2 && (
                   <>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <FormField
                         control={form.control}
                         name="nickname"
@@ -294,7 +294,7 @@ export default function SignupPage() {
                         </FormItem>
                       )}
                     />
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <FormField
                         control={form.control}
                         name="jobTitle"
@@ -356,7 +356,7 @@ export default function SignupPage() {
                       Enter your child&apos;s admission number and last name exactly as they appear on school
                       documents so we can confirm you&apos;re their parent or guardian.
                     </p>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div className="space-y-1.5">
                         <label className="text-sm font-medium">Admission number</label>
                         <Input value={admissionNo} onChange={(e) => setAdmissionNo(e.target.value)} />
@@ -401,7 +401,7 @@ export default function SignupPage() {
 
                 {serverError && <p className="text-sm text-destructive">{serverError}</p>}
 
-                <div className="flex items-center justify-between gap-3 pt-2">
+                <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
                   {step > 1 ? (
                     <Button type="button" variant="ghost" onClick={goBack}>
                       Back

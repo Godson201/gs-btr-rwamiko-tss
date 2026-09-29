@@ -48,7 +48,7 @@ export default function AdminConversationPage({ params }: { params: Promise<{ id
         Back to messages
       </Link>
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-xl font-bold tracking-tight">
             {data ? `${data.user.firstName} ${data.user.lastName}` : 'Conversation'}

@@ -18,6 +18,7 @@ import { MailModule } from './modules/mail/mail.module';
 import { MessagesModule } from './modules/messages/messages.module';
 import { ModulesModule } from './modules/modules/modules.module';
 import { ParentsModule } from './modules/parents/parents.module';
+import { AuditModule } from './modules/audit/audit.module';
 import { AppController } from './app.controller';
 import { AdmissionsModule } from './modules/admissions/admissions.module';
 
@@ -47,6 +48,7 @@ import { AdmissionsModule } from './modules/admissions/admissions.module';
     ModulesModule,
     ParentsModule,
     AdmissionsModule,
+    AuditModule,
   ],
   controllers: [AppController],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],

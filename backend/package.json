@@ -4,6 +4,7 @@
   "description": "Backend API for G.S BTR RWAMIKO TSS",
   "scripts": {
     "build": "nest build",
+    "test:audit": "ts-node test/audit.integration.ts",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
