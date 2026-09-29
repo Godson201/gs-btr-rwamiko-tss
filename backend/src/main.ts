@@ -6,6 +6,7 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import compression from 'compression';
 import helmet from 'helmet';
+import type { Request, Response } from 'express';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -14,6 +15,11 @@ async function bootstrap() {
 
   app.use(helmet());
   app.use(compression());
+  // Conversation media must pass through the authenticated media endpoint,
+  // including legacy files and temporary files waiting to be saved.
+  app.use('/uploads/messages', (_request: Request, response: Response) => {
+    response.status(404).end();
+  });
   // helmet defaults Cross-Origin-Resource-Policy to "same-origin", which makes browsers block
   // <img>/<video>/<audio> loaded from the frontend's origin (a different port = different origin)
   // with net::ERR_BLOCKED_BY_RESPONSE.NotSameOrigin. Uploaded media is meant to be embedded

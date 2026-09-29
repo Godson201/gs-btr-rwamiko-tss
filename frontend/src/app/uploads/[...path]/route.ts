@@ -8,9 +8,9 @@ export async function GET(request: NextRequest, context: { params: Promise<{ pat
   if (!path.length || path.some(part => !/^[a-zA-Z0-9_-][a-zA-Z0-9_.-]*$/.test(part))) {
     return NextResponse.json({ message: 'Media not found' }, { status: 404 });
   }
-  if (path.length === 2 && path[0] === 'announcements') {
+  if (path.length === 2 && ['announcements', 'messages'].includes(path[0])) {
     const token = (await cookies()).get(SESSION_COOKIE)?.value;
-    return proxyMedia(request, new URL(`${process.env.API_URL}/announcements/media/${path[1]}`), token ? `Bearer ${token}` : undefined);
+    return proxyMedia(request, new URL(`${process.env.API_URL}/${path[0]}/media/${path[1]}`), token ? `Bearer ${token}` : undefined);
   }
   return proxyMedia(request, new URL(`/uploads/${path.join('/')}`, process.env.API_URL));
 }

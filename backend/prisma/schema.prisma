@@ -674,6 +674,8 @@ model MessageAttachment {
   url       String
   type      AttachmentType
   filename  String
+  mimeType  String?
+  data      Bytes?
   createdAt DateTime       @default(now())
 
   message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)

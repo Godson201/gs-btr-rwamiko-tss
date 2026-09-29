@@ -2,7 +2,7 @@ import { Controller, Get, Header, Param, Query, Req, Res } from '@nestjs/common'
 import { Type } from 'class-transformer';
 import { IsInt, Max, Min } from 'class-validator';
 import { Request, Response } from 'express';
-import { sendAnnouncementMedia } from './send-announcement-media';
+import { sendMedia } from '../../utils/send-media';
 import { AnnouncementsService } from './announcements.service';
 
 class PublicUpdatesQuery {
@@ -21,6 +21,6 @@ export class PublicAnnouncementsController {
   @Get(':id/media/:attachmentId')
   async media(@Param('id') id: string, @Param('attachmentId') attachmentId: string, @Req() request: Request, @Res() response: Response) {
     const media = await this.announcements.findPublicMedia(id, attachmentId);
-    sendAnnouncementMedia(request, response, media);
+    sendMedia(request, response, media);
   }
 }

@@ -8,6 +8,8 @@ import {
   Param,
   Patch,
   Post,
+  Req,
+  Res,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
@@ -15,6 +17,8 @@ import {
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { Role } from '@prisma/client';
 import { diskStorage } from 'multer';
+import type { Request, Response } from 'express';
+import { sendMedia } from '../../utils/send-media';
 import { CurrentUser } from '../../decorators/current-user.decorator';
 import { Roles } from '../../decorators/roles.decorator';
 import { JwtAuthGuard } from '../../guards/jwt-auth.guard';
@@ -55,6 +59,13 @@ const messageFilesInterceptor = FilesInterceptor('files', 10, {
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class MessagesController {
   constructor(private readonly messagesService: MessagesService) {}
+
+  @Get('media/:filename')
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.PARENT, Role.TEACHER)
+  async media(@Param('filename') filename: string, @CurrentUser() user: AuthenticatedUser,
+    @Req() request: Request, @Res() response: Response) {
+    return sendMedia(request, response, await this.messagesService.findMedia(filename, user));
+  }
 
   @Get('my-conversation')
   @Roles(Role.PARENT, Role.TEACHER)

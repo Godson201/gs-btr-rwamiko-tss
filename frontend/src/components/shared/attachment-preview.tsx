@@ -16,7 +16,7 @@ export interface AttachmentLike {
 
 function HoverToolbar({ src, filename }: { src: string; filename: string }) {
   return (
-    <div className="absolute top-1 right-1 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+    <div className="absolute top-1 right-1 flex gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
       <button
         type="button"
         onClick={(event) => {
@@ -57,8 +57,12 @@ export function AttachmentPreview({
   if (mediaError) {
     return <div className={cn('flex aspect-video w-full flex-col items-center justify-center gap-2 rounded-md border bg-slate-50 p-4 text-center text-sm text-slate-600', className)} role="status">
       <FileText className="size-7" />
-      <p>{attachment.type === 'VIDEO' ? 'Video unavailable' : 'Photo unavailable'}</p>
-      <p className="text-xs">The school needs to upload this file again.</p>
+      <p>{attachment.type === 'VIDEO' ? 'Video unavailable' : attachment.type === 'AUDIO' ? 'Audio unavailable' : 'Photo unavailable'}</p>
+      <p className="text-xs">Try again or download the file. If it is missing, the uploader will need to upload it again.</p>
+      <div className="flex gap-3">
+        <button type="button" className="underline" onClick={() => setMediaError(false)}>Try again</button>
+        <button type="button" className="underline" onClick={() => downloadAttachment(src, attachment.filename)}>Download</button>
+      </div>
     </div>;
   }
 
@@ -108,7 +112,7 @@ export function AttachmentPreview({
   if (attachment.type === 'AUDIO') {
     return (
       <div className={cn('flex w-full items-center gap-2', className)}>
-        <audio src={src} controls className="w-full" />
+        <audio src={src} controls preload="metadata" onError={() => setMediaError(true)} className="min-w-0 w-full" />
         <button
           type="button"
           onClick={() => shareAttachment(src, attachment.filename)}

@@ -26,7 +26,7 @@ export async function downloadAttachment(src: string, filename: string) {
     link.remove();
     URL.revokeObjectURL(objectUrl);
   } catch {
-    window.open(src, '_blank');
+    toast.error('The file could not be downloaded. Try again; if it is missing, ask the uploader to upload it again.');
   }
 }
 
@@ -68,6 +68,7 @@ export function MediaLightbox({
         <img onError={() => setMediaError(true)} src={src} alt={attachment.filename} className="max-h-[65dvh] w-full rounded-md object-contain" />
       ) : <video onError={() => setMediaError(true)} src={src} controls autoPlay playsInline preload="metadata" className="max-h-[65dvh] w-full rounded-md" />)}
       <div className="flex flex-wrap items-center gap-2">
+        {mediaError && <Button type="button" variant="secondary" size="sm" onClick={() => setMediaError(false)}>Try again</Button>}
         <Button type="button" variant="secondary" size="sm" onClick={() => downloadAttachment(src, attachment.filename)}><Download />Download</Button>
         <Button type="button" variant="secondary" size="sm" onClick={() => shareAttachment(src, attachment.filename)}><Share2 />Share</Button>
       </div>

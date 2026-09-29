@@ -1,5 +1,9 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { ConversationStatus, Prisma } from '@prisma/client';
+import { ConversationStatus, Prisma, Role } from '@prisma/client';
+import { readFile, unlink } from 'node:fs/promises';
+import { join } from 'node:path';
+import { lookup } from 'mime-types';
+import { AuthenticatedUser } from '../auth/auth.types';
 import { PrismaService } from '../../database/prisma.service';
 import { attachmentTypeFromMime } from '../../utils/media-attachments';
 import type { UploadedMediaFile } from '../../utils/uploaded-file.type';
@@ -11,12 +15,33 @@ const SENDER_SELECT = {
 
 const MESSAGE_INCLUDE = {
   sender: SENDER_SELECT,
-  attachments: true,
+  attachments: { select: { id: true, messageId: true, url: true, type: true, filename: true, createdAt: true } },
 } satisfies Prisma.MessageInclude;
 
 @Injectable()
 export class MessagesService {
   constructor(private readonly prisma: PrismaService) {}
+
+  async findMedia(filename: string, user: AuthenticatedUser) {
+    if (!/^[a-zA-Z0-9_-][a-zA-Z0-9_.-]*$/.test(filename)) throw new NotFoundException('Media not found');
+    const attachment = await this.prisma.messageAttachment.findFirst({
+      where: { url: `/uploads/messages/${filename}` },
+      select: { id: true, data: true, mimeType: true,
+        message: { select: { conversation: { select: { userId: true } } } } },
+    });
+    const admin = user.portalAccess.some(role => role === Role.ADMIN || role === Role.SUPER_ADMIN);
+    if (!attachment || (!admin && attachment.message.conversation.userId !== user.id)) {
+      throw new NotFoundException('Media not found');
+    }
+    let data = attachment.data;
+    const mimeType = attachment.mimeType || lookup(filename) || 'application/octet-stream';
+    if (!data) {
+      try { data = new Uint8Array(await readFile(join(process.cwd(), 'uploads', 'messages', filename))); }
+      catch { throw new NotFoundException('This file is no longer available. Please upload it again.'); }
+      await this.prisma.messageAttachment.update({ where: { id: attachment.id }, data: { data, mimeType }, select: { id: true } });
+    }
+    return { data: Buffer.from(data), mimeType };
+  }
 
   async getOrCreateConversation(userId: string) {
     const existing = await this.prisma.conversation.findUnique({ where: { userId } });
@@ -125,26 +150,25 @@ export class MessagesService {
     dto: SendMessageDto,
     files: UploadedMediaFile[],
   ) {
+    const attachments = await Promise.all(files.map(async (file) => ({
+      url: `/uploads/messages/${file.filename}`,
+      type: attachmentTypeFromMime(file.mimetype),
+      filename: file.originalname,
+      mimeType: file.mimetype,
+      data: new Uint8Array(await readFile(join(process.cwd(), 'uploads', 'messages', file.filename))),
+    })));
     const message = await this.prisma.message.create({
-      data: { conversationId, senderId, content: dto.content?.trim() || null },
+      data: { conversationId, senderId, content: dto.content?.trim() || null,
+        attachments: { create: attachments } },
+      include: MESSAGE_INCLUDE,
     });
-
-    if (files.length > 0) {
-      await this.prisma.messageAttachment.createMany({
-        data: files.map((file) => ({
-          messageId: message.id,
-          url: `/uploads/messages/${file.filename}`,
-          type: attachmentTypeFromMime(file.mimetype),
-          filename: file.originalname,
-        })),
-      });
-    }
+    await Promise.all(files.map(file => unlink(join(process.cwd(), 'uploads', 'messages', file.filename)).catch(() => undefined)));
 
     await this.prisma.conversation.update({
       where: { id: conversationId },
       data: { updatedAt: new Date() },
     });
 
-    return this.prisma.message.findUniqueOrThrow({ where: { id: message.id }, include: MESSAGE_INCLUDE });
+    return message;
   }
 }

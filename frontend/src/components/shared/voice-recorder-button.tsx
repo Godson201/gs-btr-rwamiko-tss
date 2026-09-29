@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Mic, Send, Square, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -11,11 +11,31 @@ export function VoiceRecorderButton({ onRecorded }: { onRecorded: (file: File) =
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const recordedFileRef = useRef<File | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      const recorder = mediaRecorderRef.current;
+      if (recorder) {
+        recorder.onstop = null;
+        if (recorder.state !== 'inactive') recorder.stop();
+      }
+      streamRef.current?.getTracks().forEach(track => track.stop());
+    };
+  }, []);
+  useEffect(() => () => { if (previewUrl) URL.revokeObjectURL(previewUrl); }, [previewUrl]);
 
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream);
+      if (!mountedRef.current) { stream.getTracks().forEach(track => track.stop()); return; }
+      streamRef.current = stream;
+      const mimeType = ['audio/mp4;codecs=mp4a.40.2', 'audio/mp4', 'audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus']
+        .find(type => MediaRecorder.isTypeSupported(type));
+      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
       chunksRef.current = [];
 
       recorder.ondataavailable = (event) => {
@@ -23,9 +43,11 @@ export function VoiceRecorderButton({ onRecorded }: { onRecorded: (file: File) =
       };
 
       recorder.onstop = () => {
-        const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
-        recordedFileRef.current = new File([blob], `voice-note-${Date.now()}.webm`, {
-          type: 'audio/webm',
+        const actualType = (recorder.mimeType || chunksRef.current[0]?.type || mimeType || '').split(';')[0];
+        const extension = actualType.includes('mp4') ? 'm4a' : actualType.includes('ogg') ? 'ogg' : 'webm';
+        const blob = new Blob(chunksRef.current, { type: actualType });
+        recordedFileRef.current = new File([blob], `voice-note-${Date.now()}.${extension}`, {
+          type: actualType,
         });
         setPreviewUrl(URL.createObjectURL(blob));
         stream.getTracks().forEach((track) => track.stop());
@@ -35,7 +57,8 @@ export function VoiceRecorderButton({ onRecorded }: { onRecorded: (file: File) =
       mediaRecorderRef.current = recorder;
       setIsRecording(true);
     } catch {
-      toast.error('Microphone access is required to record a voice note');
+      streamRef.current?.getTracks().forEach(track => track.stop());
+      toast.error('Unable to record. Allow microphone access and use a browser that supports voice recording.');
     }
   };
 
@@ -73,10 +96,12 @@ export function VoiceRecorderButton({ onRecorded }: { onRecorded: (file: File) =
 
   return (
     <Button
+      key={isRecording ? 'recording' : 'idle'}
       type="button"
       variant={isRecording ? 'destructive' : 'outline'}
       size="icon"
       onClick={isRecording ? stopRecording : startRecording}
+      aria-pressed={isRecording}
       title={isRecording ? 'Stop recording' : 'Record a voice note'}
     >
       {isRecording ? <Square className="size-4" /> : <Mic className="size-4" />}

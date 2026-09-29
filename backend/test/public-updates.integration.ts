@@ -12,7 +12,7 @@ import { AnnouncementsModule } from '../src/modules/announcements/announcements.
 import { JwtStrategy } from '../src/modules/auth/strategies/jwt.strategy';
 
 const secret = 'public-updates-test-secret';
-const users = ['ADMIN', 'SUPER_ADMIN', 'TEACHER'].map(role => ({ id: role, role, portalAccess: [role],
+const users = ['ADMIN', 'SUPER_ADMIN', 'TEACHER', 'PARENT', 'STUDENT'].map(role => ({ id: role, role, portalAccess: [role],
   firstName: 'Test', lastName: role, email: `${role}@example.invalid`, isActive: true,
   accountStatus: 'ACTIVE', teacher: role === 'TEACHER' ? { staffTitle: 'HEAD_TEACHER' } : null }));
 let saved: Record<string, any> = {};
@@ -20,6 +20,7 @@ let listQuery: Record<string, any> = {};
 let mediaQuery: Record<string, any> = {};
 let mediaRecord: any = null;
 const prisma = {
+  systemSetting: { findMany: async () => [] },
   user: { findUnique: async ({ where }: any) => users.find(user => user.id === where.id) },
   announcement: {
     create: async ({ data }: any) => { saved = { id: 'post', ...data }; return saved; },
@@ -115,6 +116,10 @@ async function main() {
     assert.equal((await request(`/announcements/media/${filename}`)).status, 401);
     assert.equal((await request(`/announcements/media/${filename}`, 'ADMIN')).status, 200);
     assert.equal((await request(`/announcements/media/${filename}`, 'TEACHER')).status, 404);
+    saved.targetAudience = ['TEACHER', 'PARENT', 'STUDENT'];
+    for (const role of ['ADMIN', 'SUPER_ADMIN', 'TEACHER', 'PARENT', 'STUDENT']) {
+      assert.equal((await request(`/announcements/media/${filename}`, role)).status, 200, `${role} can open intended media`);
+    }
     saved.isPublic = false;
     assert.equal((await fetch(mediaUrl)).status, 404, 'Unpublishing revokes the public media endpoint');
     saved.isPublic = true;

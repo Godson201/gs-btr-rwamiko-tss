@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 
-export function sendAnnouncementMedia(request: Request, response: Response, media: { data: Buffer; mimeType: string }) {
+export function sendMedia(request: Request, response: Response, media: { data: Buffer; mimeType: string }) {
   const size = media.data.length;
   response.setHeader('Cache-Control', 'no-store');
   response.setHeader('Accept-Ranges', 'bytes');

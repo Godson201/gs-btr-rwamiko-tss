@@ -18,7 +18,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { sendAnnouncementMedia } from './send-announcement-media';
+import { sendMedia } from '../../utils/send-media';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { Role } from '@prisma/client';
 import { diskStorage } from 'multer';
@@ -71,7 +71,7 @@ export class AnnouncementsController {
   @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.TEACHER, Role.PARENT, Role.STUDENT)
   async media(@Param('filename') filename: string, @CurrentUser() user: AuthenticatedUser,
     @Req() request: Request, @Res() response: Response) {
-    sendAnnouncementMedia(request, response, await this.announcementsService.findPortalMedia(filename, user));
+    sendMedia(request, response, await this.announcementsService.findPortalMedia(filename, user));
   }
 
   @Get(':id')
