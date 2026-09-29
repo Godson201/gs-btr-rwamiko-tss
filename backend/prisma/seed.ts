@@ -8,9 +8,14 @@ const prisma = new PrismaClient({
 });
 
 async function main() {
-  const adminEmail = process.env.SEED_ADMIN_EMAIL ?? 'admin@gsbtrrwamiko.rw';
+  const adminEmail = (process.env.SEED_ADMIN_EMAIL ?? 'admin@gsbtrrwamiko.rw').trim();
   const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? 'ChangeMe123!';
-  const resetAdminPassword = process.env.SEED_ADMIN_RESET_PASSWORD === 'true';
+  const resetAdminPassword =
+    process.env.SEED_ADMIN_RESET_PASSWORD?.trim().toLowerCase() === 'true';
+
+  console.log(
+    `Seed admin target: ${adminEmail}; password recovery: ${resetAdminPassword ? 'enabled' : 'disabled'}`,
+  );
 
   const existingAdmin = await prisma.user.findUnique({ where: { email: adminEmail } });
   if (!existingAdmin) {
