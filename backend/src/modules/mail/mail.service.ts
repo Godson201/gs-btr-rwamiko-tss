@@ -64,6 +64,37 @@ export class MailService {
     );
   }
 
+  async sendResponsibilityChangedEmail(
+    to: string,
+    name: string,
+    responsibility: string,
+  ): Promise<void> {
+    const frontendUrl = this.configService.get<string>('FRONTEND_URL', 'http://localhost:3000');
+    await this.send(
+      to,
+      `Your school responsibility is now ${responsibility}`,
+      `
+        <p>Dear ${this.escapeHtml(name)},</p>
+        <p>Your responsibility in the G.S BTR RWAMIKO TSS School Management System has been changed.</p>
+        <p><strong>New responsibility:</strong> ${this.escapeHtml(responsibility)}</p>
+        <p>Your dashboard will now show the tools and information for this responsibility.</p>
+        <p><a href="${this.escapeHtml(frontendUrl)}/auth/login">Open the school portal</a></p>
+        <p>If you believe this change is incorrect, please contact the school administration.</p>
+        <p>G.S BTR RWAMIKO TSS<br/>"Through Here, Wealth is Flash"</p>
+      `,
+    );
+  }
+
+  private escapeHtml(value: string): string {
+    return value.replace(/[&<>'"]/g, (character) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      "'": '&#39;',
+      '"': '&quot;',
+    })[character]!);
+  }
+
   private async send(to: string, subject: string, html: string): Promise<void> {
     if (this.configService.get<string>('MAIL_ENABLED', 'true') !== 'true') {
       this.logger.warn(`Email delivery is disabled; skipped message to ${to}`);

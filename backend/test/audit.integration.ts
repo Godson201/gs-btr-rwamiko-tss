@@ -14,6 +14,7 @@ import { JwtAuthGuard } from '../src/guards/jwt-auth.guard';
 import { RolesGuard } from '../src/guards/roles.guard';
 import { Roles } from '../src/decorators/roles.decorator';
 import { AuditRequest, setAuditContext } from '../src/modules/audit/audit.middleware';
+import { MailService } from '../src/modules/mail/mail.service';
 
 // Exercise real HTTP routing, guards, DTO validation, middleware and interception.
 // Only persistence is replaced; this suite never touches a school database.
@@ -57,7 +58,8 @@ const prisma = {
 @Module({ providers: [
   { provide: PrismaService, useValue: prisma },
   { provide: ConfigService, useValue: { getOrThrow: () => secret } }, JwtStrategy,
-], exports: [PrismaService] })
+  { provide: MailService, useValue: { sendResponsibilityChangedEmail: async () => undefined } },
+], exports: [PrismaService, MailService] })
 class TestDependencies {}
 
 @Controller()

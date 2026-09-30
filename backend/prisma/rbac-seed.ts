@@ -51,10 +51,16 @@ export function deriveLegacySchoolRoleAssignments(
   if (user.teacher?.staffTitle) {
     const schoolRole =
       LEGACY_STAFF_TITLE_ROLE_MAP[user.teacher.staffTitle as LegacyStaffTitle];
-    if (schoolRole) assignments.set(schoolRole, 'LEGACY_STAFF_TITLE');
+    if (schoolRole) {
+      assignments.delete('TEACHER');
+      assignments.set(schoolRole, 'LEGACY_STAFF_TITLE');
+    }
   }
 
-  if (user.teacher?.classes.some((assignment) => assignment.isClassMaster)) {
+  const hasPrimaryLeadershipRole = [...assignments.keys()].some((role) =>
+    ['HEAD_TEACHER', 'DOS', 'DOD', 'HOD', 'PATRON', 'MATRON'].includes(role),
+  );
+  if (!hasPrimaryLeadershipRole && user.teacher?.classes.some((assignment) => assignment.isClassMaster)) {
     assignments.set('CLASS_TEACHER', 'LEGACY_CLASS_MASTER');
   }
 
@@ -132,7 +138,8 @@ export async function seedRbac(prisma: PrismaClient): Promise<void> {
 
   let assignmentCount = 0;
   for (const user of users) {
-    for (const assignment of deriveLegacySchoolRoleAssignments(user)) {
+    const legacyAssignments = deriveLegacySchoolRoleAssignments(user);
+    for (const assignment of legacyAssignments) {
       const schoolRoleId = schoolRoleIds.get(assignment.role);
       if (!schoolRoleId) throw new Error(`Missing school role: ${assignment.role}`);
 
@@ -146,6 +153,24 @@ export async function seedRbac(prisma: PrismaClient): Promise<void> {
         },
       });
       assignmentCount += 1;
+    }
+
+    const primary = legacyAssignments.find((assignment) =>
+      ['HEAD_TEACHER', 'DOS', 'DOD', 'HOD', 'PATRON', 'MATRON'].includes(assignment.role),
+    );
+    if (primary) {
+      const selectedRoleId = schoolRoleIds.get(primary.role);
+      const primaryRoleIds = [
+        'TEACHER', 'HEAD_TEACHER', 'DOS', 'DOD', 'HOD', 'PATRON', 'MATRON', 'CLASS_TEACHER',
+      ].map((code) => schoolRoleIds.get(code as SchoolRoleCode)).filter((id): id is string => Boolean(id));
+      await prisma.userSchoolRole.updateMany({
+        where: {
+          userId: user.id,
+          isActive: true,
+          schoolRoleId: { in: primaryRoleIds, not: selectedRoleId },
+        },
+        data: { isActive: false },
+      });
     }
   }
 

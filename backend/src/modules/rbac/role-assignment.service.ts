@@ -1,5 +1,6 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
+import { MailService } from '../mail/mail.service';
 import { getSchoolRoleDefinition, SchoolRoleCode } from './school-role.catalog';
 
 const LEGACY_TITLE_BY_ROLE = {
@@ -10,9 +11,24 @@ const LEGACY_TITLE_BY_ROLE = {
   MATRON: 'MATRON',
 } as const;
 
+export const PRIMARY_STAFF_RESPONSIBILITY_CODES = [
+  'TEACHER',
+  'HEAD_TEACHER',
+  'DOS',
+  'DOD',
+  'HOD',
+  'PATRON',
+  'MATRON',
+] as const satisfies readonly SchoolRoleCode[];
+
 @Injectable()
 export class RoleAssignmentService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(RoleAssignmentService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly mail: MailService,
+  ) {}
 
   listAvailableRoles() {
     return this.prisma.schoolRole.findMany({
@@ -52,7 +68,14 @@ export class RoleAssignmentService {
     const [user, role] = await Promise.all([
       this.prisma.user.findUnique({
         where: { id: userId },
-        select: { id: true, teacher: { select: { id: true } }, admin: { select: { id: true } } },
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          teacher: { select: { id: true } },
+          admin: { select: { id: true } },
+        },
       }),
       this.prisma.schoolRole.findUnique({ where: { code: roleCode } }),
     ]);
@@ -78,7 +101,18 @@ export class RoleAssignmentService {
       if (count !== departmentIds.length) throw new BadRequestException('Unknown department scope');
     }
 
-    return this.prisma.$transaction(async (tx) => {
+    const assignment = await this.prisma.$transaction(async (tx) => {
+      if ((PRIMARY_STAFF_RESPONSIBILITY_CODES as readonly string[]).includes(roleCode)) {
+        await tx.userSchoolRole.updateMany({
+          where: {
+            userId,
+            isActive: true,
+            schoolRoleId: { not: role.id },
+            schoolRole: { code: { in: [...PRIMARY_STAFF_RESPONSIBILITY_CODES, 'CLASS_TEACHER'] } },
+          },
+          data: { isActive: false, assignedById: actorId },
+        });
+      }
       const assignment = await tx.userSchoolRole.upsert({
         where: { userId_schoolRoleId: { userId, schoolRoleId: role.id } },
         update: {
@@ -104,14 +138,30 @@ export class RoleAssignmentService {
         });
       }
       const legacyTitle = LEGACY_TITLE_BY_ROLE[roleCode as keyof typeof LEGACY_TITLE_BY_ROLE];
-      if (legacyTitle && user.teacher) {
+      if (user.teacher) {
         await tx.teacher.update({
           where: { id: user.teacher.id },
-          data: { staffTitle: legacyTitle },
+          data: { staffTitle: legacyTitle ?? null },
         });
       }
       return assignment;
     });
+
+    let notificationSent = false;
+    try {
+      await this.mail.sendResponsibilityChangedEmail(
+        user.email,
+        `${user.firstName} ${user.lastName}`,
+        role.label,
+      );
+      notificationSent = true;
+    } catch (error) {
+      this.logger.error(
+        `Responsibility changed for user ${userId}, but notification email failed: ${(error as Error).message}`,
+      );
+    }
+
+    return { ...assignment, notificationSent };
   }
 
   async remove(actorId: string, userId: string, roleCode: SchoolRoleCode) {

@@ -35,10 +35,8 @@ assertDeepEqual(
     },
   }),
   [
-    'CLASS_TEACHER:LEGACY_CLASS_MASTER',
     'DOS:LEGACY_STAFF_TITLE',
     'SYSTEM_ADMIN:LEGACY_PORTAL_ROLE',
-    'TEACHER:LEGACY_PORTAL_ROLE',
   ],
 );
 

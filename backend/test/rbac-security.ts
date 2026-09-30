@@ -13,6 +13,7 @@ import { DEFAULT_ROLE_PERMISSION_GRANTS } from '../src/modules/rbac/default-role
 import { RoleAssignmentService } from '../src/modules/rbac/role-assignment.service';
 import { JwtStrategy } from '../src/modules/auth/strategies/jwt.strategy';
 import { PrismaService } from '../src/database/prisma.service';
+import { MailService } from '../src/modules/mail/mail.service';
 
 function roleContext(portalAccess?: Role[]): ExecutionContext {
   return {
@@ -87,7 +88,7 @@ async function main() {
     assert.equal(grants.size, 0, `${role} must receive no grant before its protected workflow exists`);
   }
 
-  const assignments = new RoleAssignmentService({} as PrismaService);
+  const assignments = new RoleAssignmentService({} as PrismaService, {} as MailService);
   await expectAsyncError(
     () => assignments.assign('same-user', 'same-user', 'DOS'),
     ForbiddenException,

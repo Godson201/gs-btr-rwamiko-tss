@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../src/database/prisma.service';
+import { MailService } from '../src/modules/mail/mail.service';
 import { RoleAssignmentService } from '../src/modules/rbac/role-assignment.service';
 
 type Assignment = {
@@ -18,7 +19,7 @@ const roles = [
   'HOD',
   'SYSTEM_ADMIN',
   'ACCOUNTANT',
-].map((code) => ({ id: `role-${code}`, code, isActive: true }));
+].map((code) => ({ id: `role-${code}`, code, label: code, isActive: true }));
 const assignments: Assignment[] = [
   {
     id: 'assignment-teacher',
@@ -34,9 +35,9 @@ const prisma = {
   user: {
     findUnique: async ({ where }: any) =>
       where.id === 'teacher-user'
-        ? { id: 'teacher-user', teacher: { id: 'teacher-profile' }, admin: null }
+        ? { id: 'teacher-user', email: 'teacher@example.invalid', firstName: 'Test', lastName: 'Teacher', teacher: { id: 'teacher-profile' }, admin: null }
         : where.id === 'admin-user'
-          ? { id: 'admin-user', teacher: null, admin: { id: 'admin-profile' } }
+          ? { id: 'admin-user', email: 'admin@example.invalid', firstName: 'Test', lastName: 'Admin', teacher: null, admin: { id: 'admin-profile' } }
           : null,
   },
   schoolRole: {
@@ -53,6 +54,22 @@ const prisma = {
     updateMany: async () => ({ count: 1 }),
   },
   userSchoolRole: {
+    updateMany: async ({ where, data }: any) => {
+      let count = 0;
+      for (const assignment of assignments) {
+        const code = roles.find((role) => role.id === assignment.schoolRoleId)?.code;
+        if (
+          assignment.userId === where.userId &&
+          assignment.isActive === where.isActive &&
+          assignment.schoolRoleId !== where.schoolRoleId.not &&
+          where.schoolRole.code.in.includes(code)
+        ) {
+          Object.assign(assignment, data);
+          count += 1;
+        }
+      }
+      return { count };
+    },
     findUnique: async ({ where }: any) => {
       const key = where.userId_schoolRoleId;
       return assignments.find(
@@ -99,6 +116,13 @@ const prisma = {
   $transaction: async (operation: (client: any) => Promise<unknown>) => operation(prisma),
 } as unknown as PrismaService;
 
+const responsibilityEmails: string[] = [];
+const mail = {
+  sendResponsibilityChangedEmail: async (_to: string, _name: string, responsibility: string) => {
+    responsibilityEmails.push(responsibility);
+  },
+} as unknown as MailService;
+
 async function expectError(
   action: () => Promise<unknown>,
   ErrorType: typeof BadRequestException | typeof ForbiddenException,
@@ -107,7 +131,7 @@ async function expectError(
 }
 
 async function main() {
-  const service = new RoleAssignmentService(prisma);
+  const service = new RoleAssignmentService(prisma, mail);
 
   await expectError(
     () => service.assign('teacher-user', 'teacher-user', 'DOS'),
@@ -130,27 +154,27 @@ async function main() {
     BadRequestException,
   );
 
-  await service.assign('admin-user', 'teacher-user', 'DOS');
-  await service.assign('admin-user', 'teacher-user', 'HOD', ['department-csa']);
+  const dosAssignment = await service.assign('admin-user', 'teacher-user', 'DOS');
+  const hodAssignment = await service.assign('admin-user', 'teacher-user', 'HOD', ['department-csa']);
+  assert.equal(dosAssignment.notificationSent, true);
+  assert.equal(hodAssignment.notificationSent, true);
 
   const activeCodes = assignments
     .filter((assignment) => assignment.isActive)
     .map((assignment) => roles.find((role) => role.id === assignment.schoolRoleId)!.code)
     .sort();
-  assert.deepEqual(activeCodes, ['DOS', 'HOD', 'TEACHER']);
+  assert.deepEqual(activeCodes, ['HOD']);
   assert.deepEqual(departmentScopes, [{
     userSchoolRoleId: assignments.find((item) => item.schoolRoleId === 'role-HOD')!.id,
     departmentId: 'department-csa',
   }]);
 
-  await service.remove('admin-user', 'teacher-user', 'DOS');
-  assert.equal(
-    assignments.find((assignment) => assignment.schoolRoleId === 'role-DOS')!.isActive,
-    false,
-  );
+  assert.deepEqual(responsibilityEmails, ['DOS', 'HOD']);
+
+  await service.remove('admin-user', 'teacher-user', 'HOD');
   assert.equal(
     assignments.find((assignment) => assignment.schoolRoleId === 'role-HOD')!.isActive,
-    true,
+    false,
   );
   await expectError(
     () => service.remove('admin-user', 'teacher-user', 'TEACHER'),
@@ -162,7 +186,7 @@ async function main() {
   );
 
   console.log(
-    'RBAC role-assignment checks passed: validation, coexistence, scoped HoD assignment, removal and Teacher preservation.',
+    'RBAC role-assignment checks passed: validation, exclusive responsibility replacement, scoped HoD assignment, email and removal.',
   );
 }
 
