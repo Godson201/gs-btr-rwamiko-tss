@@ -1,19 +1,22 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { Roles } from '../../decorators/roles.decorator';
+import { RequirePermissions } from '../../decorators/permissions.decorator';
 import { JwtAuthGuard } from '../../guards/jwt-auth.guard';
+import { PermissionsGuard } from '../../guards/permissions.guard';
 import { RolesGuard } from '../../guards/roles.guard';
 import { ClassModulesService } from './class-modules.service';
 import { AssignModuleDto } from './dto/assign-module.dto';
 import { UpdateAssignmentDto } from './dto/update-assignment.dto';
 
 @Controller('classes/:classId/modules')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
 export class ClassModulesController {
   constructor(private readonly classModulesService: ClassModulesService) {}
 
   @Get()
   @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.TEACHER)
+  @RequirePermissions('academic.curriculum.view')
   findAll(@Param('classId') classId: string) {
     return this.classModulesService.findAll(classId);
   }

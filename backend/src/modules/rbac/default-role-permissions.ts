@@ -26,6 +26,11 @@ export const DEFAULT_ROLE_PERMISSION_GRANTS = [
   { role: 'SYSTEM_ADMIN', permission: 'users.deactivate', scope: 'SCHOOL' },
   { role: 'SYSTEM_ADMIN', permission: 'users.assign_role', scope: 'SCHOOL' },
   { role: 'SYSTEM_ADMIN', permission: 'system.audit.view', scope: 'SCHOOL' },
+  // Preserve the legacy administrator's read-only academic visibility without
+  // making technical administrators academic decision-makers.
+  { role: 'SYSTEM_ADMIN', permission: 'academic.view', scope: 'SCHOOL' },
+  { role: 'SYSTEM_ADMIN', permission: 'academic.curriculum.view', scope: 'SCHOOL' },
+  { role: 'SYSTEM_ADMIN', permission: 'department.view', scope: 'SCHOOL' },
 
   { role: 'HEAD_TEACHER', permission: 'users.view', scope: 'SCHOOL' },
   { role: 'HEAD_TEACHER', permission: 'academic.view', scope: 'SCHOOL' },

@@ -16,7 +16,9 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { Role } from '@prisma/client';
 import { memoryStorage } from 'multer';
 import { Roles } from '../../decorators/roles.decorator';
+import { RequirePermissions } from '../../decorators/permissions.decorator';
 import { JwtAuthGuard } from '../../guards/jwt-auth.guard';
+import { PermissionsGuard } from '../../guards/permissions.guard';
 import { RolesGuard } from '../../guards/roles.guard';
 import type { UploadedSpreadsheetFile } from '../../utils/uploaded-file.type';
 import { CreateModuleDto } from './dto/create-module.dto';
@@ -24,12 +26,13 @@ import { UpdateModuleDto } from './dto/update-module.dto';
 import { ModulesService } from './modules.service';
 
 @Controller('modules')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
 export class ModulesController {
   constructor(private readonly modulesService: ModulesService) {}
 
   @Get()
   @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.TEACHER)
+  @RequirePermissions('academic.curriculum.view')
   findAll(@Query('departmentId') departmentId?: string) {
     return this.modulesService.findAll(departmentId);
   }
@@ -46,6 +49,7 @@ export class ModulesController {
 
   @Get(':id')
   @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.TEACHER)
+  @RequirePermissions('academic.curriculum.view')
   findOne(@Param('id') id: string) {
     return this.modulesService.findOne(id);
   }
