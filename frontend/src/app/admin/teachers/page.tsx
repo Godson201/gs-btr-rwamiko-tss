@@ -22,7 +22,10 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DataTable, type DataTableColumn } from '@/components/shared/data-table';
 import { api } from '@/lib/api';
-import { STAFF_TITLE_OPTIONS, type StaffTitle } from '@/lib/staff-title';
+
+const PRIMARY_RESPONSIBILITY_CODES = new Set([
+  'TEACHER', 'HEAD_TEACHER', 'DOS', 'DOD', 'HOD', 'PATRON', 'MATRON',
+]);
 
 interface Department {
   id: string;
@@ -35,7 +38,7 @@ interface Teacher {
   employeeNo: string;
   qualification: string | null;
   specialization: string | null;
-  staffTitle: StaffTitle | null;
+  staffTitle: string | null;
   department: Department | null;
   user: {
     id: string;
@@ -138,16 +141,6 @@ export default function AdminTeachersPage() {
     onError: (error: Error) => toast.error(error.message),
   });
 
-  const setStaffTitle = useMutation({
-    mutationFn: async ({ id, staffTitle }: { id: string; staffTitle: StaffTitle | null }) =>
-      api.patch(`/teachers/${id}`, { staffTitle }),
-    onSuccess: () => {
-      toast.success('Staff title updated');
-      queryClient.invalidateQueries({ queryKey: ['teachers'] });
-    },
-    onError: (error: Error) => toast.error(error.message),
-  });
-
   const grantParentAccess = useMutation({
     mutationFn: async (userId: string) => api.post(`/users/${userId}/grant-role`, { role: 'PARENT' }),
     onSuccess: () => {
@@ -165,21 +158,14 @@ export default function AdminTeachersPage() {
         : undefined;
       return api.post(`/rbac/users/${roleTeacher.user.id}/roles`, { roleCode, departmentIds });
     },
-    onSuccess: () => {
-      toast.success('School responsibility assigned');
+    onSuccess: (response) => {
+      if (response?.data?.notificationSent) {
+        toast.success('Responsibility changed and the staff member was notified by email');
+      } else {
+        toast.warning('Responsibility changed, but the notification email could not be delivered');
+      }
       queryClient.invalidateQueries({ queryKey: ['user-school-roles', roleTeacher?.user.id] });
-    },
-    onError: (error: Error) => toast.error(error.message),
-  });
-
-  const removeSchoolRole = useMutation({
-    mutationFn: async (roleCode: string) => {
-      if (!roleTeacher) return;
-      return api.delete(`/rbac/users/${roleTeacher.user.id}/roles/${roleCode}`);
-    },
-    onSuccess: () => {
-      toast.success('School responsibility removed');
-      queryClient.invalidateQueries({ queryKey: ['user-school-roles', roleTeacher?.user.id] });
+      queryClient.invalidateQueries({ queryKey: ['teachers'] });
     },
     onError: (error: Error) => toast.error(error.message),
   });
@@ -199,29 +185,6 @@ export default function AdminTeachersPage() {
     { header: 'Employee No.', cell: (row) => row.employeeNo },
     { header: 'Department', cell: (row) => row.department?.name ?? '—' },
     { header: 'Specialization', cell: (row) => row.specialization ?? '—' },
-    {
-      header: 'Staff Title',
-      cell: (row) => (
-        <Select
-          value={row.staffTitle ?? 'NONE'}
-          onValueChange={(value) =>
-            setStaffTitle.mutate({ id: row.id, staffTitle: value === 'NONE' ? null : (value as StaffTitle) })
-          }
-        >
-          <SelectTrigger className="w-48">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="NONE">None</SelectItem>
-            {STAFF_TITLE_OPTIONS.map(([value, label]) => (
-              <SelectItem key={value} value={value}>
-                {label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      ),
-    },
     {
       header: 'Status',
       cell: (row) => (
@@ -451,15 +414,15 @@ export default function AdminTeachersPage() {
             </DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
-            Assign additional responsibilities to this account without creating another login.
+            Select one primary responsibility. Changing it replaces the previous responsibility,
+            updates the dashboard and sends an email notification to the staff member.
           </p>
           <div className="space-y-3">
             {rolesLoading ? (
               <p className="text-sm text-muted-foreground">Loading roles…</p>
-            ) : schoolRoles.filter((role) => role.code !== 'SYSTEM_ADMIN').map((role) => {
+            ) : schoolRoles.filter((role) => PRIMARY_RESPONSIBILITY_CODES.has(role.code)).map((role) => {
               const assignment = assignedRoles.find((item) => item.schoolRole.code === role.code);
               const hodWithoutDepartment = role.code === 'HOD' && !roleTeacher?.department;
-              const protectedTeacherRole = role.code === 'TEACHER';
               return (
                 <div key={role.code} className="flex items-start justify-between gap-4 rounded-lg border p-3">
                   <div className="space-y-1">
@@ -479,22 +442,16 @@ export default function AdminTeachersPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      disabled={protectedTeacherRole || removeSchoolRole.isPending}
-                      title={protectedTeacherRole ? 'Teacher role is preserved while the teacher profile exists' : undefined}
-                      onClick={() => {
-                        if (confirm(`Remove the ${role.label} responsibility?`)) {
-                          removeSchoolRole.mutate(role.code);
-                        }
-                      }}
+                      disabled
                     >
-                      Remove
+                      Current
                     </Button>
                   ) : (
                     <Button
                       size="sm"
                       disabled={hodWithoutDepartment || assignSchoolRole.isPending}
                       onClick={() => {
-                        if (confirm(`Assign the ${role.label} responsibility?`)) {
+                        if (confirm(`Change this staff member's responsibility to ${role.label}? Their dashboard will change and they will receive an email.`)) {
                           assignSchoolRole.mutate(role.code);
                         }
                       }}

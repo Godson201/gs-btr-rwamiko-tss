@@ -10,10 +10,10 @@ RBAC extends the existing authentication system. It does not replace it.
 - Invitation email, password creation, login, logout, password reset and account activation are unchanged.
 - `User.role` and `User.portalAccess` remain the authoritative legacy portal selectors.
 - `Teacher.staffTitle` remains available for backward compatibility.
-- A staff member receives additional responsibilities on the same account; a second account is not required.
+- A staff member changes primary responsibility on the same account; a second account is not required.
 - Parent and student profiles remain separate from school staff responsibilities.
 
-Portal access and school responsibility are intentionally different concepts. For example, a user can retain the `TEACHER` portal while simultaneously holding `TEACHER`, `HOD` and `CLASS_TEACHER` school roles.
+Portal access and school responsibility are intentionally different concepts. A Head Teacher, DoS, DoD, HoD, Patron or Matron retains the `TEACHER` portal as the staff application shell, while the active school responsibility selects the dashboard and authorization policy.
 
 ## Data model
 
@@ -27,7 +27,7 @@ The additive RBAC models are:
 | `UserSchoolRole` | Active or historical role assignment for one user |
 | `UserSchoolRoleDepartment` | Explicit department scope for an assigned role, currently HoD |
 
-One user can have multiple `UserSchoolRole` records. The unique user/role constraint prevents duplicate assignments, while an inactive assignment can be reactivated safely.
+One user can have historical `UserSchoolRole` records. The unique user/role constraint prevents duplicates, while an inactive assignment can be reactivated safely. The service enforces one active primary staff responsibility among Teacher, Head Teacher, DoS, DoD, HoD, Patron and Matron.
 
 Supported scope modes are:
 
@@ -102,7 +102,7 @@ Existing mutation routes that have not yet been converted retain their previous 
 
 ## Role administration
 
-An authorized administrator opens the existing Teachers page, selects a staff member and manages the role checklist. Existing roles remain selected, so assigning an additional responsibility does not remove `TEACHER`.
+An authorized administrator opens the existing Teachers page, selects a staff member and chooses one primary responsibility. Selecting another responsibility deactivates the previous primary responsibility in the same transaction, updates the legacy staff title where applicable and sends the staff member an email.
 
 Rules enforced by the backend:
 
@@ -113,8 +113,9 @@ Rules enforced by the backend:
 - Department scope is rejected for roles other than HoD.
 - `TEACHER` cannot be removed while the teacher profile exists.
 - Unsupported future staff roles are rejected.
-- Assignments are upserted transactionally and can coexist.
-- Removing one role does not remove other active roles.
+- Primary responsibility assignments are switched transactionally rather than combined.
+- The staff member retains the Teacher portal login while receiving a responsibility-specific dashboard.
+- Email failure is reported to the administrator without reversing a completed responsibility change.
 
 Additive endpoints:
 
@@ -130,7 +131,7 @@ Additive endpoints:
 
 The shared portal layout supports `requiredPermission` on menu items. The authentication context retrieves `/rbac/me/access`, and desktop and mobile menus use the same filtered configuration. Hiding a menu never replaces backend authorization.
 
-The teacher dashboard renders reusable responsibility widgets from active roles. Users with multiple roles see multiple cards. HoD cards show that department scope exists. Widgets only link to implemented capabilities for which the user has an effective permission; planned workflows are shown as pending rather than as unsecured controls.
+The staff dashboard selects one responsibility-specific workspace for Teacher, Head Teacher, DoS, DoD, HoD, Patron or Matron. Navigation is filtered to that responsibility. HoD displays assigned department scope. Implemented capabilities link to existing pages; planned workflows are shown as pending rather than as unsecured controls.
 
 ## Audit logging
 
