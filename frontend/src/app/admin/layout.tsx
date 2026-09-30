@@ -5,10 +5,10 @@ import { PortalLayout, type PortalNavItem } from '@/components/shared/portal-lay
 
 const navItems: PortalNavItem[] = [
   { label: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
-  { label: 'Students', href: '/admin/students', icon: GraduationCap },
-  { label: 'Teachers', href: '/admin/teachers', icon: Users },
-  { label: 'Classes', href: '/admin/classes', icon: School },
-  { label: 'Modules', href: '/admin/modules', icon: BookMarked },
+  { label: 'Students', href: '/admin/students', icon: GraduationCap, requiredPermission: 'users.view' },
+  { label: 'Teachers', href: '/admin/teachers', icon: Users, requiredPermission: 'users.view' },
+  { label: 'Classes', href: '/admin/classes', icon: School, requiredPermission: 'academic.view' },
+  { label: 'Modules', href: '/admin/modules', icon: BookMarked, requiredPermission: 'academic.curriculum.view' },
   { label: 'Admissions', href: '/admin/admissions', icon: ClipboardList },
   { label: 'Parent Approvals', href: '/admin/parent-approvals', icon: UserCheck },
   { label: 'Announcements', href: '/admin/announcements', icon: Megaphone },

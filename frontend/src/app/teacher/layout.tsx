@@ -5,12 +5,12 @@ import { PortalLayout, type PortalNavItem } from '@/components/shared/portal-lay
 import { useAuth } from '@/contexts/auth-context';
 
 export default function TeacherLayout({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
+  const { schoolRoles } = useAuth();
 
   const navItems: PortalNavItem[] = [
     { label: 'Dashboard', href: '/teacher/dashboard', icon: LayoutDashboard },
-    { label: 'Classes & Trades', href: '/teacher/classes', icon: GraduationCap },
-    { label: 'Teaching Modules', href: '/teacher/modules', icon: BookOpen },
+    { label: 'Classes & Trades', href: '/teacher/classes', icon: GraduationCap, requiredPermission: 'academic.view' },
+    { label: 'Teaching Modules', href: '/teacher/modules', icon: BookOpen, requiredPermission: 'academic.curriculum.view' },
     { label: 'Attendance', href: '/teacher/attendance', icon: CalendarCheck },
     { label: 'Assessments', href: '/teacher/assessments', icon: ClipboardCheck },
     { label: 'Marks', href: '/teacher/marks', icon: GraduationCap },
@@ -22,7 +22,7 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
     { label: 'Settings', href: '/teacher/settings', icon: Settings },
   ];
 
-  if (user?.staffTitle) {
+  if (schoolRoles.some((role) => role.code !== 'TEACHER')) {
     navItems.push({ label: 'School Posts', href: '/teacher/posts', icon: Newspaper });
   }
 

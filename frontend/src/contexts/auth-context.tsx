@@ -55,6 +55,9 @@ export interface RegisterParentInput {
 
 interface AuthContextValue {
   user: CurrentUser | null;
+  permissions: string[];
+  schoolRoles: Array<{ code: string; label: string; departmentIds: string[] }>;
+  hasPermission: (permission: string) => boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   registerParent: (input: RegisterParentInput) => Promise<void>;
@@ -104,6 +107,8 @@ async function postSession(url: string, body: unknown): Promise<{ user: CurrentU
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<CurrentUser | null>(null);
+  const [permissions, setPermissions] = useState<string[]>([]);
+  const [schoolRoles, setSchoolRoles] = useState<AuthContextValue['schoolRoles']>([]);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
@@ -111,8 +116,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { data } = await api.get<CurrentUser>('/auth/me');
       setUser(data);
+      try {
+        const access = await api.get<Pick<AuthContextValue, 'permissions' | 'schoolRoles'>>('/rbac/me/access');
+        setPermissions(access.data.permissions);
+        setSchoolRoles(access.data.schoolRoles);
+      } catch {
+        // Keep the authenticated session usable during a rolling backend deployment.
+        setPermissions([]);
+        setSchoolRoles([]);
+      }
     } catch {
       setUser(null);
+      setPermissions([]);
+      setSchoolRoles([]);
     } finally {
       setIsLoading(false);
     }
@@ -126,6 +142,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     async (email: string, password: string) => {
       const data = await postSession('/api/auth/login', { email, password });
       setUser(data.user);
+      try {
+        const access = await api.get<Pick<AuthContextValue, 'permissions' | 'schoolRoles'>>('/rbac/me/access');
+        setPermissions(access.data.permissions);
+        setSchoolRoles(access.data.schoolRoles);
+      } catch {
+        setPermissions([]);
+        setSchoolRoles([]);
+      }
       const destination =
         data.user.accountStatus && data.user.accountStatus !== 'ACTIVE'
           ? '/auth/pending-approval'
@@ -140,6 +164,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     async (input: RegisterParentInput) => {
       const data = await postSession('/api/auth/register-parent', input);
       setUser(data.user);
+      setPermissions([]);
+      setSchoolRoles([]);
       const destination =
         data.user.accountStatus && data.user.accountStatus !== 'ACTIVE'
           ? '/auth/pending-approval'
@@ -153,12 +179,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = useCallback(async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
     setUser(null);
+    setPermissions([]);
+    setSchoolRoles([]);
     router.push('/auth/login');
     router.refresh();
   }, [router]);
 
+  const hasPermission = useCallback(
+    (permission: string) => permissions.includes(permission),
+    [permissions],
+  );
+
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, registerParent, logout, refresh }}>
+    <AuthContext.Provider value={{ user, permissions, schoolRoles, hasPermission, isLoading, login, registerParent, logout, refresh }}>
       {children}
     </AuthContext.Provider>
   );

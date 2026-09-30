@@ -29,6 +29,7 @@ export interface PortalNavItem {
   href: string;
   icon: LucideIcon;
   disabled?: boolean;
+  requiredPermission?: string;
 }
 
 const navTranslationKeys: Record<string, TranslationKey> = {
@@ -54,10 +55,13 @@ export function PortalLayout({
 }) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const { user, logout, hasPermission } = useAuth();
   const { t } = useLanguage();
   const portalKey: TranslationKey = title === 'Admin Portal' ? 'portal.admin' : title === 'Teacher Portal' ? 'portal.teacher' : 'portal.parent';
   const messageKey: TranslationKey = title === 'Admin Portal' ? 'message.admin' : title === 'Teacher Portal' ? 'message.teacher' : 'message.parent';
+  const visibleNavItems = navItems.filter(
+    (item) => !item.requiredPermission || hasPermission(item.requiredPermission),
+  );
 
   return (
     <div className="grid min-h-dvh grid-cols-[minmax(0,1fr)] md:grid-cols-[76px_minmax(0,1fr)] lg:grid-cols-[240px_minmax(0,1fr)]">
@@ -68,7 +72,7 @@ export function PortalLayout({
           </Link>
         </div>
         <nav className="flex-1 space-y-1 overflow-y-auto p-2 lg:p-3">
-          {navItems.map((item) => {
+          {visibleNavItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname.startsWith(item.href);
             return (
@@ -103,7 +107,7 @@ export function PortalLayout({
               <DialogContent className="md:hidden">
                 <DialogTitle>{t(portalKey)}</DialogTitle>
                 <nav aria-label="Portal navigation" className="grid gap-1">
-                  {navItems.map((item) => {
+                  {visibleNavItems.map((item) => {
                     const Icon = item.icon;
                     return <Link key={item.href} href={item.disabled ? '#' : item.href}
                       aria-disabled={item.disabled} aria-current={pathname.startsWith(item.href) ? 'page' : undefined}
