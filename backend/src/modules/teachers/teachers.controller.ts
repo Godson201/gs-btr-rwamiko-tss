@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { Role } from '@prisma/client';
@@ -18,6 +19,7 @@ import { AuthenticatedUser } from '../auth/auth.types';
 import { CreateTeacherDto } from './dto/create-teacher.dto';
 import { UpdateTeacherDto } from './dto/update-teacher.dto';
 import { TeachersService } from './teachers.service';
+import { AuditRequest, setAuditContext } from '../audit/audit.middleware';
 
 @Controller('teachers')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -60,7 +62,14 @@ export class TeachersController {
 
   @Patch(':id')
   @Roles(Role.ADMIN, Role.SUPER_ADMIN)
-  update(@Param('id') id: string, @Body() dto: UpdateTeacherDto) {
+  update(@Req() request: AuditRequest, @Param('id') id: string, @Body() dto: UpdateTeacherDto) {
+    if (dto.isActive !== undefined) {
+      setAuditContext(request, {
+        action: dto.isActive ? 'ACCOUNT_ACTIVATED' : 'ACCOUNT_DEACTIVATED',
+        resourceId: id,
+        details: { accountActive: dto.isActive },
+      });
+    }
     return this.teachersService.update(id, dto);
   }
 

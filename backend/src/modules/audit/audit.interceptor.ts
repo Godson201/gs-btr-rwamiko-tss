@@ -12,7 +12,9 @@ export class AuditInterceptor implements NestInterceptor {
       if (/\/auth\/(login|register-parent)\/?$/.test(request.route?.path ?? '') && data?.user?.id) {
         request.auditActor = data.user;
       }
-      if (request.method === 'POST' && typeof data?.id === 'string') request.auditResourceId = data.id;
+      if (request.method === 'POST' && !request.auditResourceId && typeof data?.id === 'string') {
+        request.auditResourceId = data.id;
+      }
     }));
   }
 }

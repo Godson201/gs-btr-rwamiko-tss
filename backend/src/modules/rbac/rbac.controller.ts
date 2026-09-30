@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { CurrentUser } from '../../decorators/current-user.decorator';
 import { RequirePermissions } from '../../decorators/permissions.decorator';
@@ -11,6 +11,7 @@ import { AssignSchoolRoleDto } from './dto/assign-school-role.dto';
 import { RoleAssignmentService } from './role-assignment.service';
 import { SCHOOL_ROLE_CODES, SchoolRoleCode } from './school-role.catalog';
 import { PermissionAccessService } from './permission-access.service';
+import { AuditRequest, setAuditContext } from '../audit/audit.middleware';
 
 @Controller('rbac')
 @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
@@ -42,16 +43,23 @@ export class RbacController {
   @Post('users/:userId/roles')
   @RequirePermissions('users.assign_role')
   assign(
+    @Req() request: AuditRequest,
     @CurrentUser() actor: AuthenticatedUser,
     @Param('userId') userId: string,
     @Body() dto: AssignSchoolRoleDto,
   ) {
+    setAuditContext(request, {
+      action: 'ROLE_ASSIGNED',
+      resourceId: userId,
+      details: { roleCode: dto.roleCode, departmentIds: dto.departmentIds ?? [] },
+    });
     return this.assignments.assign(actor.id, userId, dto.roleCode, dto.departmentIds);
   }
 
   @Delete('users/:userId/roles/:roleCode')
   @RequirePermissions('users.remove_role')
   remove(
+    @Req() request: AuditRequest,
     @CurrentUser() actor: AuthenticatedUser,
     @Param('userId') userId: string,
     @Param('roleCode') roleCode: string,
@@ -59,6 +67,11 @@ export class RbacController {
     if (!SCHOOL_ROLE_CODES.includes(roleCode as SchoolRoleCode)) {
       throw new BadRequestException('Unknown school role');
     }
+    setAuditContext(request, {
+      action: 'ROLE_REMOVED',
+      resourceId: userId,
+      details: { roleCode },
+    });
     return this.assignments.remove(actor.id, userId, roleCode as SchoolRoleCode);
   }
 }

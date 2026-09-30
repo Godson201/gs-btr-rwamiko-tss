@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import assert from 'node:assert/strict';
 import { AddressInfo } from 'node:net';
-import { Body, Controller, Global, Module, Patch, Post, Get, UseGuards, ValidationPipe, UnauthorizedException } from '@nestjs/common';
+import { Body, Controller, Global, Module, Param, Patch, Post, Get, Req, UseGuards, ValidationPipe, UnauthorizedException } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -13,6 +13,7 @@ import { JwtStrategy } from '../src/modules/auth/strategies/jwt.strategy';
 import { JwtAuthGuard } from '../src/guards/jwt-auth.guard';
 import { RolesGuard } from '../src/guards/roles.guard';
 import { Roles } from '../src/decorators/roles.decorator';
+import { AuditRequest, setAuditContext } from '../src/modules/audit/audit.middleware';
 
 // Exercise real HTTP routing, guards, DTO validation, middleware and interception.
 // Only persistence is replaced; this suite never touches a school database.
@@ -70,6 +71,32 @@ class TestActions {
   register() { return { user: users[2], accessToken: 'new-user-secret' }; }
   @Patch('teachers/:id') @UseGuards(JwtAuthGuard, RolesGuard) @Roles(Role.ADMIN)
   update() { return { id: 'teacher-record', password: 'must-never-be-logged' }; }
+  @Post('test-role/:id') @UseGuards(JwtAuthGuard, RolesGuard) @Roles(Role.ADMIN)
+  changeRole(
+    @Req() request: AuditRequest,
+    @Param('id') id: string,
+    @Body() body: { roleCode: string; departmentIds: string[]; resetToken: string },
+  ) {
+    setAuditContext(request, {
+      action: 'ROLE_ASSIGNED',
+      resourceId: id,
+      details: {
+        roleCode: body.roleCode,
+        departmentIds: body.departmentIds,
+        resetToken: body.resetToken,
+      },
+    });
+    return { id: 'role-assignment-record', success: true };
+  }
+  @Patch('test-account/:id') @UseGuards(JwtAuthGuard, RolesGuard) @Roles(Role.ADMIN)
+  deactivateAccount(@Req() request: AuditRequest, @Param('id') id: string) {
+    setAuditContext(request, {
+      action: 'ACCOUNT_DEACTIVATED',
+      resourceId: id,
+      details: { accountActive: false },
+    });
+    return { success: true };
+  }
   @Get('health')
   health() { return { ok: true }; }
 }
@@ -110,8 +137,22 @@ async function main() {
     assert.equal(records[records.length - 1]?.resourceId, 'teacher-record');
     assert.equal(records[records.length - 1]?.action, 'PATCH /api/teachers/:id');
     assert.equal(records[records.length - 1]?.actorEmail, 'ADMIN@example.invalid');
+    assert.equal(await request('/test-role/target-user', Role.ADMIN, 'POST', {
+      roleCode: 'HOD', departmentIds: ['department-1'], resetToken: 'metadata-secret',
+    }), 201);
+    assert.equal(records[records.length - 1]?.action, 'ROLE_ASSIGNED');
+    assert.equal(records[records.length - 1]?.resourceId, 'target-user');
+    assert.deepEqual(JSON.parse(String(records[records.length - 1]?.details)), {
+      roleCode: 'HOD', departmentIds: ['department-1'],
+    });
+    assert.equal(await request('/test-account/teacher-user', Role.ADMIN, 'PATCH'), 200);
+    assert.equal(records[records.length - 1]?.action, 'ACCOUNT_DEACTIVATED');
+    assert.equal(records[records.length - 1]?.resourceId, 'teacher-user');
+    assert.deepEqual(JSON.parse(String(records[records.length - 1]?.details)), {
+      accountActive: false,
+    });
     const serialized = JSON.stringify(records);
-    for (const value of ['test-password', 'wrong-secret', 'secret-body', 'secret-query', 'query-secret', 'secret-response-token', 'new-user-secret', 'must-never-be-logged', 'Bearer']) assert.ok(!serialized.includes(value));
+    for (const value of ['test-password', 'wrong-secret', 'secret-body', 'secret-query', 'query-secret', 'secret-response-token', 'new-user-secret', 'must-never-be-logged', 'metadata-secret', 'Bearer']) assert.ok(!serialized.includes(value));
     for (const query of ['page=0', 'limit=101', 'method=BOGUS', 'from=not-a-date', 'outcome=BOGUS', 'from=2026-09-30&to=2026-09-01']) assert.equal(await request(`/audit-logs?${query}`, Role.ADMIN), 400);
     assert.equal(await request('/audit-logs?page=2&limit=10&method=PATCH&outcome=failure&search=teacher&from=2026-09-01&to=2026-09-30', Role.ADMIN), 200);
     assert.equal(lastQuery!.skip, 10); assert.equal(lastQuery!.take, 10);
