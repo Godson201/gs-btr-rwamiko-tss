@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus, Trash2, UserPlus } from 'lucide-react';
+import { Plus, ShieldCheck, Trash2, UserPlus } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -47,6 +47,17 @@ interface Teacher {
   };
 }
 
+interface SchoolRole {
+  code: string;
+  label: string;
+  description: string | null;
+}
+
+interface SchoolRoleAssignment {
+  schoolRole: SchoolRole;
+  departmentScopes: Array<{ department: Department }>;
+}
+
 const teacherSchema = z.object({
   email: z.string().email('Enter a valid email address'),
   firstName: z.string().min(1, 'Required'),
@@ -65,6 +76,7 @@ export default function AdminTeachersPage() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [roleTeacher, setRoleTeacher] = useState<Teacher | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ['teachers', search],
@@ -75,6 +87,18 @@ export default function AdminTeachersPage() {
   const { data: departments } = useQuery({
     queryKey: ['departments-options'],
     queryFn: async () => (await api.get<Department[]>('/departments')).data,
+  });
+
+  const { data: schoolRoles = [] } = useQuery({
+    queryKey: ['school-roles'],
+    queryFn: async () => (await api.get<SchoolRole[]>('/rbac/roles')).data,
+  });
+
+  const { data: assignedRoles = [], isLoading: rolesLoading } = useQuery({
+    queryKey: ['user-school-roles', roleTeacher?.user.id],
+    queryFn: async () =>
+      (await api.get<SchoolRoleAssignment[]>(`/rbac/users/${roleTeacher!.user.id}/roles`)).data,
+    enabled: Boolean(roleTeacher),
   });
 
   const form = useForm<TeacherFormValues>({
@@ -133,6 +157,33 @@ export default function AdminTeachersPage() {
     onError: (error: Error) => toast.error(error.message),
   });
 
+  const assignSchoolRole = useMutation({
+    mutationFn: async (roleCode: string) => {
+      if (!roleTeacher) return;
+      const departmentIds = roleCode === 'HOD' && roleTeacher.department
+        ? [roleTeacher.department.id]
+        : undefined;
+      return api.post(`/rbac/users/${roleTeacher.user.id}/roles`, { roleCode, departmentIds });
+    },
+    onSuccess: () => {
+      toast.success('School responsibility assigned');
+      queryClient.invalidateQueries({ queryKey: ['user-school-roles', roleTeacher?.user.id] });
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  const removeSchoolRole = useMutation({
+    mutationFn: async (roleCode: string) => {
+      if (!roleTeacher) return;
+      return api.delete(`/rbac/users/${roleTeacher.user.id}/roles/${roleCode}`);
+    },
+    onSuccess: () => {
+      toast.success('School responsibility removed');
+      queryClient.invalidateQueries({ queryKey: ['user-school-roles', roleTeacher?.user.id] });
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
   const columns: DataTableColumn<Teacher>[] = [
     {
       header: 'Name',
@@ -184,6 +235,14 @@ export default function AdminTeachersPage() {
       className: 'text-right',
       cell: (row) => (
         <div className="flex justify-end gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            title="Manage school roles"
+            onClick={() => setRoleTeacher(row)}
+          >
+            <ShieldCheck className="size-4" />
+          </Button>
           {!row.user.portalAccess.includes('PARENT') && (
             <Button
               variant="ghost"
@@ -383,6 +442,72 @@ export default function AdminTeachersPage() {
       />
 
       <DataTable columns={columns} data={data ?? []} isLoading={isLoading} getRowKey={(row) => row.id} />
+
+      <Dialog open={Boolean(roleTeacher)} onOpenChange={(open) => !open && setRoleTeacher(null)}>
+        <DialogContent className="sm:max-w-xl">
+          <DialogHeader>
+            <DialogTitle>
+              School roles{roleTeacher ? ` — ${roleTeacher.user.firstName} ${roleTeacher.user.lastName}` : ''}
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Assign additional responsibilities to this account without creating another login.
+          </p>
+          <div className="space-y-3">
+            {rolesLoading ? (
+              <p className="text-sm text-muted-foreground">Loading roles…</p>
+            ) : schoolRoles.filter((role) => role.code !== 'SYSTEM_ADMIN').map((role) => {
+              const assignment = assignedRoles.find((item) => item.schoolRole.code === role.code);
+              const hodWithoutDepartment = role.code === 'HOD' && !roleTeacher?.department;
+              const protectedTeacherRole = role.code === 'TEACHER';
+              return (
+                <div key={role.code} className="flex items-start justify-between gap-4 rounded-lg border p-3">
+                  <div className="space-y-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-medium">{role.label}</span>
+                      {assignment && <Badge variant="secondary">Assigned</Badge>}
+                    </div>
+                    <p className="text-xs text-muted-foreground">{role.description}</p>
+                    {assignment?.departmentScopes.map(({ department }) => (
+                      <Badge key={department.id} variant="outline">{department.name}</Badge>
+                    ))}
+                    {hodWithoutDepartment && (
+                      <p className="text-xs text-destructive">Assign a department to this teacher first.</p>
+                    )}
+                  </div>
+                  {assignment ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={protectedTeacherRole || removeSchoolRole.isPending}
+                      title={protectedTeacherRole ? 'Teacher role is preserved while the teacher profile exists' : undefined}
+                      onClick={() => {
+                        if (confirm(`Remove the ${role.label} responsibility?`)) {
+                          removeSchoolRole.mutate(role.code);
+                        }
+                      }}
+                    >
+                      Remove
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      disabled={hodWithoutDepartment || assignSchoolRole.isPending}
+                      onClick={() => {
+                        if (confirm(`Assign the ${role.label} responsibility?`)) {
+                          assignSchoolRole.mutate(role.code);
+                        }
+                      }}
+                    >
+                      Assign
+                    </Button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
