@@ -21,6 +21,7 @@ import { ParentsModule } from './modules/parents/parents.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { AppController } from './app.controller';
 import { AdmissionsModule } from './modules/admissions/admissions.module';
+import { RbacModule } from './modules/rbac/rbac.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { AdmissionsModule } from './modules/admissions/admissions.module';
       },
     ]),
     PrismaModule,
+    RbacModule,
     MailModule,
     AcademicYearsModule,
     AnnouncementsModule,
