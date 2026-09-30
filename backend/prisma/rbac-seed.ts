@@ -86,7 +86,12 @@ export async function seedRbac(prisma: PrismaClient): Promise<void> {
   for (const definition of PERMISSION_DEFINITIONS) {
     const permission = await prisma.permission.upsert({
       where: { code: definition.code },
-      update: { description: definition.description },
+      update: {
+        description: definition.description,
+        // Permission implementation state is code-owned until a dedicated
+        // permission-management workflow exists.
+        isActive: definition.implementation === 'IMPLEMENTED',
+      },
       create: {
         code: definition.code,
         description: definition.description,

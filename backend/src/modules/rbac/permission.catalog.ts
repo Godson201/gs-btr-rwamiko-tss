@@ -34,7 +34,7 @@ export const PERMISSION_DEFINITIONS = [
   permission('users.update', 'USERS', 'Update authorized user and staff records.', 'IMPLEMENTED'),
   permission('users.deactivate', 'USERS', 'Activate or deactivate authorized accounts.', 'IMPLEMENTED'),
   permission('users.assign_role', 'USERS', 'Assign authorized portal or school roles.', 'IMPLEMENTED'),
-  permission('users.remove_role', 'USERS', 'Remove authorized school-role assignments.', 'PLANNED'),
+  permission('users.remove_role', 'USERS', 'Remove authorized school-role assignments.', 'IMPLEMENTED'),
 
   permission('academic.view', 'ACADEMIC', 'View authorized academic structures.', 'IMPLEMENTED'),
   permission('academic.manage', 'ACADEMIC', 'Manage authorized classes and modules.', 'IMPLEMENTED'),

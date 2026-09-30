@@ -100,6 +100,18 @@ export class TeachersService {
         },
       });
 
+      const teacherRole = await tx.schoolRole.findUnique({ where: { code: 'TEACHER' } });
+      if (!teacherRole?.isActive) {
+        throw new ConflictException('Teacher role configuration is unavailable');
+      }
+      await tx.userSchoolRole.create({
+        data: {
+          userId: user.id,
+          schoolRoleId: teacherRole.id,
+          source: 'LEGACY_PORTAL_ROLE',
+        },
+      });
+
       return tx.teacher.create({
         data: {
           userId: user.id,

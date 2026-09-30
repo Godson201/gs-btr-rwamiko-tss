@@ -6,6 +6,7 @@ import { ClassesController } from '../src/modules/classes/classes.controller';
 import { ClassModulesController } from '../src/modules/class-modules/class-modules.controller';
 import { DepartmentsController } from '../src/modules/departments/departments.controller';
 import { ModulesController } from '../src/modules/modules/modules.controller';
+import { RbacController } from '../src/modules/rbac/rbac.controller';
 
 function assertPermission(target: object, expected: string): void {
   const requirement = Reflect.getMetadata(PERMISSIONS_KEY, target) as
@@ -28,6 +29,10 @@ assertPermission(ClassesController.prototype.findOne, 'academic.view');
 assertPermission(ClassModulesController.prototype.findAll, 'academic.curriculum.view');
 assertPermission(ModulesController.prototype.findAll, 'academic.curriculum.view');
 assertPermission(ModulesController.prototype.findOne, 'academic.curriculum.view');
+assertPermission(RbacController.prototype.listRoles, 'users.view');
+assertPermission(RbacController.prototype.getUserRoles, 'users.view');
+assertPermission(RbacController.prototype.assign, 'users.assign_role');
+assertPermission(RbacController.prototype.remove, 'users.remove_role');
 
 if (Reflect.getMetadata(PERMISSIONS_KEY, ClassesController.prototype.create)) {
   throw new Error('Unmigrated mutation routes must retain legacy authorization only');
