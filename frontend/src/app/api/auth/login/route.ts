@@ -8,12 +8,16 @@ export async function POST(request: NextRequest) {
   }
 
   let backendResponse: Response;
+  let responseText: string;
   try {
     backendResponse = await fetch(`${process.env.API_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'User-Agent': request.headers.get('user-agent') ?? '' },
       body: JSON.stringify({ email: body.email, password: body.password }),
+      cache: 'no-store',
+      signal: AbortSignal.timeout(70000),
     });
+    responseText = await backendResponse.text();
   } catch {
     return NextResponse.json(
       { message: 'The login service is temporarily unavailable. Please try again shortly.' },
@@ -21,7 +25,6 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const responseText = await backendResponse.text();
   let data: Record<string, unknown> | null = null;
   if (responseText) {
     try {

@@ -65,12 +65,22 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 async function postSession(url: string, body: unknown): Promise<{ user: CurrentUser }> {
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  const responseText = await response.text();
+  let response: Response;
+  let responseText: string;
+  try {
+    response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(90000),
+    });
+    responseText = await response.text();
+  } catch (error) {
+    if (error instanceof Error && (error.name === 'TimeoutError' || error.name === 'AbortError')) {
+      throw new Error('The school server is taking too long to respond. Please try again.');
+    }
+    throw new Error('Unable to connect to the school. Check your internet connection and try again.');
+  }
   let data: Record<string, unknown> = {};
   if (responseText) {
     try {

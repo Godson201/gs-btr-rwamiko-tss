@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "test:pwa": "node --test test/app-service-worker.test.cjs"
+    "test:pwa": "node --test test/app-service-worker.test.cjs",
+    "test:login": "node --test test/login-route.test.cjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",

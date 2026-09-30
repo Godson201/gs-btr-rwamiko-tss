@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
@@ -14,7 +14,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { LanguageSwitcher } from '@/components/shared/language-switcher';
 
 const loginSchema = z.object({
-  email: z.string().min(1, 'Enter your email or phone number'),
+  email: z.string().trim().min(1, 'Enter your email or phone number'),
   password: z.string().min(1, 'Password is required'),
 });
 
@@ -23,14 +23,23 @@ type LoginValues = z.infer<typeof loginSchema>;
 export default function LoginPage() {
   const { login } = useAuth();
   const [serverError, setServerError] = useState<string | null>(null);
+  const [slowConnection, setSlowConnection] = useState(false);
 
   const form = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: '', password: '' },
   });
 
+  const submitting = form.formState.isSubmitting;
+  useEffect(() => {
+    if (!submitting) return;
+    const timer = window.setTimeout(() => setSlowConnection(true), 8000);
+    return () => window.clearTimeout(timer);
+  }, [submitting]);
+
   const onSubmit = async (values: LoginValues) => {
     setServerError(null);
+    setSlowConnection(false);
     try {
       await login(values.email, values.password);
     } catch (error) {
@@ -61,7 +70,7 @@ export default function LoginPage() {
                     <FormItem>
                       <FormLabel>Email or phone number</FormLabel>
                       <FormControl>
-                        <Input type="text" placeholder="you@gsbtrrwamiko.rw or 078xxxxxxx" {...field} />
+                        <Input type="text" autoComplete="username" autoCapitalize="none" spellCheck={false} placeholder="you@gsbtrrwamiko.rw or 078xxxxxxx" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -88,8 +97,9 @@ export default function LoginPage() {
                     </FormItem>
                   )}
                 />
-                {serverError && <p className="text-sm text-destructive">{serverError}</p>}
-                <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+                {submitting && slowConnection && <p role="status" data-no-translate className="text-sm text-muted-foreground">Connecting to the school server. It may take about a minute to start. Please keep this page open.</p>}
+                {serverError && <p role="alert" data-no-translate className="text-sm text-destructive">{serverError}</p>}
+                <Button type="submit" data-no-translate className="w-full" disabled={form.formState.isSubmitting}>
                   {form.formState.isSubmitting ? 'Signing in…' : 'Sign in'}
                 </Button>
               </form>
