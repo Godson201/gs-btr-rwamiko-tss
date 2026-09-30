@@ -117,10 +117,10 @@ export function PortalLayout({
             </Dialog>
             <h1 className="text-base font-semibold sm:text-lg">{t(portalKey)}</h1>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Button asChild variant="outline" size="sm" className="min-h-11">
-              <Link href="/" data-no-translate><House className="size-4" />{t('nav.home')}</Link>
-            </Button>
+          <Button asChild variant="outline" size="sm" className="ml-auto min-h-11">
+            <Link href="/" data-no-translate><House className="size-4" />{t('nav.home')}</Link>
+          </Button>
+          <div className="ml-auto flex flex-wrap items-center gap-2 sm:ml-0">
             <LanguageSwitcher compact /><DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="min-h-11 px-2 sm:pl-1.5" aria-label={user ? `${user.firstName} ${user.lastName}: account menu` : t('account')}>
