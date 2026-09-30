@@ -55,7 +55,7 @@ services:
       - key: SEED_ADMIN_PASSWORD
         sync: false
       - key: SEED_ADMIN_RESET_PASSWORD
-        value: "false"
+        value: "true"
 
   - type: web
     name: gs-btr-rwamiko-web
