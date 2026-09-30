@@ -18,9 +18,20 @@ function escapeHtml(value: string) { return value.replace(/[&<>'"]/g, (c) => ({ 
 export function QuestionBankManager() {
   const [questions, setQuestions] = useState<Question[]>([]); const [showForm, setShowForm] = useState(false); const [search, setSearch] = useState(''); const [bloomFilter, setBloomFilter] = useState('All'); const [typeFilter, setTypeFilter] = useState('All'); const [templateReady, setTemplateReady] = useState(false);
   const [importedFiles, setImportedFiles] = useState<{ name: string; size: number; importedAt: string }[]>([]);
-  const [text, setText] = useState(''); const [answer, setAnswer] = useState(''); const [type, setType] = useState<QuestionType>('Multiple choice'); const [bloom, setBloom] = useState<BloomLevel | ''>(''); const [marks, setMarks] = useState(1); const [module, setModule] = useState(''); const [difficulty, setDifficulty] = useState('Medium'); const [imageName, setImageName] = useState(''); const importRef = useRef<HTMLInputElement>(null);
-  useEffect(() => { try { const saved = localStorage.getItem('teacher-question-bank'); if (saved) setQuestions(JSON.parse(saved)); } catch {} }, []);
-  useEffect(() => { localStorage.setItem('teacher-question-bank', JSON.stringify(questions)); }, [questions]);
+  const [text, setText] = useState(''); const [answer, setAnswer] = useState(''); const [type, setType] = useState<QuestionType>('Multiple choice'); const [bloom, setBloom] = useState<BloomLevel | ''>(''); const [marks, setMarks] = useState(1); const [module, setModule] = useState(''); const [difficulty, setDifficulty] = useState('Medium'); const [imageName, setImageName] = useState(''); const importRef = useRef<HTMLInputElement>(null); const storageReady = useRef(false);
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      try {
+        const saved = localStorage.getItem('teacher-question-bank');
+        storageReady.current = true;
+        if (saved) setQuestions(JSON.parse(saved));
+      } catch {
+        storageReady.current = true;
+      }
+    }, 0);
+    return () => window.clearTimeout(timeout);
+  }, []);
+  useEffect(() => { if (storageReady.current) localStorage.setItem('teacher-question-bank', JSON.stringify(questions)); }, [questions]);
   const filtered = useMemo(() => questions.filter((q) => (bloomFilter === 'All' || q.bloom === bloomFilter) && (typeFilter === 'All' || q.type === typeFilter) && `${q.text} ${q.module}`.toLowerCase().includes(search.toLowerCase())), [questions, search, bloomFilter, typeFilter]);
   function saveQuestion() { if (!text.trim() || !answer.trim() || !module.trim() || !bloom) { toast.error('Question, expected answer, module and Bloom’s level are required.'); return; } if (type === 'Photo based' && !imageName) { toast.error('Attach an image for a photo-based question.'); return; } setQuestions((old) => [{ id: crypto.randomUUID(), text: text.trim(), answer: answer.trim(), type, bloom, marks, module: module.trim(), difficulty, imageName: imageName || undefined }, ...old]); setText(''); setAnswer(''); setBloom(''); setMarks(1); setModule(''); setImageName(''); setShowForm(false); toast.success('Question added to the bank.'); }
   function downloadTemplate() { const content = `<html><head><meta charset="utf-8"><style>body{font-family:Arial;margin:42px}h1{color:#123b70}table{border-collapse:collapse;width:100%}td,th{border:1px solid #777;padding:8px}</style></head><body><h1>G.S BTR RWAMIKO TSS — Question Import Template</h1><p>Complete every field. Do not rename headings. Repeat this table for every question.</p><table><tr><th>Module code/name</th><td>[Required]</td></tr><tr><th>Question type</th><td>True or False | Multiple choice | Fill in the blank | Matching | Short answer | Long answer / Essay | Scenario based | Photo based | Practical task</td></tr><tr><th>Bloom's taxonomy level</th><td>Remember | Understand | Apply | Analyse | Evaluate | Create</td></tr><tr><th>Difficulty</th><td>Easy | Medium | Challenging</td></tr><tr><th>Marks</th><td>[Number]</td></tr><tr><th>Question</th><td>[Required]</td></tr><tr><th>Options / matching pairs</th><td>[If applicable]</td></tr><tr><th>Expected answer / marking guide</th><td>[Required]</td></tr><tr><th>Image reference</th><td>[Photo-based questions only]</td></tr></table></body></html>`; const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([content], { type: 'application/msword' })); link.download = 'BTR-Rwamiko-Question-Bank-Template.doc'; link.click(); URL.revokeObjectURL(link.href); setTemplateReady(true); toast.success('Word template downloaded.'); }

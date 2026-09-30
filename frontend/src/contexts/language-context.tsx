@@ -163,7 +163,13 @@ const LanguageContext = createContext<LanguageContextValue | null>(null);
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguageState] = useState<Language>('en');
-  useEffect(() => { const saved = localStorage.getItem('school-language'); if (saved === 'en' || saved === 'rw') setLanguageState(saved); }, []);
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      const saved = localStorage.getItem('school-language');
+      if (saved === 'en' || saved === 'rw') setLanguageState(saved);
+    }, 0);
+    return () => window.clearTimeout(timeout);
+  }, []);
   const setLanguage = (value: Language) => { setLanguageState(value); localStorage.setItem('school-language', value); document.documentElement.lang = value; };
   useEffect(() => { document.documentElement.lang = language; }, [language]);
   useEffect(() => {
