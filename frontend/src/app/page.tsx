@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import { SchoolUpdates } from '@/components/shared/school-updates';
 import { AppPromo } from '@/components/shared/app-promo';
+import { HomePortalLink } from '@/components/shared/home-portal-link';
 import Link from 'next/link';
 import { ArrowRight, BookOpen, CheckCircle2, Cpu, MapPin, ShieldCheck, Sparkles, Wrench } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -19,7 +20,7 @@ export default function HomePage() {
             <span className="leading-tight"><span className="block text-xs font-black tracking-wide sm:text-sm">G.S BTR RWAMIKO TSS</span><span className="block text-[9px] uppercase tracking-wide sm:text-[10px] sm:tracking-[0.19em] text-cyan-100">Skills • Character • Future</span></span>
           </Link>
           <nav className="hidden items-center gap-7 text-sm font-semibold text-white/85 xl:flex"><a href="#school-updates" className="transition hover:text-white">School updates</a><a href="#story" className="transition hover:text-white">Our story</a><a href="#programmes" className="transition hover:text-white">Programmes</a><a href="#student-life" className="transition hover:text-white">Student life</a></nav>
-          <div className="hidden items-center gap-3 sm:flex"><LanguageSwitcher compact /><Link href="/admissions" className="text-sm font-bold text-white hover:text-cyan-200">Apply now</Link><Button asChild className="rounded-full bg-cyan-400 text-slate-950 shadow-lg hover:bg-cyan-300"><Link href="/auth/login">Portal login <ArrowRight className="size-4" /></Link></Button></div>
+          <div className="hidden items-center gap-3 sm:flex"><LanguageSwitcher compact /><Link href="/admissions" className="text-sm font-bold text-white hover:text-cyan-200">Apply now</Link><HomePortalLink className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-cyan-400 px-4 py-2 text-sm font-medium text-slate-950 shadow-lg hover:bg-cyan-300" /></div>
           <MobileHomeNav />
         </div>
       </header>

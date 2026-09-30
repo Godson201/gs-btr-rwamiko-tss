@@ -6,6 +6,7 @@ export type Language = 'en' | 'rw';
 
 const translations = {
   en: {
+    'nav.home': 'View homepage', 'portal.return': 'Back to portal', 'portal.login': 'Portal login',
     'language.name': 'English', 'language.label': 'Language', 'language.settings': 'Language settings',
     'language.description': 'Choose the language used on this device.', 'language.saved': 'Your preference is saved automatically.',
     'nav.dashboard': 'Dashboard', 'nav.students': 'Students', 'nav.teachers': 'Teachers', 'nav.classes': 'Classes',
@@ -18,6 +19,7 @@ const translations = {
     'message.parent': 'When school and family walk together, every learner moves forward.',
   },
   rw: {
+    'nav.home': 'Reba ahabanza', 'portal.return': 'Subira muri sisitemu', 'portal.login': 'Injira muri sisitemu',
     'language.name': 'Kinyarwanda', 'language.label': 'Ururimi', 'language.settings': 'Igenamiterere ry’ururimi',
     'language.description': 'Hitamo ururimi ruzakoreshwa kuri iki gikoresho.', 'language.saved': 'Ururimi wahisemo ruhita rubikwa.',
     'nav.dashboard': 'Ahabanza', 'nav.students': 'Abanyeshuri', 'nav.teachers': 'Abarimu', 'nav.classes': 'Amashuri',

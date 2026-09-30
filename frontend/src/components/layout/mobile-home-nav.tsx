@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { LanguageSwitcher } from '@/components/shared/language-switcher';
 import { InstallAppLink } from '@/components/shared/install-app-link';
+import { HomePortalLink } from '@/components/shared/home-portal-link';
 
 export function MobileHomeNav() {
   const [open, setOpen] = useState(false);
@@ -20,8 +21,8 @@ export function MobileHomeNav() {
         {[
           ['School updates', '/#school-updates'], ['Our story', '/#story'], ['Programmes', '/#programmes'],
           ['Student life', '/#student-life'], ['Apply now', '/admissions'],
-          ['Portal login', '/auth/login'],
         ].map(([label, href]) => <Link key={href} href={href} onClick={() => setOpen(false)} className="flex min-h-11 items-center rounded-md px-3 py-2 font-medium hover:bg-accent">{label}</Link>)}
+        <HomePortalLink onClick={() => setOpen(false)} className="flex min-h-11 items-center justify-between gap-2 rounded-md px-3 py-2 font-medium hover:bg-accent" />
         <InstallAppLink onClick={() => setOpen(false)} className="flex min-h-11 items-center rounded-md px-3 py-2 font-medium hover:bg-accent">Get the app</InstallAppLink>
       </nav>
       <LanguageSwitcher />

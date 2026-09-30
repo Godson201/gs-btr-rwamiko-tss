@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import type { LucideIcon } from 'lucide-react';
-import { Download, LogOut, Menu, User } from 'lucide-react';
+import { Download, House, LogOut, Menu, User } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -117,7 +117,11 @@ export function PortalLayout({
             </Dialog>
             <h1 className="text-base font-semibold sm:text-lg">{t(portalKey)}</h1>
           </div>
-          <div className="flex items-center gap-2"><LanguageSwitcher compact /><DropdownMenu>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button asChild variant="outline" size="sm" className="min-h-11">
+              <Link href="/" data-no-translate><House className="size-4" />{t('nav.home')}</Link>
+            </Button>
+            <LanguageSwitcher compact /><DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="min-h-11 px-2 sm:pl-1.5" aria-label={user ? `${user.firstName} ${user.lastName}: account menu` : t('account')}>
                 <UserAvatar avatar={user?.avatar} firstName={user?.firstName} lastName={user?.lastName} className="size-6" />
