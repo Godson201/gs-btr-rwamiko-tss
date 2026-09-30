@@ -10,12 +10,22 @@ import { AuthenticatedUser } from '../auth/auth.types';
 import { AssignSchoolRoleDto } from './dto/assign-school-role.dto';
 import { RoleAssignmentService } from './role-assignment.service';
 import { SCHOOL_ROLE_CODES, SchoolRoleCode } from './school-role.catalog';
+import { PermissionAccessService } from './permission-access.service';
 
 @Controller('rbac')
 @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
 @Roles(Role.ADMIN, Role.SUPER_ADMIN)
 export class RbacController {
-  constructor(private readonly assignments: RoleAssignmentService) {}
+  constructor(
+    private readonly assignments: RoleAssignmentService,
+    private readonly access: PermissionAccessService,
+  ) {}
+
+  @Get('me/access')
+  @Roles()
+  myAccess(@CurrentUser() user: AuthenticatedUser) {
+    return this.access.getAccessSummary(user.id);
+  }
 
   @Get('roles')
   @RequirePermissions('users.view')

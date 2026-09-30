@@ -12,6 +12,7 @@ const prisma = {
       {
         schoolRole: {
           code: 'TEACHER',
+          label: 'Teacher / Trainer',
           permissions: [
             {
               scopeMode: PermissionScopeMode.SELF,
@@ -24,6 +25,7 @@ const prisma = {
       {
         schoolRole: {
           code: 'HOD',
+          label: 'Head of Department',
           permissions: [
             {
               scopeMode: PermissionScopeMode.DEPARTMENT,
@@ -36,6 +38,7 @@ const prisma = {
       {
         schoolRole: {
           code: 'HEAD_TEACHER',
+          label: 'Head Teacher',
           permissions: [
             {
               scopeMode: PermissionScopeMode.SCHOOL,
@@ -78,6 +81,9 @@ async function main() {
     await access.permitsDepartment('user-1', 'academic.view', 'NIT'),
     'School scope must allow every department',
   );
+  const summary = await access.getAccessSummary('user-1');
+  assert(summary.permissions.includes('academic.view'), 'Access summary must expose effective permission codes');
+  assert(summary.schoolRoles.some((role) => role.code === 'HOD'), 'Access summary must expose active roles');
 
   console.log('RBAC permission resolution and scope checks passed.');
 }

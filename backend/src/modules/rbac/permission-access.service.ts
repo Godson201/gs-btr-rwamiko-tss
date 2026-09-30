@@ -82,4 +82,27 @@ export class PermissionAccessService {
           grant.departmentIds.includes(departmentId)),
     );
   }
+
+  async getAccessSummary(userId: string) {
+    const [resolved, assignments] = await Promise.all([
+      this.resolve(userId),
+      this.prisma.userSchoolRole.findMany({
+        where: { userId, isActive: true, schoolRole: { isActive: true } },
+        select: {
+          schoolRole: { select: { code: true, label: true } },
+          departmentScopes: { select: { departmentId: true } },
+        },
+        orderBy: { schoolRole: { label: 'asc' } },
+      }),
+    ]);
+
+    return {
+      permissions: [...resolved.keys()].sort(),
+      schoolRoles: assignments.map((assignment) => ({
+        code: assignment.schoolRole.code,
+        label: assignment.schoolRole.label,
+        departmentIds: assignment.departmentScopes.map((scope) => scope.departmentId),
+      })),
+    };
+  }
 }

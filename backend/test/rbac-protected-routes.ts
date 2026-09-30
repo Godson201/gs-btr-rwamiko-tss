@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 import { PERMISSIONS_KEY, RequiredPermissions } from '../src/decorators/permissions.decorator';
+import { ROLES_KEY } from '../src/decorators/roles.decorator';
 import { AcademicYearsController } from '../src/modules/academic-years/academic-years.controller';
 import { AuditController } from '../src/modules/audit/audit.controller';
 import { ClassesController } from '../src/modules/classes/classes.controller';
@@ -33,6 +34,11 @@ assertPermission(RbacController.prototype.listRoles, 'users.view');
 assertPermission(RbacController.prototype.getUserRoles, 'users.view');
 assertPermission(RbacController.prototype.assign, 'users.assign_role');
 assertPermission(RbacController.prototype.remove, 'users.remove_role');
+
+const myAccessRoles = Reflect.getMetadata(ROLES_KEY, RbacController.prototype.myAccess) as unknown[];
+if (!Array.isArray(myAccessRoles) || myAccessRoles.length !== 0) {
+  throw new Error('The current-user access endpoint must be available to every authenticated portal role');
+}
 
 if (Reflect.getMetadata(PERMISSIONS_KEY, ClassesController.prototype.create)) {
   throw new Error('Unmigrated mutation routes must retain legacy authorization only');
