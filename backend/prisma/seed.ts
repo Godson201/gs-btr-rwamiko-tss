@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
+import { seedRbac } from './rbac-seed';
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }),
@@ -79,6 +80,8 @@ async function main() {
     });
   }
   console.log(`Ensured ${departments.length} TVET departments.`);
+
+  await seedRbac(prisma);
 }
 
 main()
