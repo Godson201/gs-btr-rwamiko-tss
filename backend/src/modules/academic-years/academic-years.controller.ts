@@ -6,6 +6,8 @@ import { JwtAuthGuard } from '../../guards/jwt-auth.guard';
 import { PermissionsGuard } from '../../guards/permissions.guard';
 import { RolesGuard } from '../../guards/roles.guard';
 import { AcademicYearsService } from './academic-years.service';
+import { CurrentUser } from '../../decorators/current-user.decorator';
+import { AuthenticatedUser } from '../auth/auth.types';
 
 @Controller('academic-years')
 @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
@@ -15,7 +17,7 @@ export class AcademicYearsController {
   constructor(private readonly academicYearsService: AcademicYearsService) {}
 
   @Get()
-  findAll() {
-    return this.academicYearsService.findAll();
+  findAll(@CurrentUser() user: AuthenticatedUser) {
+    return this.academicYearsService.findAllForUser(user.id);
   }
 }

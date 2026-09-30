@@ -8,6 +8,8 @@ import { RolesGuard } from '../../guards/roles.guard';
 import { ClassModulesService } from './class-modules.service';
 import { AssignModuleDto } from './dto/assign-module.dto';
 import { UpdateAssignmentDto } from './dto/update-assignment.dto';
+import { CurrentUser } from '../../decorators/current-user.decorator';
+import { AuthenticatedUser } from '../auth/auth.types';
 
 @Controller('classes/:classId/modules')
 @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
@@ -17,8 +19,8 @@ export class ClassModulesController {
   @Get()
   @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.TEACHER)
   @RequirePermissions('academic.curriculum.view')
-  findAll(@Param('classId') classId: string) {
-    return this.classModulesService.findAll(classId);
+  findAll(@CurrentUser() user: AuthenticatedUser, @Param('classId') classId: string) {
+    return this.classModulesService.findAllForUser(user.id, classId);
   }
 
   @Post()

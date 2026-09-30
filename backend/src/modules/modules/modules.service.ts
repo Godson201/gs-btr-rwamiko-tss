@@ -4,6 +4,7 @@ import { PrismaService } from '../../database/prisma.service';
 import { parseSpreadsheet } from '../../utils/parse-spreadsheet';
 import { CreateModuleDto } from './dto/create-module.dto';
 import { UpdateModuleDto } from './dto/update-module.dto';
+import { AcademicScopeService } from '../rbac/academic-scope.service';
 
 const MODULE_INCLUDE = {
   department: { select: { id: true, name: true, code: true } },
@@ -17,7 +18,26 @@ export interface ModuleBulkImportResult {
 
 @Injectable()
 export class ModulesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private readonly scope: AcademicScopeService) {}
+
+  async findAllForUser(userId: string, departmentId?: string) {
+    const scope = await this.scope.subjectWhere(userId, 'academic.curriculum.view');
+    return this.prisma.subject.findMany({
+      where: { AND: [scope, { departmentId }] },
+      include: MODULE_INCLUDE,
+      orderBy: { code: 'asc' },
+    });
+  }
+
+  async findOneForUser(userId: string, id: string) {
+    const scope = await this.scope.subjectWhere(userId, 'academic.curriculum.view');
+    const foundModule = await this.prisma.subject.findFirst({
+      where: { AND: [{ id }, scope] },
+      include: MODULE_INCLUDE,
+    });
+    if (!foundModule) throw new NotFoundException('Module not found');
+    return foundModule;
+  }
 
   findAll(departmentId?: string) {
     return this.prisma.subject.findMany({

@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
 import { CreateClassDto } from './dto/create-class.dto';
 import { UpdateClassDto } from './dto/update-class.dto';
+import { AcademicScopeService } from '../rbac/academic-scope.service';
 
 const CLASS_INCLUDE = {
   academicYear: { select: { id: true, name: true } },
@@ -11,10 +12,18 @@ const CLASS_INCLUDE = {
 
 @Injectable()
 export class ClassesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private readonly scope: AcademicScopeService) {}
 
   findAll() {
     return this.prisma.class.findMany({
+      include: CLASS_INCLUDE,
+      orderBy: [{ level: 'asc' }, { name: 'asc' }],
+    });
+  }
+
+  async findAllForUser(userId: string) {
+    return this.prisma.class.findMany({
+      where: await this.scope.classWhere(userId, 'academic.view'),
       include: CLASS_INCLUDE,
       orderBy: [{ level: 'asc' }, { name: 'asc' }],
     });
@@ -25,6 +34,16 @@ export class ClassesService {
     if (!klass) {
       throw new NotFoundException('Class not found');
     }
+    return klass;
+  }
+
+  async findOneForUser(userId: string, id: string) {
+    const scope = await this.scope.classWhere(userId, 'academic.view');
+    const klass = await this.prisma.class.findFirst({
+      where: { AND: [{ id }, scope] },
+      include: CLASS_INCLUDE,
+    });
+    if (!klass) throw new NotFoundException('Class not found');
     return klass;
   }
 

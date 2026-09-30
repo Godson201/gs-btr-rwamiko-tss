@@ -17,6 +17,8 @@ import { RolesGuard } from '../../guards/roles.guard';
 import { ClassesService } from './classes.service';
 import { CreateClassDto } from './dto/create-class.dto';
 import { UpdateClassDto } from './dto/update-class.dto';
+import { CurrentUser } from '../../decorators/current-user.decorator';
+import { AuthenticatedUser } from '../auth/auth.types';
 
 @Controller('classes')
 @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
@@ -26,15 +28,15 @@ export class ClassesController {
   @Get()
   @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.TEACHER)
   @RequirePermissions('academic.view')
-  findAll() {
-    return this.classesService.findAll();
+  findAll(@CurrentUser() user: AuthenticatedUser) {
+    return this.classesService.findAllForUser(user.id);
   }
 
   @Get(':id')
   @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.TEACHER)
   @RequirePermissions('academic.view')
-  findOne(@Param('id') id: string) {
-    return this.classesService.findOne(id);
+  findOne(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) {
+    return this.classesService.findOneForUser(user.id, id);
   }
 
   @Post()

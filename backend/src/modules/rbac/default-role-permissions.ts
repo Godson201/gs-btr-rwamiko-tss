@@ -55,6 +55,7 @@ export const DEFAULT_ROLE_PERMISSION_GRANTS = [
   { role: 'TEACHER', permission: 'academic.view', scope: 'TEACHING_ASSIGNMENT' },
   { role: 'TEACHER', permission: 'academic.curriculum.view', scope: 'TEACHING_ASSIGNMENT' },
   { role: 'TEACHER', permission: 'teaching.assignment.view', scope: 'SELF' },
+  { role: 'TEACHER', permission: 'department.view', scope: 'TEACHING_ASSIGNMENT' },
 ] as const satisfies readonly DefaultRolePermissionGrant[];
 
 export function assertDefaultGrantIsImplemented(grant: DefaultRolePermissionGrant): void {

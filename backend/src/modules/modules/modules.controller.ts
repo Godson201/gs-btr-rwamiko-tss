@@ -24,6 +24,8 @@ import type { UploadedSpreadsheetFile } from '../../utils/uploaded-file.type';
 import { CreateModuleDto } from './dto/create-module.dto';
 import { UpdateModuleDto } from './dto/update-module.dto';
 import { ModulesService } from './modules.service';
+import { CurrentUser } from '../../decorators/current-user.decorator';
+import { AuthenticatedUser } from '../auth/auth.types';
 
 @Controller('modules')
 @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
@@ -33,8 +35,8 @@ export class ModulesController {
   @Get()
   @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.TEACHER)
   @RequirePermissions('academic.curriculum.view')
-  findAll(@Query('departmentId') departmentId?: string) {
-    return this.modulesService.findAll(departmentId);
+  findAll(@CurrentUser() user: AuthenticatedUser, @Query('departmentId') departmentId?: string) {
+    return this.modulesService.findAllForUser(user.id, departmentId);
   }
 
   @Post('bulk-import')
@@ -50,8 +52,8 @@ export class ModulesController {
   @Get(':id')
   @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.TEACHER)
   @RequirePermissions('academic.curriculum.view')
-  findOne(@Param('id') id: string) {
-    return this.modulesService.findOne(id);
+  findOne(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) {
+    return this.modulesService.findOneForUser(user.id, id);
   }
 
   @Post()

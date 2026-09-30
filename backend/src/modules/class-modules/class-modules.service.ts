@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
 import { AssignModuleDto } from './dto/assign-module.dto';
 import { UpdateAssignmentDto } from './dto/update-assignment.dto';
+import { AcademicScopeService } from '../rbac/academic-scope.service';
 
 const ASSIGNMENT_INCLUDE = {
   subject: { select: { id: true, code: true, name: true, credits: true } },
@@ -16,7 +17,21 @@ const ASSIGNMENT_INCLUDE = {
 
 @Injectable()
 export class ClassModulesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private readonly scope: AcademicScopeService) {}
+
+  async findAllForUser(userId: string, classId: string) {
+    const classScope = await this.scope.classWhere(userId, 'academic.curriculum.view');
+    const accessibleClass = await this.prisma.class.findFirst({
+      where: { AND: [{ id: classId }, classScope] },
+      select: { id: true },
+    });
+    if (!accessibleClass) throw new NotFoundException('Class not found');
+    return this.prisma.classSubject.findMany({
+      where: await this.scope.classSubjectWhere(userId, classId, 'academic.curriculum.view'),
+      include: ASSIGNMENT_INCLUDE,
+      orderBy: { subject: { code: 'asc' } },
+    });
+  }
 
   findAll(classId: string) {
     return this.prisma.classSubject.findMany({
