@@ -1,4 +1,10 @@
-import { ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Prisma } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
@@ -78,58 +84,106 @@ export class TeachersService {
   }
 
   async create(dto: CreateTeacherDto) {
-    const existing = await this.prisma.user.findUnique({ where: { email: dto.email } });
+    const email = dto.email.trim().toLowerCase();
+    const phone = dto.phone?.trim() || undefined;
+    const qualification = dto.qualification?.trim() || undefined;
+    const specialization = dto.specialization?.trim() || undefined;
+    const departmentId = dto.departmentId?.trim() || undefined;
+
+    const existing = await this.prisma.user.findFirst({
+      where: {
+        OR: [
+          { email: { equals: email, mode: 'insensitive' } },
+          ...(phone ? [{ phone }] : []),
+        ],
+      },
+      select: { email: true, phone: true },
+    });
     if (existing) {
-      throw new ConflictException('A user with this email already exists');
+      throw new ConflictException(
+        existing.email.toLowerCase() === email
+          ? 'A user with this email already exists'
+          : 'A user with this phone number already exists',
+      );
+    }
+
+    if (departmentId) {
+      const department = await this.prisma.department.findUnique({
+        where: { id: departmentId },
+        select: { id: true },
+      });
+      if (!department) {
+        throw new BadRequestException('Selected department does not exist');
+      }
     }
 
     const temporaryPassword = dto.password ?? randomBytes(8).toString('hex');
     const saltRounds = Number(this.configService.get('BCRYPT_SALT_ROUNDS', 10));
     const hashedPassword = await bcrypt.hash(temporaryPassword, saltRounds);
 
-    const teacher = await this.prisma.$transaction(async (tx) => {
-      const user = await tx.user.create({
-        data: {
-          email: dto.email,
-          password: hashedPassword,
-          firstName: dto.firstName,
-          lastName: dto.lastName,
-          phone: dto.phone,
-          role: 'TEACHER',
-          portalAccess: ['TEACHER'],
-        },
-      });
+    let teacher;
+    try {
+      teacher = await this.prisma.$transaction(async (tx) => {
+        const user = await tx.user.create({
+          data: {
+            email,
+            password: hashedPassword,
+            firstName: dto.firstName.trim(),
+            lastName: dto.lastName.trim(),
+            phone,
+            role: 'TEACHER',
+            portalAccess: ['TEACHER'],
+          },
+        });
 
-      const teacherRole = await tx.schoolRole.findUnique({ where: { code: 'TEACHER' } });
-      if (!teacherRole?.isActive) {
-        throw new ConflictException('Teacher role configuration is unavailable');
+        const teacherRole = await tx.schoolRole.findUnique({ where: { code: 'TEACHER' } });
+        if (!teacherRole?.isActive) {
+          throw new ConflictException('Teacher role configuration is unavailable');
+        }
+        await tx.userSchoolRole.create({
+          data: {
+            userId: user.id,
+            schoolRoleId: teacherRole.id,
+            source: 'LEGACY_PORTAL_ROLE',
+          },
+        });
+
+        return tx.teacher.create({
+          data: {
+            userId: user.id,
+            employeeNo: `EMP-${new Date().getFullYear()}-${randomInt(100000, 999999)}`,
+            dateOfBirth: new Date(dto.dateOfBirth),
+            gender: dto.gender,
+            qualification,
+            specialization,
+            departmentId,
+          },
+          include: TEACHER_INCLUDE,
+        });
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2002') {
+          const target = String(error.meta?.target ?? '');
+          if (target.includes('email')) {
+            throw new ConflictException('A user with this email already exists');
+          }
+          if (target.includes('phone')) {
+            throw new ConflictException('A user with this phone number already exists');
+          }
+          throw new ConflictException('A teacher with these details already exists');
+        }
+        if (error.code === 'P2003') {
+          throw new BadRequestException('The selected department is invalid');
+        }
       }
-      await tx.userSchoolRole.create({
-        data: {
-          userId: user.id,
-          schoolRoleId: teacherRole.id,
-          source: 'LEGACY_PORTAL_ROLE',
-        },
-      });
-
-      return tx.teacher.create({
-        data: {
-          userId: user.id,
-          employeeNo: `EMP-${new Date().getFullYear()}-${randomInt(100000, 999999)}`,
-          dateOfBirth: new Date(dto.dateOfBirth),
-          gender: dto.gender,
-          qualification: dto.qualification,
-          specialization: dto.specialization,
-          departmentId: dto.departmentId,
-        },
-        include: TEACHER_INCLUDE,
-      });
-    });
+      throw error;
+    }
 
     try {
       const { resetLink } = await this.authService.createPasswordResetToken(teacher.user.id);
       await this.mailService.sendTeacherWelcomeEmail(
-        dto.email,
+        email,
         `${dto.firstName} ${dto.lastName}`,
         temporaryPassword,
         resetLink,
