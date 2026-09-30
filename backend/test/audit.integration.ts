@@ -8,6 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Role } from '@prisma/client';
 import { PrismaService } from '../src/database/prisma.service';
 import { AuditModule } from '../src/modules/audit/audit.module';
+import { RbacModule } from '../src/modules/rbac/rbac.module';
 import { JwtStrategy } from '../src/modules/auth/strategies/jwt.strategy';
 import { JwtAuthGuard } from '../src/guards/jwt-auth.guard';
 import { RolesGuard } from '../src/guards/roles.guard';
@@ -25,6 +26,21 @@ let lastQuery: Record<string, any>;
 let failWrites = false;
 const prisma = {
   user: { findUnique: async ({ where }: { where: { id: string } }) => users.find(u => u.id === where.id) },
+  userSchoolRole: {
+    findMany: async ({ where }: { where: { userId: string } }) =>
+      where.userId === Role.ADMIN || where.userId === Role.SUPER_ADMIN
+        ? [{
+          schoolRole: {
+            code: 'SYSTEM_ADMIN',
+            permissions: [{
+              scopeMode: 'SCHOOL',
+              permission: { code: 'system.audit.view' },
+            }],
+          },
+          departmentScopes: [],
+        }]
+        : [],
+  },
   auditLog: {
     create: async ({ data }: { data: Record<string, unknown> }) => {
       if (failWrites) throw new Error('Database unavailable');
@@ -58,7 +74,7 @@ class TestActions {
   health() { return { ok: true }; }
 }
 
-@Module({ imports: [TestDependencies, AuditModule], controllers: [TestActions] })
+@Module({ imports: [TestDependencies, RbacModule, AuditModule], controllers: [TestActions] })
 class TestApp {}
 
 async function main() {

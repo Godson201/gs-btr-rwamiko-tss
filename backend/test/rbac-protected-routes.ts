@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import { PERMISSIONS_KEY, RequiredPermissions } from '../src/decorators/permissions.decorator';
 import { AcademicYearsController } from '../src/modules/academic-years/academic-years.controller';
+import { AuditController } from '../src/modules/audit/audit.controller';
 import { ClassesController } from '../src/modules/classes/classes.controller';
 import { ClassModulesController } from '../src/modules/class-modules/class-modules.controller';
 import { DepartmentsController } from '../src/modules/departments/departments.controller';
@@ -20,6 +21,7 @@ function assertPermission(target: object, expected: string): void {
 }
 
 assertPermission(AcademicYearsController, 'academic.view');
+assertPermission(AuditController, 'system.audit.view');
 assertPermission(DepartmentsController, 'department.view');
 assertPermission(ClassesController.prototype.findAll, 'academic.view');
 assertPermission(ClassesController.prototype.findOne, 'academic.view');
