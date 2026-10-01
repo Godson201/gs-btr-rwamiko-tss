@@ -43,6 +43,12 @@ enum AccountStatus {
   REJECTED
 }
 
+enum ModuleType {
+  SPECIFIC
+  GENERAL
+  COMPLEMENTARY
+}
+
 model User {
   id        String    @id @default(cuid())
   email     String    @unique
@@ -373,6 +379,8 @@ model Subject {
   description   String?
   credits       Int?
   learningHours Int?
+  sector        String?
+  moduleType    ModuleType?
   competences   String[]
   isCore        Boolean  @default(false)
   createdAt     DateTime @default(now())

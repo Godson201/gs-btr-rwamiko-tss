@@ -1,4 +1,5 @@
-import { IsArray, IsBoolean, IsInt, IsOptional, IsString, Min } from 'class-validator';
+import { ModuleType } from '@prisma/client';
+import { IsArray, IsBoolean, IsEnum, IsInt, IsOptional, IsString, Min } from 'class-validator';
 
 export class CreateModuleDto {
   @IsString()
@@ -6,6 +7,10 @@ export class CreateModuleDto {
 
   @IsString()
   name: string;
+
+  @IsOptional()
+  @IsString()
+  classId?: string;
 
   @IsOptional()
   @IsString()
@@ -24,6 +29,14 @@ export class CreateModuleDto {
   @IsInt()
   @Min(0)
   learningHours?: number;
+
+  @IsOptional()
+  @IsString()
+  sector?: string;
+
+  @IsOptional()
+  @IsEnum(ModuleType)
+  moduleType?: ModuleType;
 
   @IsOptional()
   @IsArray()

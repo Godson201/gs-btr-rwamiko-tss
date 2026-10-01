@@ -1,0 +1,5 @@
+CREATE TYPE "ModuleType" AS ENUM ('SPECIFIC', 'GENERAL', 'COMPLEMENTARY');
+
+ALTER TABLE "Subject"
+ADD COLUMN "sector" TEXT,
+ADD COLUMN "moduleType" "ModuleType";

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
 import { parseSpreadsheet } from '../../utils/parse-spreadsheet';
@@ -8,6 +8,13 @@ import { AcademicScopeService } from '../rbac/academic-scope.service';
 
 const MODULE_INCLUDE = {
   department: { select: { id: true, name: true, code: true } },
+  classes: {
+    select: {
+      class: {
+        select: { id: true, name: true, level: true, academicYear: { select: { name: true } } },
+      },
+    },
+  },
   _count: { select: { classes: true } },
 } satisfies Prisma.SubjectInclude;
 
@@ -58,8 +65,41 @@ export class ModulesService {
     return foundModule;
   }
 
-  create(dto: CreateModuleDto) {
-    return this.prisma.subject.create({ data: dto, include: MODULE_INCLUDE });
+  async create(dto: CreateModuleDto) {
+    const { classId, departmentId, ...moduleData } = dto;
+
+    try {
+      return await this.prisma.$transaction(async (tx) => {
+        let resolvedDepartmentId = departmentId;
+        if (classId) {
+          const selectedClass = await tx.class.findUnique({
+            where: { id: classId },
+            select: { id: true, departmentId: true },
+          });
+          if (!selectedClass) throw new BadRequestException('Selected class does not exist');
+          if (!selectedClass.departmentId) {
+            throw new BadRequestException('Selected class is not assigned to a trade');
+          }
+          resolvedDepartmentId = selectedClass.departmentId;
+        }
+
+        const created = await tx.subject.create({
+          data: { ...moduleData, departmentId: resolvedDepartmentId },
+        });
+        if (classId) {
+          await tx.classSubject.create({ data: { classId, subjectId: created.id } });
+        }
+        return tx.subject.findUniqueOrThrow({ where: { id: created.id }, include: MODULE_INCLUDE });
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+        throw new ConflictException('A module with this code already exists');
+      }
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {
+        throw new BadRequestException('The selected class or trade is invalid');
+      }
+      throw error;
+    }
   }
 
   async update(id: string, dto: UpdateModuleDto) {
