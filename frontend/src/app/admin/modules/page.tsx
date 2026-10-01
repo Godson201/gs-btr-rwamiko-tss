@@ -166,7 +166,10 @@ export default function AdminModulesPage() {
       ),
     },
     { header: 'Trade', cell: (row) => row.department?.name ?? '—' },
-    { header: 'Class', cell: (row) => row.classes.map((item) => item.class.name).join(', ') || '—' },
+    {
+      header: 'Class',
+      cell: (row) => (row.classes ?? []).map((item) => item.class.name).join(', ') || 'Not assigned',
+    },
     { header: 'Sector', cell: (row) => row.sector ?? '—' },
     { header: 'Credits', cell: (row) => row.credits ?? '—' },
     { header: 'Learning Hours', cell: (row) => row.learningHours ?? '—' },
@@ -174,7 +177,7 @@ export default function AdminModulesPage() {
       header: 'Type',
       cell: (row) => <Badge variant="secondary">{row.moduleType ? moduleTypeLabels[row.moduleType] : 'Not specified'}</Badge>,
     },
-    { header: 'Classes', cell: (row) => row._count.classes },
+    { header: 'Classes', cell: (row) => row._count?.classes ?? row.classes?.length ?? 0 },
     {
       header: '',
       className: 'text-right',
