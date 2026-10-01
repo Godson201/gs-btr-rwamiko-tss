@@ -15,6 +15,7 @@ export interface ComboboxOption {
 export function Combobox({
   options,
   value,
+  selectedLabel,
   onChange,
   placeholder = 'Select…',
   searchPlaceholder = 'Search…',
@@ -25,6 +26,7 @@ export function Combobox({
 }: {
   options: ComboboxOption[];
   value: string | null;
+  selectedLabel?: string;
   onChange: (value: string) => void;
   placeholder?: string;
   searchPlaceholder?: string;
@@ -38,7 +40,7 @@ export function Combobox({
   // Keep a controlled value visible while its option list is loading or
   // refetching. This is important for cascading selectors where choosing a
   // parent immediately starts loading the next administrative division.
-  const displayLabel = selected?.label ?? value;
+  const displayLabel = selectedLabel || selected?.label || value;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

@@ -100,7 +100,8 @@ export function LocationPicker({
         <Combobox
           options={toOptions(provincesQuery.data)}
           value={current.province || null}
-          loading={provincesQuery.isLoading}
+          selectedLabel={current.province || undefined}
+          loading={provincesQuery.isLoading && !provincesQuery.data}
           placeholder="Select province"
           searchPlaceholder="Search provinces…"
           onChange={(province) => onChange({ ...EMPTY_VALUE, province })}
@@ -111,8 +112,9 @@ export function LocationPicker({
         <Combobox
           options={toOptions(districtsQuery.data)}
           value={current.district || null}
+          selectedLabel={current.district || undefined}
           disabled={!current.province}
-          loading={districtsQuery.isFetching}
+          loading={districtsQuery.isFetching && !districtsQuery.data}
           placeholder="Select district"
           searchPlaceholder="Search districts…"
           onChange={(district) => onChange({ ...current, district, sector: '', cell: '', village: '', villageId: '' })}
@@ -123,8 +125,9 @@ export function LocationPicker({
         <Combobox
           options={toOptions(sectorsQuery.data)}
           value={current.sector || null}
+          selectedLabel={current.sector || undefined}
           disabled={!current.district}
-          loading={sectorsQuery.isFetching}
+          loading={sectorsQuery.isFetching && !sectorsQuery.data}
           placeholder="Select sector"
           searchPlaceholder="Search sectors…"
           onChange={(sector) => onChange({ ...current, sector, cell: '', village: '', villageId: '' })}
@@ -135,8 +138,9 @@ export function LocationPicker({
         <Combobox
           options={toOptions(cellsQuery.data)}
           value={current.cell || null}
+          selectedLabel={current.cell || undefined}
           disabled={!current.sector}
-          loading={cellsQuery.isFetching}
+          loading={cellsQuery.isFetching && !cellsQuery.data}
           placeholder="Select cell"
           searchPlaceholder="Search cells…"
           onChange={(cell) => onChange({ ...current, cell, village: '', villageId: '' })}
@@ -147,8 +151,9 @@ export function LocationPicker({
         <Combobox
           options={(villagesQuery.data ?? []).map((v) => ({ value: v.id, label: v.village }))}
           value={current.villageId || null}
+          selectedLabel={current.village || undefined}
           disabled={!current.cell}
-          loading={villagesQuery.isFetching}
+          loading={villagesQuery.isFetching && !villagesQuery.data}
           placeholder="Select village"
           searchPlaceholder="Search villages…"
           onChange={(villageId) => {
