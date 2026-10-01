@@ -8,7 +8,10 @@ const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }),
 });
 
-const CSV_PATH = join(__dirname, 'seed-data', 'rwanda-locations.csv');
+// `__dirname` points to dist/prisma in the production image, while the CSV is
+// copied to /app/prisma/seed-data. Resolving from the application root works
+// for ts-node locally and for compiled JavaScript in Docker.
+const CSV_PATH = join(process.cwd(), 'prisma', 'seed-data', 'rwanda-locations.csv');
 const BATCH_SIZE = 1000;
 
 function parseCsv(raw: string): { id: string; province: string; district: string; sector: string; cell: string; village: string }[] {
@@ -26,6 +29,12 @@ async function main() {
   const rows = parseCsv(raw);
   console.log(`Parsed ${rows.length} location rows from ${CSV_PATH}`);
 
+  const existing = await prisma.location.count();
+  if (existing >= rows.length) {
+    console.log(`Rwanda locations already available (${existing} rows); import skipped.`);
+    return;
+  }
+
   let created = 0;
   for (let i = 0; i < rows.length; i += BATCH_SIZE) {
     const batch = rows.slice(i, i + BATCH_SIZE);
@@ -34,7 +43,8 @@ async function main() {
     console.log(`Inserted batch ${i / BATCH_SIZE + 1}/${Math.ceil(rows.length / BATCH_SIZE)} (${result.count} new rows)`);
   }
 
-  console.log(`Done. ${created} locations created (of ${rows.length} rows parsed).`);
+  const total = await prisma.location.count();
+  console.log(`Done. ${created} locations created; ${total} total location rows available.`);
 }
 
 main()
