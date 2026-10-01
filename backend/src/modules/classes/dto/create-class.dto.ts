@@ -1,4 +1,4 @@
-import { IsInt, IsOptional, IsString, Min } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
 export class CreateClassDto {
   @IsString()
@@ -18,8 +18,4 @@ export class CreateClassDto {
   @IsString()
   departmentId?: string;
 
-  @IsOptional()
-  @IsInt()
-  @Min(1)
-  capacity?: number;
 }

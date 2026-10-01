@@ -49,16 +49,32 @@ async function main() {
     console.log('Admin user already exists; password unchanged.');
   }
 
-  const currentYearName = new Date().getFullYear().toString();
-  const academicYear = await prisma.academicYear.upsert({
-    where: { name: currentYearName },
-    update: {},
-    create: {
+  const startYear = new Date().getFullYear();
+  const legacyYearName = startYear.toString();
+  const currentYearName = `${startYear}-${startYear + 1}`;
+  const academicYear = await prisma.$transaction(async (tx) => {
+    const current = await tx.academicYear.findUnique({ where: { name: currentYearName } });
+    const legacy = current
+      ? null
+      : await tx.academicYear.findUnique({ where: { name: legacyYearName } });
+    const data = {
       name: currentYearName,
-      startDate: new Date(`${currentYearName}-01-01`),
-      endDate: new Date(`${currentYearName}-12-31`),
+      startDate: new Date(`${startYear}-09-01`),
+      endDate: new Date(`${startYear + 1}-08-31`),
       isCurrent: true,
-    },
+    };
+
+    const year = current
+      ? await tx.academicYear.update({ where: { id: current.id }, data })
+      : legacy
+        ? await tx.academicYear.update({ where: { id: legacy.id }, data })
+        : await tx.academicYear.create({ data });
+
+    await tx.academicYear.updateMany({
+      where: { id: { not: year.id }, isCurrent: true },
+      data: { isCurrent: false },
+    });
+    return year;
   });
   console.log(`Ensured academic year: ${academicYear.name}`);
 

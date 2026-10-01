@@ -18,7 +18,6 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DataTable, type DataTableColumn } from '@/components/shared/data-table';
 import { api } from '@/lib/api';
@@ -40,7 +39,6 @@ interface SchoolClass {
   name: string;
   level: string;
   section: string | null;
-  capacity: number | null;
   academicYear: { id: string; name: string };
   department: Department | null;
   _count: { students: number };
@@ -50,7 +48,6 @@ const classSchema = z.object({
   departmentId: z.string().min(1, 'Select a trade'),
   className: z.string().min(1, 'Select a class'),
   academicYearId: z.string().min(1, 'Required'),
-  capacity: z.string().optional(),
 });
 
 const classNamesByDepartmentCode: Record<string, string[]> = {
@@ -86,7 +83,7 @@ export default function AdminClassesPage() {
 
   const form = useForm<ClassFormValues>({
     resolver: zodResolver(classSchema),
-    defaultValues: { departmentId: '', className: '', academicYearId: '', capacity: '' },
+    defaultValues: { departmentId: '', className: '', academicYearId: '' },
   });
 
   const selectedDepartment = departments?.find(
@@ -103,7 +100,6 @@ export default function AdminClassesPage() {
         level: values.className.split(' ')[0],
         departmentId: values.departmentId,
         academicYearId: values.academicYearId,
-        capacity: values.capacity ? Number(values.capacity) : undefined,
       }),
     onSuccess: () => {
       toast.success('Class created');
@@ -139,8 +135,7 @@ export default function AdminClassesPage() {
     { header: 'Trade', cell: (row) => row.department?.name ?? 'Not assigned' },
     { header: 'Class level', cell: (row) => row.level },
     { header: 'Academic Year', cell: (row) => row.academicYear.name },
-    { header: 'Students', cell: (row) => row._count.students },
-    { header: 'Capacity', cell: (row) => row.capacity ?? '—' },
+    { header: 'Capacity', cell: (row) => row._count.students },
     {
       header: '',
       className: 'text-right',
@@ -165,7 +160,7 @@ export default function AdminClassesPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Classes</h2>
-          <p className="text-sm text-muted-foreground">Manage trade classes and capacity</p>
+          <p className="text-sm text-muted-foreground">Manage trade classes and assigned students</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
@@ -242,19 +237,6 @@ export default function AdminClassesPage() {
                   />
                 </div>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <FormField
-                    control={form.control}
-                    name="capacity"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Capacity (optional)</FormLabel>
-                        <FormControl>
-                          <Input type="number" min={1} {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
                   <FormField
                     control={form.control}
                     name="academicYearId"
