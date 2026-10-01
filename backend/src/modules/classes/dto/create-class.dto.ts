@@ -15,6 +15,10 @@ export class CreateClassDto {
   academicYearId: string;
 
   @IsOptional()
+  @IsString()
+  departmentId?: string;
+
+  @IsOptional()
   @IsInt()
   @Min(1)
   capacity?: number;

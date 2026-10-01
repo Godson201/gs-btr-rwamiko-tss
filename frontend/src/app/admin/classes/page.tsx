@@ -29,6 +29,12 @@ interface AcademicYear {
   isCurrent: boolean;
 }
 
+interface Department {
+  id: string;
+  name: string;
+  code: string;
+}
+
 interface SchoolClass {
   id: string;
   name: string;
@@ -36,16 +42,26 @@ interface SchoolClass {
   section: string | null;
   capacity: number | null;
   academicYear: { id: string; name: string };
+  department: Department | null;
   _count: { students: number };
 }
 
 const classSchema = z.object({
-  name: z.string().min(1, 'Required'),
-  level: z.string().min(1, 'Required'),
-  section: z.string().optional(),
+  departmentId: z.string().min(1, 'Select a trade'),
+  className: z.string().min(1, 'Select a class'),
   academicYearId: z.string().min(1, 'Required'),
   capacity: z.string().optional(),
 });
+
+const classNamesByDepartmentCode: Record<string, string[]> = {
+  CSA: ['L3 CSA', 'L4 CSA', 'L5 CSA'],
+  SOD: ['L3 SWD', 'L4 SWD', 'L5 SWD'],
+  NIT: ['L3 NIT', 'L4 NIT', 'L5 NIT'],
+  ELT: ['L3 ELT', 'L4 ELT', 'L5 ELT'],
+  ETT: ['L3 ETE', 'L4 ETE', 'L5 ETE'],
+  BCN: ['L3 BDC', 'L4 BDC', 'L5 BDC'],
+  ACC: ['S4 ACC', 'S5 ACC', 'S6 ACC'],
+};
 
 type ClassFormValues = z.infer<typeof classSchema>;
 
@@ -63,15 +79,30 @@ export default function AdminClassesPage() {
     queryFn: async () => (await api.get<AcademicYear[]>('/academic-years')).data,
   });
 
+  const { data: departments } = useQuery({
+    queryKey: ['departments-options'],
+    queryFn: async () => (await api.get<Department[]>('/departments')).data,
+  });
+
   const form = useForm<ClassFormValues>({
     resolver: zodResolver(classSchema),
-    defaultValues: { name: '', level: '', section: '', academicYearId: '', capacity: '' },
+    defaultValues: { departmentId: '', className: '', academicYearId: '', capacity: '' },
   });
+
+  const selectedDepartment = departments?.find(
+    (department) => department.id === form.watch('departmentId'),
+  );
+  const classChoices = selectedDepartment
+    ? classNamesByDepartmentCode[selectedDepartment.code] ?? []
+    : [];
 
   const createClass = useMutation({
     mutationFn: async (values: ClassFormValues) =>
       api.post('/classes', {
-        ...values,
+        name: values.className,
+        level: values.className.split(' ')[0],
+        departmentId: values.departmentId,
+        academicYearId: values.academicYearId,
         capacity: values.capacity ? Number(values.capacity) : undefined,
       }),
     onSuccess: () => {
@@ -105,7 +136,8 @@ export default function AdminClassesPage() {
         </Link>
       ),
     },
-    { header: 'Level', cell: (row) => row.level },
+    { header: 'Trade', cell: (row) => row.department?.name ?? 'Not assigned' },
+    { header: 'Class level', cell: (row) => row.level },
     { header: 'Academic Year', cell: (row) => row.academicYear.name },
     { header: 'Students', cell: (row) => row._count.students },
     { header: 'Capacity', cell: (row) => row.capacity ?? '—' },
@@ -133,7 +165,7 @@ export default function AdminClassesPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Classes</h2>
-          <p className="text-sm text-muted-foreground">Manage class groups and capacity</p>
+          <p className="text-sm text-muted-foreground">Manage trade classes and capacity</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
@@ -154,45 +186,62 @@ export default function AdminClassesPage() {
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <FormField
                     control={form.control}
-                    name="name"
+                    name="departmentId"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Class name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g. Senior 4 Software Dev" {...field} />
-                        </FormControl>
+                        <FormLabel>Trade / programme</FormLabel>
+                        <Select
+                          value={field.value}
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            form.setValue('className', '', { shouldValidate: true });
+                          }}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select trade" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {departments?.filter((department) => classNamesByDepartmentCode[department.code]).map((department) => (
+                              <SelectItem key={department.id} value={department.id}>
+                                {department.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                   <FormField
                     control={form.control}
-                    name="level"
+                    name="className"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Level</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g. S4" {...field} />
-                        </FormControl>
+                        <FormLabel>{selectedDepartment?.code === 'ACC' ? 'Senior class' : 'Level and class'}</FormLabel>
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                          disabled={!selectedDepartment}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder={selectedDepartment ? 'Select class' : 'Select trade first'} />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {classChoices.map((className) => (
+                              <SelectItem key={className} value={className}>{className}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <FormField
-                    control={form.control}
-                    name="section"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Section (optional)</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g. A" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
                   <FormField
                     control={form.control}
                     name="capacity"
@@ -206,32 +255,31 @@ export default function AdminClassesPage() {
                       </FormItem>
                     )}
                   />
+                  <FormField
+                    control={form.control}
+                    name="academicYearId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Academic year</FormLabel>
+                        <Select value={field.value} onValueChange={field.onChange}>
+                          <FormControl>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select academic year" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {academicYears?.map((year) => (
+                              <SelectItem key={year.id} value={year.id}>
+                                {year.name}{year.isCurrent ? ' (current)' : ''}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
-                <FormField
-                  control={form.control}
-                  name="academicYearId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Academic year</FormLabel>
-                      <Select value={field.value} onValueChange={field.onChange}>
-                        <FormControl>
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select academic year" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {academicYears?.map((year) => (
-                            <SelectItem key={year.id} value={year.id}>
-                              {year.name}
-                              {year.isCurrent ? ' (current)' : ''}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
                 <DialogFooter>
                   <Button type="submit" disabled={createClass.isPending}>
                     {createClass.isPending ? 'Saving…' : 'Save class'}
