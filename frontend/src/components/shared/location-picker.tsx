@@ -1,7 +1,6 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { Combobox } from '@/components/ui/combobox';
 import { api } from '@/lib/api';
 
 interface Village {
@@ -91,77 +90,101 @@ export function LocationPicker({
     staleTime: Infinity,
   });
 
-  const toOptions = (values: string[] | undefined) => (values ?? []).map((v) => ({ value: v, label: v }));
-
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
       <div className="space-y-1.5">
         <label className="text-sm font-medium">Province</label>
-        <Combobox
-          options={toOptions(provincesQuery.data)}
-          value={current.province || null}
-          selectedLabel={current.province || undefined}
+        <LocationSelect
+          options={(provincesQuery.data ?? []).map((item) => ({ value: item, label: item }))}
+          value={current.province}
           loading={provincesQuery.isLoading && !provincesQuery.data}
           placeholder="Select province"
-          searchPlaceholder="Search provinces…"
           onChange={(province) => onChange({ ...EMPTY_VALUE, province })}
         />
       </div>
       <div className="space-y-1.5">
         <label className="text-sm font-medium">District</label>
-        <Combobox
-          options={toOptions(districtsQuery.data)}
-          value={current.district || null}
-          selectedLabel={current.district || undefined}
+        <LocationSelect
+          options={(districtsQuery.data ?? []).map((item) => ({ value: item, label: item }))}
+          value={current.district}
           disabled={!current.province}
           loading={districtsQuery.isFetching && !districtsQuery.data}
           placeholder="Select district"
-          searchPlaceholder="Search districts…"
           onChange={(district) => onChange({ ...current, district, sector: '', cell: '', village: '', villageId: '' })}
         />
       </div>
       <div className="space-y-1.5">
         <label className="text-sm font-medium">Sector</label>
-        <Combobox
-          options={toOptions(sectorsQuery.data)}
-          value={current.sector || null}
-          selectedLabel={current.sector || undefined}
+        <LocationSelect
+          options={(sectorsQuery.data ?? []).map((item) => ({ value: item, label: item }))}
+          value={current.sector}
           disabled={!current.district}
           loading={sectorsQuery.isFetching && !sectorsQuery.data}
           placeholder="Select sector"
-          searchPlaceholder="Search sectors…"
           onChange={(sector) => onChange({ ...current, sector, cell: '', village: '', villageId: '' })}
         />
       </div>
       <div className="space-y-1.5">
         <label className="text-sm font-medium">Cell</label>
-        <Combobox
-          options={toOptions(cellsQuery.data)}
-          value={current.cell || null}
-          selectedLabel={current.cell || undefined}
+        <LocationSelect
+          options={(cellsQuery.data ?? []).map((item) => ({ value: item, label: item }))}
+          value={current.cell}
           disabled={!current.sector}
           loading={cellsQuery.isFetching && !cellsQuery.data}
           placeholder="Select cell"
-          searchPlaceholder="Search cells…"
           onChange={(cell) => onChange({ ...current, cell, village: '', villageId: '' })}
         />
       </div>
       <div className="space-y-1.5 sm:col-span-2">
         <label className="text-sm font-medium">Village</label>
-        <Combobox
+        <LocationSelect
           options={(villagesQuery.data ?? []).map((v) => ({ value: v.id, label: v.village }))}
-          value={current.villageId || null}
-          selectedLabel={current.village || undefined}
+          value={current.villageId}
           disabled={!current.cell}
           loading={villagesQuery.isFetching && !villagesQuery.data}
           placeholder="Select village"
-          searchPlaceholder="Search villages…"
           onChange={(villageId) => {
             const village = villagesQuery.data?.find((v) => v.id === villageId);
             onChange({ ...current, villageId, village: village?.village ?? '' });
           }}
         />
       </div>
+      {current.villageId && (
+        <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900 sm:col-span-2">
+          <span className="font-semibold">Selected location:</span>{' '}
+          {[current.province, current.district, current.sector, current.cell, current.village].join(' › ')}
+        </div>
+      )}
     </div>
+  );
+}
+
+function LocationSelect({
+  options,
+  value,
+  onChange,
+  placeholder,
+  disabled = false,
+  loading = false,
+}: {
+  options: Array<{ value: string; label: string }>;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+  disabled?: boolean;
+  loading?: boolean;
+}) {
+  return (
+    <select
+      value={value}
+      disabled={disabled || loading}
+      onChange={(event) => onChange(event.target.value)}
+      className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-xs outline-none focus-visible:ring-2 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      <option value="">{loading ? 'Loading…' : placeholder}</option>
+      {options.map((option) => (
+        <option key={option.value} value={option.value}>{option.label}</option>
+      ))}
+    </select>
   );
 }
