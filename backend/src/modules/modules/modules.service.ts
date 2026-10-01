@@ -104,7 +104,56 @@ export class ModulesService {
 
   async update(id: string, dto: UpdateModuleDto) {
     await this.findOne(id);
-    return this.prisma.subject.update({ where: { id }, data: dto, include: MODULE_INCLUDE });
+    const { classId, departmentId, ...moduleData } = dto;
+
+    try {
+      return await this.prisma.$transaction(async (tx) => {
+        let resolvedDepartmentId = departmentId;
+        if (classId) {
+          const selectedClass = await tx.class.findUnique({
+            where: { id: classId },
+            select: { departmentId: true },
+          });
+          if (!selectedClass) throw new BadRequestException('Selected class does not exist');
+          if (!selectedClass.departmentId) {
+            throw new BadRequestException('Selected class is not assigned to a trade');
+          }
+          resolvedDepartmentId = selectedClass.departmentId;
+        }
+
+        await tx.subject.update({
+          where: { id },
+          data: { ...moduleData, departmentId: resolvedDepartmentId },
+        });
+
+        if (classId) {
+          const assignments = await tx.classSubject.findMany({
+            where: { subjectId: id },
+            orderBy: { createdAt: 'asc' },
+          });
+          if (!assignments.some((assignment) => assignment.classId === classId)) {
+            if (assignments[0]) {
+              await tx.classSubject.update({
+                where: { id: assignments[0].id },
+                data: { classId },
+              });
+            } else {
+              await tx.classSubject.create({ data: { classId, subjectId: id } });
+            }
+          }
+        }
+
+        return tx.subject.findUniqueOrThrow({ where: { id }, include: MODULE_INCLUDE });
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+        throw new ConflictException('The module code or class assignment already exists');
+      }
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {
+        throw new BadRequestException('The selected class or trade is invalid');
+      }
+      throw error;
+    }
   }
 
   async remove(id: string) {

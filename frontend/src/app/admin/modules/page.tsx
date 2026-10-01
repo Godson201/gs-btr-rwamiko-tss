@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus, Trash2 } from 'lucide-react';
+import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -15,7 +15,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -77,6 +76,7 @@ type ModuleFormValues = z.infer<typeof moduleSchema>;
 export default function AdminModulesPage() {
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingModule, setEditingModule] = useState<CourseModule | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ['modules'],
@@ -125,9 +125,9 @@ export default function AdminModulesPage() {
       schoolClass.department?.id === selectedDepartmentId && schoolClass.level === selectedLevel,
   );
 
-  const createModule = useMutation({
-    mutationFn: async (values: ModuleFormValues) =>
-      api.post('/modules', {
+  const saveModule = useMutation({
+    mutationFn: async (values: ModuleFormValues) => {
+      const payload = {
         code: values.code,
         name: values.name,
         classId: values.classId,
@@ -136,15 +136,45 @@ export default function AdminModulesPage() {
         learningHours: Number(values.learningHours),
         competences: values.competences.split('\n').map((line) => line.trim()).filter(Boolean),
         moduleType: values.moduleType,
-      }),
+      };
+      return editingModule
+        ? api.patch(`/modules/${editingModule.id}`, payload)
+        : api.post('/modules', payload);
+    },
     onSuccess: () => {
-      toast.success('Module created');
+      toast.success(editingModule ? 'Module updated' : 'Module created');
       queryClient.invalidateQueries({ queryKey: ['modules'] });
+      queryClient.invalidateQueries({ queryKey: ['class-modules'] });
       setIsDialogOpen(false);
+      setEditingModule(null);
       form.reset();
     },
     onError: (error: Error) => toast.error(error.message),
   });
+
+  const openCreateModule = () => {
+    setEditingModule(null);
+    form.reset();
+    setIsDialogOpen(true);
+  };
+
+  const openEditModule = (module: CourseModule) => {
+    const assignment = module.classes?.[0]?.class;
+    setEditingModule(module);
+    form.reset({
+      code: module.code,
+      name: module.name,
+      departmentId: module.department?.id ?? '',
+      level: assignment?.level ?? '',
+      classId: assignment?.id ?? '',
+      sector: module.sector ?? '',
+      credits: module.credits?.toString() ?? '',
+      learningHours: module.learningHours?.toString() ?? '',
+      competences: module.competences.join('\n'),
+      moduleType: module.moduleType ?? 'SPECIFIC',
+    });
+    setIsDialogOpen(true);
+  };
 
   const deleteModule = useMutation({
     mutationFn: async (id: string) => api.delete(`/modules/${id}`),
@@ -182,17 +212,22 @@ export default function AdminModulesPage() {
       header: '',
       className: 'text-right',
       cell: (row) => (
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => {
-            if (confirm(`Delete module ${row.name}? This cannot be undone.`)) {
-              deleteModule.mutate(row.id);
-            }
-          }}
-        >
-          <Trash2 className="size-4 text-destructive" />
-        </Button>
+        <div className="flex justify-end gap-1">
+          <Button variant="ghost" size="icon" aria-label={`Edit ${row.name}`} onClick={() => openEditModule(row)}>
+            <Pencil className="size-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => {
+              if (confirm(`Delete module ${row.name}? This cannot be undone.`)) {
+                deleteModule.mutate(row.id);
+              }
+            }}
+          >
+            <Trash2 className="size-4 text-destructive" />
+          </Button>
+        </div>
       ),
     },
   ];
@@ -212,20 +247,21 @@ export default function AdminModulesPage() {
             invalidateKeys={['modules']}
             createdLabel={(row) => String(row.code)}
           />
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="size-4" />
-                Add Module
-              </Button>
-            </DialogTrigger>
+          <Dialog open={isDialogOpen} onOpenChange={(open) => {
+            setIsDialogOpen(open);
+            if (!open) setEditingModule(null);
+          }}>
+            <Button onClick={openCreateModule}>
+              <Plus className="size-4" />
+              Add Module
+            </Button>
           <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Add Module</DialogTitle>
+              <DialogTitle>{editingModule ? 'Edit Module' : 'Add Module'}</DialogTitle>
             </DialogHeader>
             <Form {...form}>
               <form
-                onSubmit={form.handleSubmit((values) => createModule.mutate(values))}
+                onSubmit={form.handleSubmit((values) => saveModule.mutate(values))}
                 className="space-y-4"
               >
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -397,8 +433,8 @@ export default function AdminModulesPage() {
                   )}
                 />
                 <DialogFooter>
-                  <Button type="submit" disabled={createModule.isPending}>
-                    {createModule.isPending ? 'Saving…' : 'Save module'}
+                  <Button type="submit" disabled={saveModule.isPending}>
+                    {saveModule.isPending ? 'Saving…' : editingModule ? 'Update module' : 'Save module'}
                   </Button>
                 </DialogFooter>
               </form>

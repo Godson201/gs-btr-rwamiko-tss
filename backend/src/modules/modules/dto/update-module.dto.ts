@@ -4,6 +4,10 @@ import { IsArray, IsBoolean, IsEnum, IsInt, IsOptional, IsString, Min } from 'cl
 export class UpdateModuleDto {
   @IsOptional()
   @IsString()
+  classId?: string;
+
+  @IsOptional()
+  @IsString()
   code?: string;
 
   @IsOptional()
