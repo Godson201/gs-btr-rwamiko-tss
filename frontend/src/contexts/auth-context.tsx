@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
-import { roleHomePath } from '@/lib/session';
+import { roleHomePath, SESSION_ACTIVITY_KEY, SESSION_IDLE_TIMEOUT_MS } from '@/lib/session';
 
 export interface LocationSummary {
   id: string;
@@ -142,6 +142,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = useCallback(
     async (email: string, password: string) => {
       const data = await postSession('/api/auth/login', { email, password });
+      localStorage.setItem(SESSION_ACTIVITY_KEY, String(Date.now()));
       setUser(data.user);
       try {
         const access = await api.get<Pick<AuthContextValue, 'permissions' | 'schoolRoles'>>('/rbac/me/access');
@@ -164,6 +165,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const registerParent = useCallback(
     async (input: RegisterParentInput) => {
       const data = await postSession('/api/auth/register-parent', input);
+      localStorage.setItem(SESSION_ACTIVITY_KEY, String(Date.now()));
       setUser(data.user);
       setPermissions([]);
       setSchoolRoles([]);
@@ -178,13 +180,64 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 
   const logout = useCallback(async () => {
-    await fetch('/api/auth/logout', { method: 'POST' });
+    localStorage.removeItem(SESSION_ACTIVITY_KEY);
     setUser(null);
     setPermissions([]);
     setSchoolRoles([]);
-    router.push('/auth/login');
-    router.refresh();
+    try {
+      await fetch('/api/auth/logout', { method: 'POST', cache: 'no-store' });
+    } finally {
+      router.replace('/auth/login');
+      router.refresh();
+    }
   }, [router]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    let lastRecorded = Number(localStorage.getItem(SESSION_ACTIVITY_KEY)) || Date.now();
+    if (!localStorage.getItem(SESSION_ACTIVITY_KEY)) {
+      localStorage.setItem(SESSION_ACTIVITY_KEY, String(lastRecorded));
+    }
+
+    const checkForTimeout = () => {
+      const storedActivity = localStorage.getItem(SESSION_ACTIVITY_KEY);
+      if (!storedActivity) {
+        void logout();
+        return;
+      }
+      const lastActivity = Number(storedActivity);
+      if (Date.now() - lastActivity >= SESSION_IDLE_TIMEOUT_MS) void logout();
+    };
+    const recordActivity = () => {
+      const now = Date.now();
+      if (now - lastRecorded < 1000) return;
+      lastRecorded = now;
+      localStorage.setItem(SESSION_ACTIVITY_KEY, String(now));
+    };
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') checkForTimeout();
+    };
+    const handlePageShow = () => checkForTimeout();
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === SESSION_ACTIVITY_KEY) checkForTimeout();
+    };
+    const activityEvents: Array<keyof WindowEventMap> = ['pointerdown', 'keydown', 'scroll', 'touchstart'];
+    activityEvents.forEach((event) => window.addEventListener(event, recordActivity, { passive: true }));
+    document.addEventListener('visibilitychange', handleVisibility);
+    window.addEventListener('pageshow', handlePageShow);
+    window.addEventListener('storage', handleStorage);
+    const timer = window.setInterval(checkForTimeout, 30_000);
+    checkForTimeout();
+
+    return () => {
+      activityEvents.forEach((event) => window.removeEventListener(event, recordActivity));
+      document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('pageshow', handlePageShow);
+      window.removeEventListener('storage', handleStorage);
+      window.clearInterval(timer);
+    };
+  }, [logout, user]);
 
   const hasPermission = useCallback(
     (permission: string) => permissions.includes(permission),

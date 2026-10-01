@@ -11,10 +11,15 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
 import { api } from '@/lib/api';
 
 const resetSchema = z.object({
   password: z.string().min(8, 'Password must be at least 8 characters'),
+  confirmPassword: z.string().min(1, 'Please confirm your password'),
+}).refine((values) => values.password === values.confirmPassword, {
+  message: 'Passwords do not match',
+  path: ['confirmPassword'],
 });
 
 type ResetValues = z.infer<typeof resetSchema>;
@@ -28,7 +33,7 @@ function ResetPasswordForm() {
 
   const form = useForm<ResetValues>({
     resolver: zodResolver(resetSchema),
-    defaultValues: { password: '' },
+    defaultValues: { password: '', confirmPassword: '' },
   });
 
   const onSubmit = async (values: ResetValues) => {
@@ -38,7 +43,7 @@ function ResetPasswordForm() {
     }
     setServerError(null);
     try {
-      await api.post('/auth/reset-password', { token, password: values.password });
+      await api.post('/auth/reset-password', { token, password: values.password, confirmPassword: values.confirmPassword });
       setSuccess(true);
       setTimeout(() => router.push('/auth/login'), 2000);
     } catch (error) {
@@ -64,7 +69,20 @@ function ResetPasswordForm() {
             <FormItem>
               <FormLabel>New password</FormLabel>
               <FormControl>
-                <Input type="password" placeholder="••••••••" {...field} />
+                <PasswordInput autoComplete="new-password" placeholder="••••••••" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="confirmPassword"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Confirm password</FormLabel>
+              <FormControl>
+                <PasswordInput autoComplete="new-password" placeholder="••••••••" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

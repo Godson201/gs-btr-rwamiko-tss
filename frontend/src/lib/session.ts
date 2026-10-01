@@ -1,5 +1,7 @@
 export const SESSION_COOKIE = 'session';
 export const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7; // 7 days, matches backend JWT_EXPIRES_IN default
+export const SESSION_IDLE_TIMEOUT_MS = 15 * 60 * 1000;
+export const SESSION_ACTIVITY_KEY = 'school-session-last-activity';
 
 export interface SessionPayload {
   sub: string;

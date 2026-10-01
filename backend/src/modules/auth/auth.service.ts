@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { AccountStatus, ParentStatus, Role } from '@prisma/client';
@@ -239,6 +239,9 @@ export class AuthService {
   }
 
   async resetPassword(dto: ResetPasswordDto): Promise<{ message: string }> {
+    if (dto.confirmPassword !== undefined && dto.password !== dto.confirmPassword) {
+      throw new BadRequestException('Passwords do not match');
+    }
     const tokenHash = this.hashToken(dto.token);
     const resetToken = await this.prisma.passwordResetToken.findUnique({ where: { tokenHash } });
 

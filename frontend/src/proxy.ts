@@ -43,6 +43,10 @@ export async function proxy(request: NextRequest) {
     if (session.accountStatus && session.accountStatus !== 'ACTIVE') {
       return NextResponse.redirect(new URL('/auth/pending-approval', request.url));
     }
+    const response = NextResponse.next();
+    response.headers.set('Cache-Control', 'private, no-store, no-cache, max-age=0, must-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    return response;
   }
 
   if ((pathname === '/auth/login' || pathname === '/auth/signup') && session) {

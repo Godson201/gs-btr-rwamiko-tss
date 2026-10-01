@@ -17,5 +17,6 @@ export async function POST(request: NextRequest) {
   }
   const response = NextResponse.json({ success: true });
   response.cookies.delete(SESSION_COOKIE);
+  response.headers.set('Cache-Control', 'no-store, max-age=0');
   return response;
 }
