@@ -19,8 +19,8 @@ export function MobileHomeNav() {
       <DialogTitle>G.S BTR RWAMIKO TSS</DialogTitle>
       <nav aria-label="School navigation" className="grid gap-2">
         {[
-          ['School updates', '/#school-updates'], ['Our story', '/#story'], ['Programmes', '/#programmes'],
-          ['Student life', '/#student-life'], ['Apply now', '/admissions'],
+          ['School updates', '/#school-updates'], ['Our story', '/our-story'], ['Programmes', '/programmes'],
+          ['Student life', '/student-life'], ['Apply now', '/admissions'],
         ].map(([label, href]) => <Link key={href} href={href} onClick={() => setOpen(false)} className="flex min-h-11 items-center rounded-md px-3 py-2 font-medium hover:bg-accent">{label}</Link>)}
         <HomePortalLink onClick={() => setOpen(false)} className="flex min-h-11 items-center justify-between gap-2 rounded-md px-3 py-2 font-medium hover:bg-accent" />
         <InstallAppLink onClick={() => setOpen(false)} className="flex min-h-11 items-center rounded-md px-3 py-2 font-medium hover:bg-accent">Get the app</InstallAppLink>
