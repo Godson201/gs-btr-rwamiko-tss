@@ -1,23 +1,20 @@
 import { Gender } from '@prisma/client';
-import { IsDateString, IsEmail, IsEnum, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsDateString, IsEnum, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class CreateStudentDto {
-  @IsEmail()
-  email: string;
-
-  @IsString()
-  @MinLength(8)
-  password: string;
-
   @IsString()
   firstName: string;
+
+  @IsOptional()
+  @IsString()
+  middleName?: string;
 
   @IsString()
   lastName: string;
 
   @IsOptional()
   @IsString()
-  phone?: string;
+  nationalId?: string;
 
   @IsDateString()
   dateOfBirth: string;
@@ -29,14 +26,26 @@ export class CreateStudentDto {
   @IsString()
   address?: string;
 
+  @IsString()
+  classId: string;
+
+  @IsNumber()
+  @Min(0)
+  @Max(100)
+  previousMarks: number;
+
+  @IsString()
+  motherName: string;
+
+  @IsString()
+  fatherName: string;
+
   @IsOptional()
   @IsString()
-  classId?: string;
+  guardianPhone?: string;
 
   @IsOptional()
   @IsString()
   parentId?: string;
 
-  @IsString()
-  academicYear: string;
 }

@@ -1,5 +1,5 @@
 import { Gender } from '@prisma/client';
-import { IsBoolean, IsDateString, IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsDateString, IsEnum, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class UpdateStudentDto {
   @IsOptional()
@@ -8,11 +8,19 @@ export class UpdateStudentDto {
 
   @IsOptional()
   @IsString()
+  middleName?: string;
+
+  @IsOptional()
+  @IsString()
   lastName?: string;
 
   @IsOptional()
   @IsString()
   phone?: string;
+
+  @IsOptional()
+  @IsString()
+  nationalId?: string;
 
   @IsOptional()
   @IsDateString()
@@ -37,6 +45,24 @@ export class UpdateStudentDto {
   @IsOptional()
   @IsString()
   academicYear?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Max(100)
+  previousMarks?: number;
+
+  @IsOptional()
+  @IsString()
+  motherName?: string;
+
+  @IsOptional()
+  @IsString()
+  fatherName?: string;
+
+  @IsOptional()
+  @IsString()
+  guardianPhone?: string;
 
   @IsOptional()
   @IsBoolean()

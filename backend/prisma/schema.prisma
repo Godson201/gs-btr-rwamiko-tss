@@ -125,6 +125,10 @@ model Student {
   userId         String    @unique
   admissionNo    String    @unique
   nationalId     String?   @unique
+  previousMarks  Float?
+  motherName     String?
+  fatherName     String?
+  guardianPhone  String?
   dateOfBirth    DateTime
   gender         Gender
   address        String?

@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Prisma } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
@@ -14,12 +14,22 @@ const STUDENT_INCLUDE = {
       id: true,
       email: true,
       firstName: true,
+      middleName: true,
       lastName: true,
       phone: true,
       isActive: true,
     },
   },
-  class: { select: { id: true, name: true, level: true, section: true } },
+  class: {
+    select: {
+      id: true,
+      name: true,
+      level: true,
+      section: true,
+      department: { select: { id: true, name: true, code: true } },
+      academicYear: { select: { id: true, name: true } },
+    },
+  },
   parent: {
     select: { id: true, user: { select: { firstName: true, lastName: true } } },
   },
@@ -43,14 +53,14 @@ export class StudentsService {
 
     const where: Prisma.StudentWhereInput = {
       classId: params.classId,
-      user: params.search
-        ? {
-            OR: [
-              { firstName: { contains: params.search, mode: 'insensitive' } },
-              { lastName: { contains: params.search, mode: 'insensitive' } },
-              { email: { contains: params.search, mode: 'insensitive' } },
-            ],
-          }
+      OR: params.search
+        ? [
+            { user: { firstName: { contains: params.search, mode: 'insensitive' } } },
+            { user: { middleName: { contains: params.search, mode: 'insensitive' } } },
+            { user: { lastName: { contains: params.search, mode: 'insensitive' } } },
+            { admissionNo: { contains: params.search, mode: 'insensitive' } },
+            { nationalId: { contains: params.search, mode: 'insensitive' } },
+          ]
         : undefined,
     };
 
@@ -80,52 +90,74 @@ export class StudentsService {
   }
 
   async create(dto: CreateStudentDto) {
-    const existing = await this.prisma.user.findUnique({ where: { email: dto.email } });
-    if (existing) {
-      throw new ConflictException('A user with this email already exists');
+    const selectedClass = await this.prisma.class.findUnique({
+      where: { id: dto.classId },
+      select: { id: true, academicYear: { select: { name: true } } },
+    });
+    if (!selectedClass) {
+      throw new BadRequestException('Selected class does not exist');
     }
 
     const saltRounds = Number(this.configService.get('BCRYPT_SALT_ROUNDS', 10));
-    const hashedPassword = await bcrypt.hash(dto.password, saltRounds);
+    const internalPassword = randomBytes(24).toString('hex');
+    const hashedPassword = await bcrypt.hash(internalPassword, saltRounds);
+    const internalEmail = `student.${Date.now()}.${randomBytes(5).toString('hex')}@internal.gsbtrrwamiko.rw`;
 
-    return this.prisma.$transaction(async (tx) => {
-      const user = await tx.user.create({
-        data: {
-          email: dto.email,
-          password: hashedPassword,
-          firstName: dto.firstName,
-          lastName: dto.lastName,
-          phone: dto.phone,
-          role: 'STUDENT',
-          portalAccess: ['STUDENT'],
-        },
-      });
+    try {
+      return await this.prisma.$transaction(async (tx) => {
+        const user = await tx.user.create({
+          data: {
+            email: internalEmail,
+            password: hashedPassword,
+            firstName: dto.firstName.trim(),
+            middleName: dto.middleName?.trim() || undefined,
+            lastName: dto.lastName.trim(),
+            role: 'STUDENT',
+            portalAccess: [],
+            isActive: false,
+          },
+        });
 
-      return tx.student.create({
-        data: {
-          userId: user.id,
-          admissionNo: `ADM-${new Date().getFullYear()}-${randomInt(100000, 999999)}`,
-          dateOfBirth: new Date(dto.dateOfBirth),
-          gender: dto.gender,
-          address: dto.address,
-          classId: dto.classId,
-          parentId: dto.parentId,
-          academicYear: dto.academicYear,
-        },
-        include: STUDENT_INCLUDE,
+        return tx.student.create({
+          data: {
+            userId: user.id,
+            admissionNo: `ADM-${new Date().getFullYear()}-${randomInt(100000, 999999)}`,
+            nationalId: dto.nationalId?.trim() || undefined,
+            previousMarks: dto.previousMarks,
+            motherName: dto.motherName.trim(),
+            fatherName: dto.fatherName.trim(),
+            guardianPhone: dto.guardianPhone?.trim() || undefined,
+            dateOfBirth: new Date(dto.dateOfBirth),
+            gender: dto.gender,
+            address: dto.address?.trim() || undefined,
+            classId: selectedClass.id,
+            parentId: dto.parentId || undefined,
+            academicYear: selectedClass.academicYear.name,
+          },
+          include: STUDENT_INCLUDE,
+        });
       });
-    });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+        throw new ConflictException('A student with this national ID or admission number already exists');
+      }
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {
+        throw new BadRequestException('The selected class or parent is invalid');
+      }
+      throw error;
+    }
   }
 
   async update(id: string, dto: UpdateStudentDto) {
     const student = await this.findOne(id);
 
     return this.prisma.$transaction(async (tx) => {
-      if (dto.firstName || dto.lastName || dto.phone !== undefined || dto.isActive !== undefined) {
+      if (dto.firstName || dto.middleName !== undefined || dto.lastName || dto.phone !== undefined || dto.isActive !== undefined) {
         await tx.user.update({
           where: { id: student.user.id },
           data: {
             firstName: dto.firstName,
+            middleName: dto.middleName,
             lastName: dto.lastName,
             phone: dto.phone,
             isActive: dto.isActive,
@@ -138,6 +170,11 @@ export class StudentsService {
         data: {
           dateOfBirth: dto.dateOfBirth ? new Date(dto.dateOfBirth) : undefined,
           gender: dto.gender,
+          nationalId: dto.nationalId,
+          previousMarks: dto.previousMarks,
+          motherName: dto.motherName,
+          fatherName: dto.fatherName,
+          guardianPhone: dto.guardianPhone,
           address: dto.address,
           classId: dto.classId,
           parentId: dto.parentId,
