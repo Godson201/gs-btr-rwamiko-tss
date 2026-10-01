@@ -35,6 +35,10 @@ export function Combobox({
 }) {
   const [open, setOpen] = useState(false);
   const selected = options.find((option) => option.value === value);
+  // Keep a controlled value visible while its option list is loading or
+  // refetching. This is important for cascading selectors where choosing a
+  // parent immediately starts loading the next administrative division.
+  const displayLabel = selected?.label ?? value;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -44,11 +48,11 @@ export function Combobox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          disabled={disabled || loading}
-          className={cn('w-full justify-between font-normal', !selected && 'text-muted-foreground', className)}
+          disabled={disabled || (loading && !value)}
+          className={cn('w-full justify-between font-normal', !displayLabel && 'text-muted-foreground', className)}
         >
           <span className="truncate">
-            {loading ? 'Loading…' : selected ? selected.label : placeholder}
+            {displayLabel ?? (loading ? 'Loading…' : placeholder)}
           </span>
           {loading ? (
             <Loader2 className="size-4 shrink-0 animate-spin opacity-50" />
