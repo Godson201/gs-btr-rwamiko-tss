@@ -9,7 +9,6 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Combobox } from '@/components/ui/combobox';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -108,7 +107,7 @@ export default function AdminStudentsPage() {
               <div className="grid gap-4 sm:grid-cols-3">
                 <FormField control={form.control} name="departmentId" render={({ field }) => <FormItem><FormLabel>Trade</FormLabel><Select value={field.value} onValueChange={(value) => { field.onChange(value); form.setValue('level',''); form.setValue('classId',''); }}><FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select trade" /></SelectTrigger></FormControl><SelectContent>{trades.map((trade) => <SelectItem key={trade.id} value={trade.id}>{trade.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>} />
                 <FormField control={form.control} name="level" render={({ field }) => <FormItem><FormLabel>Level</FormLabel><Select value={field.value} disabled={!departmentId} onValueChange={(value) => { field.onChange(value); form.setValue('classId',''); }}><FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select level" /></SelectTrigger></FormControl><SelectContent>{levels.map((item) => <SelectItem key={item} value={item}>{item}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>} />
-                <FormField control={form.control} name="classId" render={({ field }) => <FormItem><FormLabel>Class</FormLabel><FormControl><Combobox options={classOptions.map((item) => ({ value: item.id, label: item.name }))} value={field.value || null} selectedLabel={selectedClass?.name} disabled={!level} placeholder="Select class" onChange={field.onChange} /></FormControl><FormMessage /></FormItem>} />
+                <FormField control={form.control} name="classId" render={({ field }) => <FormItem><FormLabel>Class</FormLabel><FormControl><ControlledSelect options={classOptions.map((item) => ({ value: item.id, label: item.name }))} value={field.value} disabled={!level} placeholder="Select class" onChange={field.onChange} /></FormControl><FormMessage /></FormItem>} />
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <FormItem><FormLabel>Academic year</FormLabel><Input value={selectedClass?.academicYear.name ?? ''} placeholder="Selected automatically from class" readOnly className="bg-muted" /></FormItem>
@@ -122,7 +121,7 @@ export default function AdminStudentsPage() {
             </FormSection>
             <FormSection title="4. Parent account link" description="Optionally connect this learner to an existing verified parent account.">
               <FormField control={form.control} name="linkExistingParent" render={({ field }) => <FormItem><FormControl><label className="flex cursor-pointer items-center gap-3 rounded-lg border p-3"><input type="checkbox" checked={field.value} onChange={(event) => { field.onChange(event.target.checked); if (!event.target.checked) form.setValue('parentId',''); }} /><span><span className="block font-medium">Link student to an existing parent</span><span className="block text-xs text-muted-foreground">Leave unchecked if the parent has not created an account.</span></span></label></FormControl></FormItem>} />
-              {linkExistingParent && <FormField control={form.control} name="parentId" render={({ field }) => <FormItem><FormLabel>Parent or guardian account</FormLabel><FormControl><Combobox options={(parents ?? []).map((parent) => ({ value: parent.id, label: `${parent.user.firstName} ${parent.user.lastName}` }))} value={field.value || null} placeholder="Search parent accounts" searchPlaceholder="Search by parent name…" onChange={field.onChange} /></FormControl><FormMessage /></FormItem>} />}
+              {linkExistingParent && <FormField control={form.control} name="parentId" render={({ field }) => <FormItem><FormLabel>Parent or guardian account</FormLabel><FormControl><ControlledSelect options={(parents ?? []).map((parent) => ({ value: parent.id, label: `${parent.user.firstName} ${parent.user.lastName}` }))} value={field.value ?? ''} placeholder="Select parent or guardian" onChange={field.onChange} /></FormControl><FormMessage /></FormItem>} />}
             </FormSection>
             <div className="rounded-lg bg-blue-50 p-3 text-sm text-blue-900">Admission number and enrollment date are generated automatically. No student username or password is required.</div>
             <DialogFooter><Button type="submit" disabled={createStudent.isPending}>{createStudent.isPending ? 'Saving…' : 'Save student record'}</Button></DialogFooter>
@@ -140,4 +139,17 @@ function FormSection({ title, description, children }: { title: string; descript
 }
 function TextField({ form, name, label, type = 'text' }: { form: ReturnType<typeof useForm<StudentFormValues>>; name: keyof StudentFormValues; label: string; type?: string }) {
   return <FormField control={form.control} name={name} render={({ field }) => <FormItem><FormLabel>{label}</FormLabel><FormControl><Input type={type} value={typeof field.value === 'string' ? field.value : ''} onChange={field.onChange} onBlur={field.onBlur} name={field.name} ref={field.ref} /></FormControl><FormMessage /></FormItem>} />;
+}
+
+function ControlledSelect({ options, value, onChange, placeholder, disabled = false }: {
+  options: Array<{ value: string; label: string }>;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+  disabled?: boolean;
+}) {
+  return <select value={value} disabled={disabled} onChange={(event) => onChange(event.target.value)} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-xs outline-none focus-visible:ring-2 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50">
+    <option value="">{placeholder}</option>
+    {options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+  </select>;
 }
