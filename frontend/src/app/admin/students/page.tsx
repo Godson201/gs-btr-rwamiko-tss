@@ -14,6 +14,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DataTable, type DataTableColumn } from '@/components/shared/data-table';
+import { LocationPicker, type LocationPickerValue } from '@/components/shared/location-picker';
 import { api } from '@/lib/api';
 
 interface Department { id: string; name: string; code: string }
@@ -47,6 +48,7 @@ export default function AdminStudentsPage() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [homeLocation, setHomeLocation] = useState<LocationPickerValue | null>(null);
   const { data, isLoading } = useQuery({ queryKey: ['students', search], queryFn: async () => (await api.get<{ data: Student[] }>('/students', { params: { search } })).data.data });
   const { data: classes } = useQuery({ queryKey: ['classes-options'], queryFn: async () => (await api.get<ClassOption[]>('/classes')).data });
   const { data: parents } = useQuery({ queryKey: ['parents-options'], queryFn: async () => (await api.get<ParentOption[]>('/parents')).data });
@@ -68,7 +70,7 @@ export default function AdminStudentsPage() {
       motherName: values.motherName, fatherName: values.fatherName, guardianPhone: values.guardianPhone || undefined,
       parentId: values.linkExistingParent ? values.parentId : undefined,
     }),
-    onSuccess: () => { toast.success('Student academic record created'); queryClient.invalidateQueries({ queryKey: ['students'] }); queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] }); setIsDialogOpen(false); form.reset(defaults); },
+    onSuccess: () => { toast.success('Student academic record created'); queryClient.invalidateQueries({ queryKey: ['students'] }); queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] }); setIsDialogOpen(false); form.reset(defaults); setHomeLocation(null); },
     onError: (error: Error) => toast.error(error.message),
   });
   const deleteStudent = useMutation({
@@ -115,7 +117,10 @@ export default function AdminStudentsPage() {
               </div>
             </FormSection>
             <FormSection title="3. Home and family information" description="Provide the learner's home address and parent or guardian contacts.">
-              <TextField form={form} name="address" label="Home address" />
+              <FormField control={form.control} name="address" render={() => <FormItem><FormLabel>Home address</FormLabel><LocationPicker value={homeLocation} onChange={(location) => {
+                setHomeLocation(location);
+                form.setValue('address', location?.villageId ? formatLocation(location) : '', { shouldDirty: true, shouldValidate: true });
+              }} /><FormMessage /></FormItem>} />
               <div className="grid gap-4 sm:grid-cols-2"><TextField form={form} name="motherName" label="Mother's name" /><TextField form={form} name="fatherName" label="Father's name" /></div>
               <TextField form={form} name="guardianPhone" label="Parent or guardian telephone (optional)" type="tel" />
             </FormSection>
@@ -152,4 +157,8 @@ function ControlledSelect({ options, value, onChange, placeholder, disabled = fa
     <option value="">{placeholder}</option>
     {options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
   </select>;
+}
+
+function formatLocation(location: LocationPickerValue) {
+  return [location.province, location.district, location.sector, location.cell, location.village].join(', ');
 }
