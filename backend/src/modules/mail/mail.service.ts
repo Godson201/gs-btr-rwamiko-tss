@@ -103,7 +103,13 @@ export class MailService {
     try {
       const provider = this.configService.get<string>('MAIL_PROVIDER', 'smtp').toLowerCase();
       if (provider === 'brevo') {
-        await this.sendWithBrevo(to, subject, html);
+        try {
+          await this.sendWithBrevo(to, subject, html);
+        } catch (brevoError) {
+          if (!this.hasSmtpFallback()) throw brevoError;
+          this.logger.warn(`Brevo delivery failed; retrying ${to} through configured SMTP`);
+          await this.mailerService.sendMail({ to, subject, html });
+        }
       } else {
         await this.mailerService.sendMail({ to, subject, html });
       }
@@ -111,6 +117,14 @@ export class MailService {
       this.logger.error(`Failed to send email to ${to}: ${(error as Error).message}`);
       throw error;
     }
+  }
+
+  private hasSmtpFallback(): boolean {
+    return Boolean(
+      this.configService.get<string>('SMTP_HOST') &&
+      this.configService.get<string>('SMTP_USER') &&
+      this.configService.get<string>('SMTP_PASS'),
+    );
   }
 
   private async sendWithBrevo(to: string, subject: string, html: string): Promise<void> {

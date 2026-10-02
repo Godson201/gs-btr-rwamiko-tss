@@ -11,17 +11,19 @@ import { MailService } from './mail.service';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
         const enabled = configService.get<string>('MAIL_ENABLED', 'true') === 'true';
-        const provider = configService.get<string>('MAIL_PROVIDER', 'smtp').toLowerCase();
-        const user = configService.get<string>('SMTP_USER', 'no-reply@localhost');
+        const configuredUser = configService.get<string>('SMTP_USER');
+        const user = configuredUser || 'no-reply@localhost';
+        const host = configService.get<string>('SMTP_HOST');
+        const password = configService.get<string>('SMTP_PASS');
+        const smtpConfigured = Boolean(host && configuredUser && password);
         return {
-          // HTTP email providers do not use Nodemailer's transport. Keep a harmless
-          // JSON transport registered so MailerService remains available for SMTP fallback.
-          transport: enabled && provider === 'smtp'
+          // Keep SMTP ready as a fallback when an HTTP provider is unavailable.
+          transport: enabled && smtpConfigured
             ? {
-                host: configService.getOrThrow<string>('SMTP_HOST'),
+                host,
                 port: Number(configService.get('SMTP_PORT', 587)),
                 secure: Number(configService.get('SMTP_PORT', 587)) === 465,
-                auth: { user, pass: configService.getOrThrow<string>('SMTP_PASS') },
+                auth: { user, pass: password },
               }
             : { jsonTransport: true },
           defaults: { from: configService.get<string>('SMTP_FROM', user) },
