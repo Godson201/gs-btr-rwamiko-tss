@@ -19,6 +19,9 @@ const computerSystems = '/images/programmes/computer-systems-students-v2.png';
 const computerSystemsPractical = '/images/programmes/computer-systems-practical-v2.png';
 const software = '/images/programmes/software-development-students-v2.png';
 const networking = '/images/programmes/network-electronics-lab.png';
+const nitStructuredCabling = '/images/programmes/nit-structured-cabling-v2.png';
+const nitNetworkRack = '/images/programmes/nit-network-rack-v2.png';
+const nitWirelessTesting = '/images/programmes/nit-wireless-testing-v2.png';
 const construction = '/images/programmes/construction-electrical-workshop.png';
 const buildingConstruction = '/images/programmes/building-construction-students-v2.png';
 const buildingConstructionSettingOut = '/images/programmes/building-construction-setting-out-v2.png';
@@ -51,8 +54,8 @@ export const programmes: Programme[] = [
     slug: 'network-internet-technology', code: 'NIT', name: 'Network & Internet Technology',
     shortDescription: 'Build, configure, secure, and support the networks that connect people, devices, and services.',
     overview: 'Network & Internet Technology prepares learners to install physical network infrastructure, configure connected devices, provide internet services, identify faults, and apply foundational security practices in homes, schools, and organisations.',
-    levels: ['L3 NIT', 'L4 NIT', 'L5 NIT'], accent: 'from-sky-500 to-cyan-700', image: networking,
-    gallery: [{ src: networking, alt: 'Students configuring a network rack and testing circuits' }, { src: computing, alt: 'Learners configuring computers for a network' }, { src: '/students-workshop.png', alt: 'Technical students working together in a laboratory' }],
+    levels: ['L3 NIT', 'L4 NIT', 'L5 NIT'], accent: 'from-sky-500 to-cyan-700', image: nitStructuredCabling,
+    gallery: [{ src: nitStructuredCabling, alt: 'NIT students in school uniform preparing, terminating, and testing network cables' }, { src: nitNetworkRack, alt: 'NIT students configuring a network rack, switch, router, and connected laptop' }, { src: nitWirelessTesting, alt: 'NIT students planning wireless coverage and testing a school network connection' }],
     skills: ['Structured cabling and network installation', 'Router, switch, and wireless configuration', 'IP addressing and network services', 'Fault isolation and performance testing', 'Foundational network security'],
     careers: ['Network support technician', 'Internet service support assistant', 'Structured-cabling technician', 'Junior network administrator', 'ICT field technician'],
     furtherStudy: ['Network engineering', 'Cybersecurity', 'Cloud computing', 'Telecommunications'],
