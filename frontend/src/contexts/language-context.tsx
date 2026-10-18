@@ -120,10 +120,23 @@ const phraseRw: Record<string, string> = {
   'Add question': 'Ongeraho ikibazo', 'Upload resource': 'Ohereza imfashanyigisho', 'Add conduct record': 'Andika imyitwarire',
   'Create assessment': 'Kora isuzumabumenyi', 'Enter marks': 'Andika amanota', 'Plan module': 'Tegura isomo', 'Type': 'Ubwoko',
   'Save draft': 'Bika umushinga', 'Cancel': 'Hagarika', 'Filter': 'Shungura', 'Manage': 'Genzura',
+  'School updates': 'Amakuru y’ishuri', 'School portal': 'Urubuga rw’ishuri', 'View homepage': 'Reba ahabanza',
+  'Get the app': 'Shyira porogaramu ku gikoresho', 'Open navigation': 'Fungura inzira', 'Portal navigation': 'Inzira za sisitemu',
+  'Enter your email or phone number': 'Andika imeyili cyangwa nimero ya telefoni', 'Password is required': 'Ijambo ry’ibanga rirakenewe',
+  'Email and password are required': 'Imeyili cyangwa telefoni n’ijambo ry’ibanga birakenewe', 'Invalid credentials': 'Imeyili, telefoni cyangwa ijambo ry’ibanga si byo',
+  'This account has been deactivated': 'Iyi konti yahagaritswe',
+  'Connecting to the school server. It may take about a minute to start. Please keep this page open.': 'Turimo guhuza na seriveri y’ishuri. Ishobora gufata umunota umwe gutangira. Komeza uru rupapuro rufunguye.',
+  'The school server is taking too long to respond. Please try again.': 'Seriveri y’ishuri itinze gusubiza. Ongera ugerageze.',
+  'Unable to connect to the school. Check your internet connection and try again.': 'Ntibishobotse guhuza n’ishuri. Reba interineti yawe wongere ugerageze.',
+  'The login service is temporarily unavailable. Please try again shortly.': 'Serivisi yo kwinjira ntiri kuboneka ubu. Ongera ugerageze mu kanya.',
+  'The login service is not configured. Please contact the school administrator.': 'Serivisi yo kwinjira ntirashyirwaho neza. Vugana n’ubuyobozi bw’ishuri.',
+  'The school database is temporarily unavailable. Please try again shortly.': 'Ububiko bw’amakuru y’ishuri ntiburi kuboneka ubu. Ongera ugerageze mu kanya.',
+  'The service is temporarily unavailable. Please try again.': 'Serivisi ntiri kuboneka ubu. Ongera ugerageze.',
+  'The service returned an invalid response. Please try again.': 'Serivisi yatanze igisubizo kitari cyo. Ongera ugerageze.',
+  'The login service returned an invalid response. Please try again shortly.': 'Serivisi yo kwinjira yatanze igisubizo kitari cyo. Ongera ugerageze mu kanya.',
 };
 
-const originalText = new WeakMap<Text, string>();
-const originalAttributes = new WeakMap<Element, Map<string, string>>();
+const phraseEn = Object.fromEntries(Object.entries(phraseRw).map(([english, kinyarwanda]) => [kinyarwanda, english]));
 
 function translatePage(language: Language) {
   const translate = (value: string) => {
@@ -131,9 +144,10 @@ function translatePage(language: Language) {
     const trailing = value.match(/\s*$/)?.[0] ?? '';
     const core = value.trim();
     if (!core) return value;
-    if (phraseRw[core]) return `${leading}${language === 'rw' ? phraseRw[core] : core}${trailing}`;
-    if (core.startsWith('Welcome, ')) return `${leading}${language === 'rw' ? core.replace('Welcome, ', 'Murakaza neza, ') : core}${trailing}`;
-    return value;
+    const english = phraseEn[core] ?? core;
+    if (language === 'rw' && english.startsWith('Welcome, ')) return `${leading}${english.replace('Welcome, ', 'Murakaza neza, ')}${trailing}`;
+    if (language === 'en' && core.startsWith('Murakaza neza, ')) return `${leading}${core.replace('Murakaza neza, ', 'Welcome, ')}${trailing}`;
+    return `${leading}${language === 'rw' ? (phraseRw[english] ?? core) : english}${trailing}`;
   };
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
   let node: Node | null;
@@ -141,18 +155,15 @@ function translatePage(language: Language) {
     const textNode = node as Text;
     const parent = textNode.parentElement;
     if (!parent || ['SCRIPT', 'STYLE'].includes(parent.tagName) || parent.closest('[data-no-translate]')) continue;
-    if (!originalText.has(textNode)) originalText.set(textNode, textNode.nodeValue ?? '');
-    const source = originalText.get(textNode) ?? '';
-    textNode.nodeValue = language === 'rw' ? translate(source) : source;
+    const current = textNode.nodeValue ?? '';
+    const translated = translate(current);
+    if (translated !== current) textNode.nodeValue = translated;
   }
   document.querySelectorAll('[placeholder], [title], [aria-label]').forEach(element => {
-    let originals = originalAttributes.get(element);
-    if (!originals) { originals = new Map(); originalAttributes.set(element, originals); }
     for (const attribute of ['placeholder', 'title', 'aria-label']) {
       const current = element.getAttribute(attribute); if (!current) continue;
-      if (!originals.has(attribute)) originals.set(attribute, current);
-      const source = originals.get(attribute) ?? current;
-      element.setAttribute(attribute, language === 'rw' ? (phraseRw[source] ?? source) : source);
+      const translated = translate(current);
+      if (translated !== current) element.setAttribute(attribute, translated);
     }
   });
 }
@@ -173,10 +184,19 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const setLanguage = (value: Language) => { setLanguageState(value); localStorage.setItem('school-language', value); document.documentElement.lang = value; };
   useEffect(() => { document.documentElement.lang = language; }, [language]);
   useEffect(() => {
+    const options: MutationObserverInit = { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['placeholder', 'title', 'aria-label'] };
+    let frame = 0;
+    const observer = new MutationObserver(() => {
+      window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(() => {
+        observer.disconnect();
+        translatePage(language);
+        observer.observe(document.body, options);
+      });
+    });
     translatePage(language);
-    const observer = new MutationObserver(() => translatePage(language));
-    observer.observe(document.body, { childList: true, subtree: true });
-    return () => observer.disconnect();
+    observer.observe(document.body, options);
+    return () => { window.cancelAnimationFrame(frame); observer.disconnect(); };
   }, [language]);
   const value = useMemo(() => ({ language, setLanguage, t: (key: TranslationKey) => translations[language][key] ?? translations.en[key] }), [language]);
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;

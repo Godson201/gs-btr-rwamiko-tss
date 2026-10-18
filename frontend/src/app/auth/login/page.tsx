@@ -98,9 +98,9 @@ export default function LoginPage() {
                     </FormItem>
                   )}
                 />
-                {submitting && slowConnection && <p role="status" data-no-translate className="text-sm text-muted-foreground">Connecting to the school server. It may take about a minute to start. Please keep this page open.</p>}
-                {serverError && <p role="alert" data-no-translate className="text-sm text-destructive">{serverError}</p>}
-                <Button type="submit" data-no-translate className="w-full" disabled={form.formState.isSubmitting}>
+                {submitting && slowConnection && <p role="status" className="text-sm text-muted-foreground">Connecting to the school server. It may take about a minute to start. Please keep this page open.</p>}
+                {serverError && <p role="alert" className="text-sm text-destructive">{serverError}</p>}
+                <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
                   {form.formState.isSubmitting ? 'Signing in…' : 'Sign in'}
                 </Button>
               </form>

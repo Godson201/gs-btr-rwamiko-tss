@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { AccountStatus, ParentStatus, Role } from '@prisma/client';
@@ -27,10 +27,22 @@ export class AuthService {
 
   async validateUser(identifier: string, password: string): Promise<AuthenticatedUser> {
     // identifier is whatever the login form was given — an email or a phone number.
-    const user = await this.prisma.user.findFirst({
-      where: { OR: [{ email: identifier }, { phone: identifier }] },
-      include: { teacher: { select: { staffTitle: true } } },
-    });
+    const normalizedIdentifier = identifier.trim();
+    const email = normalizedIdentifier.includes('@')
+      ? normalizedIdentifier.toLowerCase()
+      : normalizedIdentifier;
+    let user;
+    try {
+      user = await this.prisma.user.findFirst({
+        where: { OR: [{ email }, { phone: normalizedIdentifier }] },
+        include: { teacher: { select: { staffTitle: true } } },
+      });
+    } catch (error) {
+      if (this.isDatabaseUnavailable(error)) {
+        throw new ServiceUnavailableException('The school database is temporarily unavailable. Please try again shortly.');
+      }
+      throw error;
+    }
 
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
@@ -284,6 +296,14 @@ export class AuthService {
 
   private hashToken(token: string): string {
     return createHash('sha256').update(token).digest('hex');
+  }
+
+  private isDatabaseUnavailable(error: unknown): boolean {
+    if (!error || typeof error !== 'object') return false;
+    const code = 'code' in error ? String(error.code) : '';
+    const message = 'message' in error ? String(error.message) : '';
+    return ['ECONNREFUSED', 'P1001', 'P1002', 'P1017'].includes(code)
+      || /ECONNREFUSED|connect(?:ion)?\s+(?:refused|timed out)|server has closed the connection/i.test(message);
   }
 
   async me(userId: string) {

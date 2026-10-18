@@ -7,13 +7,21 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: 'Email and password are required' }, { status: 400 });
   }
 
+  const backendUrl = process.env.API_URL?.trim().replace(/\/$/, '');
+  if (!backendUrl) {
+    return NextResponse.json(
+      { message: 'The login service is not configured. Please contact the school administrator.' },
+      { status: 503 },
+    );
+  }
+
   let backendResponse: Response;
   let responseText: string;
   try {
-    backendResponse = await fetch(`${process.env.API_URL}/auth/login`, {
+    backendResponse = await fetch(`${backendUrl}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'User-Agent': request.headers.get('user-agent') ?? '' },
-      body: JSON.stringify({ email: body.email, password: body.password }),
+      body: JSON.stringify({ email: String(body.email).trim(), password: body.password }),
       cache: 'no-store',
       signal: AbortSignal.timeout(70000),
     });
