@@ -7,6 +7,7 @@ import { ArrowRight, BookOpen, CheckCircle2, Cpu, MapPin, ShieldCheck, Sparkles,
 import { Button } from '@/components/ui/button';
 import { MobileHomeNav } from '@/components/layout/mobile-home-nav';
 import { LanguageSwitcher } from '@/components/shared/language-switcher';
+import { PublicFooter } from '@/components/public/public-footer';
 
 const programmes = ['Computer Systems & Architecture', 'Software Development', 'Network & Internet Technology', 'Electrical Technology', 'Electronics & Telecommunication', 'Building Construction', 'Professional Accounting'];
 
@@ -83,7 +84,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <footer className="border-t border-slate-200 bg-white px-5 py-8 sm:px-8"><div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-5 text-center sm:flex-row sm:text-left"><div className="flex items-center gap-3"><Image src="/school-logo.png" alt="School crest" width={64} height={43} className="h-12 w-auto object-contain" /><div><p className="text-sm font-black">G.S BTR RWAMIKO TSS</p><p className="text-xs text-slate-500">Through Here, Wealth is Flash</p></div></div><p className="text-xs text-slate-500">© {new Date().getFullYear()} G.S BTR Rwamiko TSS. Learning with purpose.</p></div></footer>
+      <PublicFooter />
     </main>
   );
 }

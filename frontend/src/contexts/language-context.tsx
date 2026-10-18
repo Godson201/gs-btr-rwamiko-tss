@@ -134,6 +134,12 @@ const phraseRw: Record<string, string> = {
   'The service is temporarily unavailable. Please try again.': 'Serivisi ntiri kuboneka ubu. Ongera ugerageze.',
   'The service returned an invalid response. Please try again.': 'Serivisi yatanze igisubizo kitari cyo. Ongera ugerageze.',
   'The login service returned an invalid response. Please try again shortly.': 'Serivisi yo kwinjira yatanze igisubizo kitari cyo. Ongera ugerageze mu kanya.',
+  'Education ecosystem': 'Urwego rw’uburezi', 'Partners & Stakeholders': 'Abafatanyabikorwa n’inzego bireba',
+  'Official institutions supporting education, skills development, assessment, employment, and progression in Rwanda.': 'Inzego zemewe zifasha uburezi, guteza imbere ubumenyi, isuzuma, umurimo no gukomeza amashuri mu Rwanda.',
+  'Ministry of Education': 'Minisiteri y’Uburezi', 'Rwanda TVET Board': 'Urwego rw’Igihugu rushinzwe TVET',
+  'Rwanda Basic Education Board': 'Urwego rw’Igihugu rushinzwe Uburezi bw’Ibanze',
+  'National Examination and School Inspection Authority': 'Ikigo cy’Igihugu gishinzwe Ibizamini n’Ubugenzuzi bw’Amashuri',
+  'Ministry of Public Service and Labour': 'Minisiteri y’Abakozi ba Leta n’Umurimo', 'Rwanda Polytechnic': 'Rwanda Polytechnic',
 };
 
 const phraseEn = Object.fromEntries(Object.entries(phraseRw).map(([english, kinyarwanda]) => [kinyarwanda, english]));
