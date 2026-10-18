@@ -31,7 +31,7 @@ export function AuthShowcasePanel({
 
   return (
     <div className="relative hidden flex-col justify-between overflow-hidden bg-slate-950 p-10 text-white lg:flex">
-      <Image src="/students-campus.png" alt="Students arriving on campus" fill priority sizes="50vw" className="auth-story-image object-cover object-center" />
+      <Image src="/students-campus-v2.png" alt="G.S BTR Rwamiko TSS students arriving on campus" fill priority sizes="50vw" className="auth-story-image object-cover object-center" />
       <div className="absolute inset-0 bg-linear-to-r from-slate-950 via-slate-950/80 to-slate-950/20" />
       <div className="absolute inset-0 bg-linear-to-t from-slate-950 via-transparent to-slate-950/50" />
       <div className="school-grid pointer-events-none absolute inset-0 opacity-20" />

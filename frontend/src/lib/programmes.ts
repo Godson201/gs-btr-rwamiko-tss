@@ -15,9 +15,10 @@ export interface Programme {
 }
 
 const computing = '/images/programmes/computing-lab.png';
+const software = '/images/programmes/software-development-students-v2.png';
 const networking = '/images/programmes/network-electronics-lab.png';
 const construction = '/images/programmes/construction-electrical-workshop.png';
-const accounting = '/images/programmes/accounting-class.png';
+const accounting = '/images/programmes/accounting-students-v2.png';
 
 export const programmes: Programme[] = [
   {
@@ -35,8 +36,8 @@ export const programmes: Programme[] = [
     slug: 'software-development', code: 'SWD', name: 'Software Development',
     shortDescription: 'Learn to analyse real problems and create reliable web, mobile, and data-driven software solutions.',
     overview: 'Software Development combines computational thinking, programming, interface design, databases, testing, and collaborative project work. Students learn a disciplined process: understand a user need, design a solution, build it, test it, and explain it.',
-    levels: ['L3 SWD', 'L4 SWD', 'L5 SWD'], accent: 'from-violet-500 to-indigo-700', image: computing,
-    gallery: [{ src: computing, alt: 'Students developing software in a computer laboratory' }, { src: '/students-classroom.png', alt: 'Learners planning a collaborative project' }, { src: networking, alt: 'Students connecting applications to laboratory infrastructure' }],
+    levels: ['L3 SWD', 'L4 SWD', 'L5 SWD'], accent: 'from-violet-500 to-indigo-700', image: software,
+    gallery: [{ src: software, alt: 'G.S BTR Rwamiko TSS students developing software together' }, { src: computing, alt: 'Learners working with computer systems in the laboratory' }, { src: networking, alt: 'Students connecting applications to laboratory infrastructure' }],
     skills: ['Programming fundamentals and algorithms', 'Responsive web and application development', 'Database design and data management', 'Software testing and debugging', 'Requirements analysis and team delivery'],
     careers: ['Junior software developer', 'Web developer', 'Application support assistant', 'Quality-assurance tester', 'Database support assistant'],
     furtherStudy: ['Software engineering', 'Computer science', 'Information systems', 'Data science'],
@@ -91,7 +92,7 @@ export const programmes: Programme[] = [
     shortDescription: 'Build trusted financial records, interpret business information, and support responsible decision-making.',
     overview: 'Professional Accounting develops accuracy, integrity, organisation, and business understanding. Learners practise recording transactions, preparing accounts, budgeting, using digital tools, and communicating financial information clearly.',
     levels: ['S4 ACC', 'S5 ACC', 'S6 ACC'], accent: 'from-fuchsia-500 to-purple-800', image: accounting,
-    gallery: [{ src: accounting, alt: 'Students completing a practical accounting simulation' }, { src: '/students-classroom.png', alt: 'Learners discussing academic work in class' }, { src: computing, alt: 'Students using computers for digital business tasks' }],
+    gallery: [{ src: accounting, alt: 'G.S BTR Rwamiko TSS students completing a practical accounting exercise' }, { src: '/students-classroom.png', alt: 'Learners discussing academic work in class' }, { src: computing, alt: 'Students using computers for digital business tasks' }],
     skills: ['Bookkeeping and financial records', 'Budgeting and cost awareness', 'Spreadsheet and accounting-software use', 'Business mathematics and communication', 'Ethics, accuracy, and internal control'],
     careers: ['Accounts assistant', 'Bookkeeper', 'Payroll assistant', 'Cashier or finance clerk', 'Junior audit or tax assistant'],
     furtherStudy: ['Accounting', 'Finance', 'Business administration', 'Economics and entrepreneurship'],

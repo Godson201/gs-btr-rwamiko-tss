@@ -26,7 +26,7 @@ export default function HomePage() {
       </header>
 
       <section className="relative flex min-h-[640px] sm:min-h-[760px] items-end overflow-hidden bg-slate-950 lg:min-h-screen">
-        <Image src="/students-campus.png" alt="Students walking together on a green school campus" fill className="object-cover object-center" priority sizes="100vw" />
+        <Image src="/students-campus-v2.png" alt="G.S BTR Rwamiko TSS students walking together on campus" fill className="object-cover object-center" priority sizes="100vw" />
         <div className="absolute inset-0 bg-linear-to-r from-slate-950 via-slate-950/75 to-slate-950/10" /><div className="absolute inset-0 bg-linear-to-t from-slate-950 via-transparent to-slate-950/20" />
         <div className="school-orb school-orb-one" /><div className="school-orb school-orb-two" /><div className="school-grid absolute inset-0 opacity-20" />
         <div className="relative z-10 mx-auto w-full max-w-7xl px-5 pb-20 pt-36 sm:px-8 lg:pb-28">
@@ -49,7 +49,7 @@ export default function HomePage() {
           <div className="mt-8 grid gap-4 sm:grid-cols-2">{[['Excellent education', BookOpen], ['Practice-led learning', Wrench], ['Digital confidence', Cpu], ['Safe community', ShieldCheck]].map(([label, Icon]) => <div key={label as string} className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"><span className="rounded-xl bg-cyan-100 p-2 text-cyan-800"><Icon className="size-5" /></span><span className="text-sm font-bold">{label as string}</span></div>)}</div>
           <Button asChild variant="outline" className="mt-7 rounded-full"><Link href="/our-story">Read our story <ArrowRight className="size-4" /></Link></Button>
         </div>
-        <div className="relative"><div className="absolute -inset-5 -z-10 rounded-[2.5rem] bg-linear-to-br from-cyan-200 to-emerald-100 blur-2xl" /><Image src="/students-classroom.png" alt="Students collaborating during a classroom lesson" width={1536} height={1024} className="aspect-[4/3] w-full rounded-[2rem] object-cover shadow-2xl" sizes="(max-width: 1024px) 100vw, 55vw" /><div className="absolute -bottom-7 left-5 rounded-2xl bg-slate-950 p-5 text-white shadow-xl sm:left-8"><p className="text-3xl font-black text-cyan-300">7</p><p className="text-xs font-bold uppercase tracking-widest">Career pathways</p></div></div>
+        <div className="relative"><div className="absolute -inset-5 -z-10 rounded-[2.5rem] bg-linear-to-br from-cyan-200 to-emerald-100 blur-2xl" /><Image src="/images/programmes/software-development-students-v2.png" alt="G.S BTR Rwamiko TSS students collaborating during a software lesson" width={1536} height={1024} className="aspect-[4/3] w-full rounded-[2rem] object-cover shadow-2xl" sizes="(max-width: 1024px) 100vw, 55vw" /><div className="absolute -bottom-7 left-5 rounded-2xl bg-slate-950 p-5 text-white shadow-xl sm:left-8"><p className="text-3xl font-black text-cyan-300">7</p><p className="text-xs font-bold uppercase tracking-widest">Career pathways</p></div></div>
       </section>
 
       <section id="programmes" className="bg-slate-950 py-24 text-white lg:py-32"><div className="mx-auto max-w-7xl px-5 sm:px-8"><div className="grid gap-12 lg:grid-cols-2 lg:items-center">
