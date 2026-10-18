@@ -20,6 +20,8 @@ const computerSystemsPractical = '/images/programmes/computer-systems-practical-
 const software = '/images/programmes/software-development-students-v2.png';
 const networking = '/images/programmes/network-electronics-lab.png';
 const construction = '/images/programmes/construction-electrical-workshop.png';
+const buildingConstruction = '/images/programmes/building-construction-students-v2.png';
+const buildingConstructionSettingOut = '/images/programmes/building-construction-setting-out-v2.png';
 const accounting = '/images/programmes/accounting-students-v2.png';
 
 export const programmes: Programme[] = [
@@ -80,14 +82,14 @@ export const programmes: Programme[] = [
   },
   {
     slug: 'building-construction', code: 'BDC', name: 'Building Construction',
-    shortDescription: 'Turn plans into safe, durable structures through measurement, masonry, finishing, and site practice.',
-    overview: 'Building Construction gives learners a strong foundation in drawings, setting out, masonry, concrete work, finishes, quantities, and site organisation. Accuracy, teamwork, safety, and responsible material use are central to every practical task.',
-    levels: ['L3 BDC', 'L4 BDC', 'L5 BDC'], accent: 'from-orange-500 to-red-800', image: construction,
-    gallery: [{ src: construction, alt: 'Students practising masonry and reading construction drawings' }, { src: '/students-workshop.png', alt: 'Learners using tools in a supervised workshop' }, { src: '/students-classroom.png', alt: 'Students planning and reviewing technical work' }],
-    skills: ['Technical drawing and plan interpretation', 'Setting out, measurement, and levelling', 'Masonry, concrete, and finishing work', 'Materials estimation and responsible use', 'Site safety, teamwork, and quality control'],
+    shortDescription: 'Learn to transform drawings into safe, accurate structures through setting out, masonry, formwork, concrete, and finishing practice.',
+    overview: 'Building Construction takes learners through the complete journey from interpreting a drawing and measuring a site to setting out, building, checking, and finishing a structure. In practical teams, students learn to use surveying and hand tools, prepare materials, construct masonry, assemble formwork, and verify quality while following professional safety procedures and using resources responsibly.',
+    levels: ['L3 BDC', 'L4 BDC', 'L5 BDC'], accent: 'from-orange-500 to-red-800', image: buildingConstruction,
+    gallery: [{ src: buildingConstruction, alt: 'BDC students interpreting a drawing and constructing a masonry training wall safely' }, { src: buildingConstructionSettingOut, alt: 'BDC students practising levelling, setting out, and reinforced-concrete formwork' }, { src: construction, alt: 'Building Construction learners completing supervised workshop practice' }],
+    skills: ['Construction drawing interpretation and site planning', 'Setting out, measurement, surveying, and levelling', 'Masonry, formwork, reinforcement, and concrete work', 'Plastering, finishes, quantities, and material control', 'Site safety, teamwork, workmanship, and quality inspection'],
     careers: ['Masonry technician', 'Construction-site assistant', 'Building maintenance technician', 'Junior quantity-estimation assistant', 'Self-employed construction craftsperson'],
     furtherStudy: ['Civil engineering', 'Construction technology', 'Quantity surveying', 'Architecture'],
-    projects: ['Set out and build a demonstration wall', 'Prepare a simple materials estimate', 'Complete a measured finishing exercise'],
+    projects: ['Interpret a drawing, set out, and build a demonstration wall', 'Assemble and check formwork for a reinforced-concrete element', 'Prepare a materials estimate and complete a measured finishing exercise'],
   },
   {
     slug: 'professional-accounting', code: 'ACC', name: 'Professional Accounting',
