@@ -22,7 +22,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       title="Admin Portal"
       navItems={navItems}
       profileHref="/admin/profile"
-      backgroundImage="/students-workshop.png"
+      backgroundImage="/school-campus-uniform-v3.png"
       message="Leadership turns a shared vision into opportunities for every learner."
     >
       {children}

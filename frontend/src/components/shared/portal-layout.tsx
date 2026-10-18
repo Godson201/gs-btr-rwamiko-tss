@@ -42,7 +42,7 @@ export function PortalLayout({
   title,
   navItems,
   profileHref,
-  backgroundImage = '/students-classroom.png',
+  backgroundImage = '/school-campus-uniform-v3.png',
   message = 'Every lesson is one more step toward the future you are building.',
   children,
 }: {

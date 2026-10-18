@@ -52,7 +52,7 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
   }
 
   return (
-    <PortalLayout title="Teacher Portal" navItems={navItems} profileHref="/teacher/profile" backgroundImage="/students-classroom.png" message="A great teacher does more than share knowledge—they awaken possibility.">
+    <PortalLayout title="Teacher Portal" navItems={navItems} profileHref="/teacher/profile" backgroundImage="/school-campus-uniform-v3.png" message="A great teacher does more than share knowledge—they awaken possibility.">
       {children}
     </PortalLayout>
   );

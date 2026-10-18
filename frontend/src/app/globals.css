@@ -72,7 +72,7 @@
 
 @media (max-width: 1023px) {
   .auth-shell {
-    background-image: linear-gradient(rgba(248,250,252,.9), rgba(236,254,255,.92)), url('/students-campus.png');
+    background-image: linear-gradient(rgba(248,250,252,.9), rgba(236,254,255,.92)), url('/school-campus-uniform-v3.png');
     background-position: center;
     background-size: cover;
     background-attachment: fixed;

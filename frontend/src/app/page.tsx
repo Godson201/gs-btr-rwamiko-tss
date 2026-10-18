@@ -26,7 +26,7 @@ export default function HomePage() {
       </header>
 
       <section className="relative flex min-h-[640px] sm:min-h-[760px] items-end overflow-hidden bg-slate-950 lg:min-h-screen">
-        <Image src="/students-campus-v2.png" alt="G.S BTR Rwamiko TSS students walking together on campus" fill className="object-cover object-center" priority sizes="100vw" />
+        <Image src="/school-campus-uniform-v3.png" alt="G.S BTR Rwamiko TSS students gathered on the school campus" fill className="object-cover object-center" priority sizes="100vw" />
         <div className="absolute inset-0 bg-linear-to-r from-slate-950 via-slate-950/75 to-slate-950/10" /><div className="absolute inset-0 bg-linear-to-t from-slate-950 via-transparent to-slate-950/20" />
         <div className="school-orb school-orb-one" /><div className="school-orb school-orb-two" /><div className="school-grid absolute inset-0 opacity-20" />
         <div className="relative z-10 mx-auto w-full max-w-7xl px-5 pb-20 pt-36 sm:px-8 lg:pb-28">
