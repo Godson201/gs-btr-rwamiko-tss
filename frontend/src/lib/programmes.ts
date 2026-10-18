@@ -15,6 +15,8 @@ export interface Programme {
 }
 
 const computing = '/images/programmes/computing-lab.png';
+const computerSystems = '/images/programmes/computer-systems-students-v2.png';
+const computerSystemsPractical = '/images/programmes/computer-systems-practical-v2.png';
 const software = '/images/programmes/software-development-students-v2.png';
 const networking = '/images/programmes/network-electronics-lab.png';
 const construction = '/images/programmes/construction-electrical-workshop.png';
@@ -25,8 +27,8 @@ export const programmes: Programme[] = [
     slug: 'computer-systems-architecture', code: 'CSA', name: 'Computer Systems & Architecture',
     shortDescription: 'Understand, assemble, configure, protect, and maintain the computer systems on which modern organisations depend.',
     overview: 'Computer Systems & Architecture develops confident technicians who understand how hardware, operating systems, storage, peripherals, and basic networks work together. Learners move from diagnosis to deployment through structured laboratory practice.',
-    levels: ['L3 CSA', 'L4 CSA', 'L5 CSA'], accent: 'from-cyan-500 to-blue-700', image: computing,
-    gallery: [{ src: computing, alt: 'Learners assembling a desktop computer in an ICT laboratory' }, { src: networking, alt: 'Learners testing connected computer equipment' }, { src: '/students-workshop.png', alt: 'Students collaborating during practical technical learning' }],
+    levels: ['L3 CSA', 'L4 CSA', 'L5 CSA'], accent: 'from-cyan-500 to-blue-700', image: computerSystems,
+    gallery: [{ src: computerSystems, alt: 'CSA students assembling a desktop computer with guidance from their technical instructor' }, { src: computerSystemsPractical, alt: 'CSA students diagnosing computer hardware in a supervised practical lesson' }, { src: computing, alt: 'Computer systems laboratory prepared for practical learning' }],
     skills: ['Computer assembly and component selection', 'Operating-system installation and configuration', 'Preventive maintenance and troubleshooting', 'Data protection, backup, and user support', 'Basic network and peripheral deployment'],
     careers: ['Computer maintenance technician', 'IT support technician', 'Systems support assistant', 'Help-desk technician', 'Junior infrastructure technician'],
     furtherStudy: ['Computer engineering', 'Information technology', 'Cybersecurity', 'Network administration'],
