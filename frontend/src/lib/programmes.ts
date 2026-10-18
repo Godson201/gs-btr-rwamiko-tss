@@ -23,6 +23,9 @@ const nitStructuredCabling = '/images/programmes/nit-structured-cabling-v2.png';
 const nitNetworkRack = '/images/programmes/nit-network-rack-v2.png';
 const nitWirelessTesting = '/images/programmes/nit-wireless-testing-v2.png';
 const construction = '/images/programmes/construction-electrical-workshop.png';
+const eltMotorControl = '/images/programmes/elt-motor-control-v2.png';
+const eltDomesticWiring = '/images/programmes/elt-domestic-wiring-v2.png';
+const eltStudentWorkshop = '/images/programmes/elt-student-workshop-v2.jpg';
 const buildingConstruction = '/images/programmes/building-construction-students-v2.png';
 const buildingConstructionSettingOut = '/images/programmes/building-construction-setting-out-v2.png';
 const accounting = '/images/programmes/accounting-students-v2.png';
@@ -65,8 +68,8 @@ export const programmes: Programme[] = [
     slug: 'electrical-technology', code: 'ELT', name: 'Electrical Technology',
     shortDescription: 'Develop the discipline and practical competence to install, test, and maintain safe electrical systems.',
     overview: 'Electrical Technology joins scientific understanding with safe workshop practice. Learners interpret drawings, select materials, install circuits, use measuring instruments, locate faults, and work according to professional safety procedures.',
-    levels: ['L3 ELT', 'L4 ELT', 'L5 ELT'], accent: 'from-amber-400 to-orange-700', image: construction,
-    gallery: [{ src: construction, alt: 'Students completing safe electrical and construction practice' }, { src: networking, alt: 'Learners using electronic test instruments' }, { src: '/students-workshop.png', alt: 'Students learning safely in a technical workshop' }],
+    levels: ['L3 ELT', 'L4 ELT', 'L5 ELT'], accent: 'from-amber-400 to-orange-700', image: eltMotorControl,
+    gallery: [{ src: eltMotorControl, alt: 'ELT students safely wiring and testing a motor-control training circuit' }, { src: eltDomesticWiring, alt: 'ELT students installing and testing a domestic electrical wiring board' }, { src: eltStudentWorkshop, alt: 'Electrical Technology students presenting a motor-control practical in the school workshop' }],
     skills: ['Domestic and commercial wiring', 'Electrical drawings and material estimation', 'Testing, measurement, and fault finding', 'Motor and control fundamentals', 'Occupational safety and tool care'],
     careers: ['Electrical installation technician', 'Maintenance electrician assistant', 'Solar installation assistant', 'Electrical maintenance technician', 'Industrial wiring assistant'],
     furtherStudy: ['Electrical engineering', 'Renewable energy technology', 'Industrial electricity', 'Electromechanics'],
