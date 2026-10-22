@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
+import { waitForAuthServer } from '@/lib/wait-for-auth-server';
 import { roleHomePath, SESSION_ACTIVITY_KEY, SESSION_IDLE_TIMEOUT_MS } from '@/lib/session';
 
 export interface LocationSummary {
@@ -68,6 +69,7 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 async function postSession(url: string, body: unknown): Promise<{ user: CurrentUser }> {
+  await waitForAuthServer();
   let response: Response;
   let responseText: string;
   try {

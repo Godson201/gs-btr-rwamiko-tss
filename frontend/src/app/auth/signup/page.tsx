@@ -400,7 +400,8 @@ export default function SignupPage() {
                   </div>
                 )}
 
-                {serverError && <p className="text-sm text-destructive">{serverError}</p>}
+                {form.formState.isSubmitting && <p role="status" className="text-sm text-muted-foreground">Connecting to the school server. We automatically check again while it starts. Please keep this page open.</p>}
+                {serverError && <p role="alert" className="text-sm text-destructive">{serverError}</p>}
 
                 <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
                   {step > 1 ? (
